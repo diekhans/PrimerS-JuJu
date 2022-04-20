@@ -1,2 +1,2 @@
-# PrimerJuJu
-Tools to assist with primer design
+# PrimersJuJu
+Tools to assist with designing multiple primers.
