@@ -33,7 +33,7 @@ spans an intron, then
 ** The coordinate range pairs must meet the primer3 requirement that that at least one of the two sequences is less than 60 bp in length.
 ** Check intron-spanning requirements.
 * Call primer3 to produce a list of possible primer pairs.
-* Double-check Delta G for secondary structures of any self-dimers, hairpins, and heterodimers that should be weaker (more positive) than -9.0 kcal/mole.
+* Double-check delta-G for secondary structures of any self-dimers, hairpins, and heterodimers that should be weaker (more positive) than -9.0 kcal/mole.
 * Cs and Gs (three hydrogen bonds) are preferred at the primer terminus (3’) to enhance specific binding.
 * check for off-target mappings using isPcr to check for uniqueness of each primer pair in both the transcriptome and genome
 * quality control to check against other isoforms
