@@ -1,56 +1,42 @@
 # Overview of PrimersJuJu workflow
 
-PrimersJuJu takes manually select regions and isoforms and use
-primer3 to produce a set of primer pairs.
+Primers-JuJu takes manually select regions and isoforms and use
+primer3 with other validation to produce a set of primer pairs.
 
-The command line program pjuju is used take user-defined input sets and
-produce a set of prioritized primer sequence pairs.
-
-  ** generate track of region being designed
-# Overview of PrimersJuJu workflow
-
-PrimersJuJu takes manually select regions and isoforms and use
-primer3 to produce a set of primer pairs.
-
-The command line program pjuju is used take user-defined input sets and
-produce a set of prioritized primer sequence pairs.
-
-  ** generate track of region being designed
+The command line program primers-juju is used to take user-defined input sets
+and produce a set of prioritized primer sequence pairs.  The results are both
+a TSV file with information about the primers and tracks in a UCSC browser
+assembly hub.
 
 ## Input
 
-For a given locus, the user provides as input:
+For each desired primer pair, the user provides as input:
 
-* a unique name to identify the primer set being designed.
-* genome assembly
-* a list of transcript models to use
+* a unique symbolic name to identify the primer set being designed
+* the genome assembly
+* list of transcript models to use
 * coordinates ranges of two regions from which to pick the primer pairs
-* parameters of uses for the primer design
+* parameters to use for the primer design
 
-The genome assembly is specifics as the genome assembly in UCSC two-bit
-format.  The transcript models are specified as one or more tracks and the
+The genome assembly is specified as the genome assembly in UCSC two-bit
+file.  The transcript models are specified as one or more tracks and the
 transcript ids within those tracks.
 
 The coordinate range pairs must meet the primer3 requirement that that at
-least one of the two sequences is less than 60 bp in length.  
-
-Session
-inteserct range with trans fuzzy
-
-HOW TO DO THIS:
-If a coordinate
-range cross a splice junction, then it will be a required splice junction for
-primer3.  A given region must not contain more than one splice junction.
-
-All of the primer3 parameters maybe changed from the defaults, either by the
-command line or a configuration file.
+least one of the two sequences is less than 60 bp in length.  If a region
+spans an intron, then 
 
 ## Processing
 
-* validate input to make sure it is consistent with the requirements
-* call primer3 to produce a list of possible primer pairs.
-* use isPcr to check for uniqueness of each primer pair.
-* output results
+* Validate input to make sure it is consistent with the requirements:
+** Allow for slightly fuzziness in region boundaries and adjust to match exons
+** The coordinate range pairs must meet the primer3 requirement that that at least one of the two sequences is less than 60 bp in length.
+** Check intron-spanning requirements.
+* Call primer3 to produce a list of possible primer pairs.
+* Double-check Delta G for secondary structures of any self-dimers, hairpins, and heterodimers that should be weaker (more positive) than -9.0 kcal/mole.
+* Cs and Gs (three hydrogen bonds) are preferred at the primer terminus (3’) to enhance specific binding.
+* check for off-target mappings using isPcr to check for uniqueness of each primer pair in both the transcriptome and genome
+* quality control to check against other isoforms
 
 ## Output
 
@@ -58,67 +44,15 @@ A TSV file is created that contains the prioritized list of primer pairs.
 This includes the genomic cooridnates, all attributes report by primer3,
 the results of isPcr and the sequences.
 
-A BED version annotating the primers in the genome.  This includes all
-attributes, suitable for turning create a bigBed for a track hub.  Color
-coding is used to identify the highest priority primer pairs.
+A BED files are produce for:
+** browser track of original regions
+** browser track with primer pairs
+** browser track with amplicons
 
+Color coding is used to identify the highest priority primer pairs.
 
-## Possible extensions
-
-* pre-filter regions with mappability tracks
-* if a region exceeds the primer3 maximum, split it up into multiple calls to primer3
-* split regions exceeding primer3 maximum size into overlapping regions and make multiple calls to primer3
-* create separate primer pair lists when a region crosses multiple splice junctions
-
-## Input
-
-For a given locus, the user provides as input:
-
-* a unique name to identify the primer set being designed.
-* genome assembly
-* a list of transcript models to use
-* coordinates ranges of two regions from which to pick the primer pairs
-* parameters of uses for the primer design
-
-The genome assembly is specifics as the genome assembly in UCSC two-bit
-format.  The transcript models are specified as one or more tracks and the
-transcript ids within those tracks.
-
-The coordinate range pairs must meet the primer3 requirement that that at
-least one of the two sequences is less than 60 bp in length.  
-
-Session
-inteserct range with trans fuzzy
-
-HOW TO DO THIS:
-If a coordinate
-range cross a splice junction, then it will be a required splice junction for
-primer3.  A given region must not contain more than one splice junction.
-
-All of the primer3 parameters maybe changed from the defaults, either by the
-command line or a configuration file.
-
-## Processing
-
-* validate input to make sure it is consistent with the requirements
-* call primer3 to produce a list of possible primer pairs.
-* use isPcr to check for uniqueness of each primer pair.
-* output results
-
-## Output
-
-A TSV file is created that contains the prioritized list of primer pairs.
-This includes the genomic cooridnates, all attributes report by primer3,
-the results of isPcr and the sequences.
-
-A BED version annotating the primers in the genome.  This includes all
-attributes, suitable for turning create a bigBed for a track hub.  Color
-coding is used to identify the highest priority primer pairs.
-
+A track hub is created
 
 ## Possible extensions
-
-* pre-filter regions with mappability tracks
 * if a region exceeds the primer3 maximum, split it up into multiple calls to primer3
-* split regions exceeding primer3 maximum size into overlapping regions and make multiple calls to primer3
-* create separate primer pair lists when a region crosses multiple splice junctions
+

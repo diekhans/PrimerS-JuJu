@@ -1,6 +1,6 @@
-# PrimersJuJu
+# PrimerS-JuJu
 
-Tools to assist with designing multiple primers for full-length
+Tools to assist with designing multiple RT-PCR primers for full-length
 isoform amplification.
 
 
