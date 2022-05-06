@@ -45,4 +45,4 @@ only be displayed for that transcript, while all other columns are displayed for
 transcripts.
 
 
-# TODO: need examples
+An example primer targets TSV is here: [primer-targets-example.tsv](primer-targets-example.tsv)
