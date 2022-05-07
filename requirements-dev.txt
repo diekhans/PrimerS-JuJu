@@ -1,6 +1,6 @@
-virtualenv
 setuptools
 wheel
 bumpversion
 twine
 vulture
+pytest

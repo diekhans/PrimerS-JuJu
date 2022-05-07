@@ -5,7 +5,6 @@ pyprogs = $(shell file -F $$'\t' bin/* | awk '/Python script/{print $$1}')
 pytests =  tests/libtests/*.py
 pypi_url = https://upload.pypi.org/simple/
 testpypi_url = https://test.pypi.org/simple/
-testenv = testenv
 
 version = $(shell PYTHONPATH=lib ${PYTHON} -c "import primersjuju; print(primersjuju.__version__)")
 
@@ -16,6 +15,7 @@ have_mdlinkcheck = $(shell which markdown-link-check >&/dev/null && echo yes || 
 
 help:
 	@echo "clean - remove all build, test, coverage and Python artifacts"
+	@echo "devenv - setup local venv"
 	@echo "doc - build various pieces of the doc"
 	@echo "lint - check style with flake8"
 	@echo "lint-doc - check documentation"
@@ -25,7 +25,7 @@ help:
 	@echo "test - run tests quickly with the default Python"
 	@echo "install - install the package to the active Python's site-packages"
 	@echo "dist - package"
-	@echo "test-pip - test install the package using pip"
+	@echo "test-${PIP} - test install the package using pip"
 	@echo "release-testpypi - test upload to testpypi"
 	@echo "test-release-testpypi - install from testpypi"
 	@echo "release - package and upload a release"
@@ -34,6 +34,14 @@ help:
 
 lint:
 	${FLAKE8} ${pyprogs} ${pytests} lib
+
+.PHONY: devenv
+devenv:
+	test -x ${devenv} || ${SYS_PYTHON} -m venv ${devenv}
+	${PIP} install --upgrade pip
+	${PIP} install --upgrade wheel
+	${PIP} install -r requirements-dev.txt
+	${PIP} install -e .
 
 # this gets a lot of false-positive, just use for code cleanup rather than making it
 # standard
@@ -69,7 +77,7 @@ dist: clean
 # test install locally
 test-pip: dist
 	${envsetup}
-	${envact} && cd ${testenv} && pip install --no-cache-dir $(realpath ${dist_tar})
+	${envact} && cd ${testenv} && ${PIP} install --no-cache-dir $(realpath ${dist_tar})
 	${envact} && cd tests ${MAKE} test
 
 # test release to testpypi
@@ -79,7 +87,7 @@ release-testpypi: dist
 # test release install from testpypi
 test-release-testpypi:
 	${envsetup}
-	${envact} && cd ${testenv} && pip install --no-cache-dir --index-url=${testpypi_url} --extra-index-url=https://pypi.org/simple ${pkgver_spec}
+	${envact} && cd ${testenv} && ${PIP} install --no-cache-dir --index-url=${testpypi_url} --extra-index-url=https://pypi.org/simple ${pkgver_spec}
 	${envact} && cd tests && ${MAKE} test
 
 release: dist
@@ -87,6 +95,6 @@ release: dist
 
 test-release:
 	${envsetup}
-	${envact} && cd ${testenv} && pip install --no-cache-dir ${pkgver_spec}
+	${envact} && cd ${testenv} && ${PIP} install --no-cache-dir ${pkgver_spec}
 	${envact} && cd tests && ${MAKE} test
 

@@ -3,7 +3,10 @@
 import setuptools
 
 requirements = [
-    "primer3-py>=0.6.1"
+    "primer3-py>=0.6.1",
+    "twobitreader>=3.1.7",
+    "pyBigWig>=0.3.18",
+    "pycbio @ git+https://github.com/diekhans/pycbio.git",
 ]
 
 setuptools.setup(
