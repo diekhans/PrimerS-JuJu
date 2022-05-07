@@ -19,6 +19,10 @@ class TargetTranscript:
         self.trans_id = trans_id
         self.user_attrs = user_attrs
 
+    def __str__(self):
+        ua = [(k, self.user_attrs[k]) for k in sorted(self.user_attrs.keys())]
+        return f"({self.trans_track}, {self.trans_id}) {ua}"
+
 class PrimerTarget:
     """
     A given primer target regions and associate target transcripts
@@ -28,15 +32,31 @@ class PrimerTarget:
         self.region_5p = region_5p
         self.region_3p = region_3p
         self.user_attrs = user_attrs
-        self.transcripts = {}  # by (track, id)
+        self.tracks = {}  # by [trans_track][trans_id]
 
     def add_transcript(self, trans_track, trans_id, user_attrs):
-        key = (trans_track, trans_id)
-        if key in self.transcripts:
-            raise PrimersJuJuUserError(f"duplicate transcript for primer: '{trans_track}', '{trans_id}'")
+        track = self.tracks.get(trans_track)
+        if track is None:
+            track = self.tracks[trans_track] = {}
+        if trans_id in track:
+            raise PrimersJuJuUserError(f"duplicate transcript for primer: ({trans_track}, {trans_id})")
         trans = TargetTranscript(trans_track, trans_id, user_attrs)
-        self.transcripts[key] = trans
+        self.tracks[trans_track][trans_id] = trans
         return trans
+
+    def access_transcript(self, trans_track, trans_id):
+        "transcript or error"
+        try:
+            return self.tracks[trans_track][trans_id]
+        except KeyError:
+            raise PrimersJuJuUserError(f"unknown transcript ({trans_track}, {trans_id})")
+
+    def get_tracks_trans(self):
+        "returns list of tuples of (trans_track, trans_id)"
+        return [(tr, tid)
+                for tr in self.tracks.keys()
+                for tid in self.tracks[tr].keys()]
+
 
 class PrimerTargets:
     """ All specified primer targets, each with a unique id"""
@@ -136,6 +156,7 @@ def _primer_targets_build(rows):
     for row in rows:
         if row.region_5p == "":
             _add_continue_row(primer_targets, transcript_user_cols, row)
+    return primer_targets
 
 def _check_required_columns(rows):
     if len(rows) == 0:
