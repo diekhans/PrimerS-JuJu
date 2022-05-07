@@ -2,7 +2,7 @@ ROOT = .
 include ${ROOT}/defs.mk
 
 pyprogs = $(shell file -F $$'\t' bin/* | awk '/Python script/{print $$1}')
-pyotherprogs = $(shell file -F $$'\t' devs/bin/* tests/*/bin/* | awk '/Python script/{print $$1}')
+pytests =  tests/libtests/*.py
 pypi_url = https://upload.pypi.org/simple/
 testpypi_url = https://test.pypi.org/simple/
 testenv = testenv
@@ -33,7 +33,7 @@ help:
 
 
 lint:
-	${FLAKE8} ${pyprogs} ${pyotherprogs} lib
+	${FLAKE8} ${pyprogs} ${pytests} lib
 
 # this gets a lot of false-positive, just use for code cleanup rather than making it
 # standard

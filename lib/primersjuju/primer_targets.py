@@ -120,7 +120,8 @@ def _do_add_primary_row(primer_targets, target_user_cols, transcript_user_cols, 
     _check_target_id(row.target_id)
     _must_not_be_empty(REQUIRED_COLS, row)
 
-    target = primer_targets.add_target(row.target_id, row.region_5p, row.region_3p,
+    target = primer_targets.add_target(row.target_id,
+                                       _parse_coords(row.region_5p), _parse_coords(row.region_3p),
                                        _build_column_dict(target_user_cols, row))
     target.add_transcript(row.trans_track, row.trans_id,
                           _build_column_dict(transcript_user_cols, row))
@@ -166,10 +167,10 @@ def _check_required_columns(rows):
         if col not in row0:
             raise PrimersJuJuUserError(f"required column is missing: '{col}'")
 
-def primer_targets_read(primer_targets_tsv):
+def primer_targets_read(primer_targets_tsv, in_fh=None):
     """read all primer targets into PrimerTargets object"""
     try:
-        rows = [row for row in TsvReader(primer_targets_tsv)]
+        rows = [row for row in TsvReader(primer_targets_tsv, inFh=in_fh)]
         _check_required_columns(rows)
         return _primer_targets_build(rows)
     except Exception as ex:
