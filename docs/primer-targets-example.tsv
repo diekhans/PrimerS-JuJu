@@ -1,4 +1,4 @@
-target_id	trans_target_track	trans_target_id		region_5p	region_3p	gene_name	gene_id	trans_cat	trans_structural_cat	notes	trans_notes
+target_id	trans_track	trans_id		region_5p	region_3p	gene_name	gene_id	trans_cat	trans_structural_cat	notes	trans_notes
 EFNB3+1	GENCODE_V39	ENST00000226091.3		chr17:7709210-7710259	chr17:7705244-7705707	EFNB3	ENSG00000108947.5			single GENCODE isoform	
-EFNB3+1	WTC11_consolidated	FSM_45093						FSM	PB-specific	
+EFNB3+1	WTC11_consolidated	FSM_45093						FSM	PB-specific		
 EFNB3+1	WTC11_consolidated	NNC-318304						NNC	PB-specific		3' exon short form of GENCODE

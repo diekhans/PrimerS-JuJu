@@ -4,7 +4,7 @@
 
 * *symbolic id* - string used to identify starting with an alphabetic character,
   with remaining characters being alpha-numeric, or one '_', '-', '.', '=', '%', or '+'
-* column names are all valid Python identifiers to allow easy access from code; however, sometimes clunky names.  These start with an alphabetic character, followed by an alpha-numeric or '_" character
+* all defined column names are all valid Python identifiers to allow easy access from code; however, sometimes clunky names.  These start with an alphabetic character, followed by an alpha-numeric or '_" character.
 
 ## Primer target specification
 
@@ -25,15 +25,15 @@ target transcripts.
   display coordinates, such as chrX:15,547,624-15,602,400.  Note what the browser
   displays are one-based coordinates.  Commas are optional.
 * *region_3p* - genomic coordinates of the 3' region.
-* *trans_target_track* - symbolic name of track that contains the target transcript. A list of valid
+* *trans_track* - symbolic name of track that contains the target transcript. A list of valid
   tracks names and their corresponding file will be defined for the project.
-* *trans_target_id* - target transcript id, which is the BED name.  This must be
+* *trans_id* - target transcript id, which is the BED name.  This must be
   unique within the track.
 
 
 Continuation rows consist of the same *target_id*, with the *region_5p* and
-*region_3p* cells empty.  They containing *trans_target_track* and
-*trans_target_id* for each additional transcript.  No order is required, as the
+*region_3p* cells empty.  They containing *trans_track* and
+*trans_id* for each additional transcript.  No order is required, as the
 *target_id* connects the rows.  However, having the continuation row follow
 The primary row is good for maintaining sanity.
 
