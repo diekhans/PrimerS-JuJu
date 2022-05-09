@@ -5,7 +5,7 @@ primer_targets input file
 import re
 from pycbio.tsv import TsvReader
 from pycbio.hgdata.coords import Coords
-from . import PrimersJuJuUserError
+from . import PrimersJuJuDataError
 
 # for validation
 REGION_COLS = frozenset(["region_5p", "region_3p"])
@@ -39,7 +39,7 @@ class PrimerTarget:
         if track is None:
             track = self.tracks[trans_track] = {}
         if trans_id in track:
-            raise PrimersJuJuUserError(f"duplicate transcript for primer: ({trans_track}, {trans_id})")
+            raise PrimersJuJuDataError(f"duplicate transcript for primer: ({trans_track}, {trans_id})")
         trans = TargetTranscript(trans_track, trans_id, user_attrs)
         self.tracks[trans_track][trans_id] = trans
         return trans
@@ -49,7 +49,7 @@ class PrimerTarget:
         try:
             return self.tracks[trans_track][trans_id]
         except KeyError:
-            raise PrimersJuJuUserError(f"unknown transcript ({trans_track}, {trans_id})")
+            raise PrimersJuJuDataError(f"unknown transcript ({trans_track}, {trans_id})")
 
     def get_tracks_trans(self):
         "returns list of tuples of (trans_track, trans_id)"
@@ -65,7 +65,7 @@ class PrimerTargets:
 
     def add_target(self, target_id, region_5p, region_3p, user_attrs):
         if target_id in self.targets:
-            raise PrimersJuJuUserError(f"duplicate primer target_id '{target_id}")
+            raise PrimersJuJuDataError(f"duplicate primer target_id '{target_id}")
         target = PrimerTarget(target_id, region_5p, region_3p, user_attrs)
         self.targets[target_id] = target
         return target
@@ -78,27 +78,27 @@ class PrimerTargets:
         "target or error"
         target = self.targets.get(target_id)
         if target is None:
-            raise PrimersJuJuUserError(f"unknown primer target_id references '{target_id}")
+            raise PrimersJuJuDataError(f"unknown primer target_id references '{target_id}")
         return target
 
 def _check_target_id(target_id):
     if not re.match("^[A-Za-z][-_.=%+A-Za-z0-9]*$", target_id):
-        raise PrimersJuJuUserError(f"invalid target_id string '{target_id}', see documentation")
+        raise PrimersJuJuDataError(f"invalid target_id string '{target_id}', see documentation")
 
 def _must_not_be_empty(columns, row):
     for col in columns:
         if row[col] == "":
-            raise PrimersJuJuUserError(f"row column {col} must not be empty")
+            raise PrimersJuJuDataError(f"row column {col} must not be empty")
 
 def _must_be_empty(columns, row):
     for col in columns:
         if row[col] != "":
-            raise PrimersJuJuUserError(f"row column {col} must be empty")
+            raise PrimersJuJuDataError(f"row column {col} must be empty")
 
 def _parse_coords(coord_str):
     coords = Coords.parse(coord_str, oneBased=True)
     if len(coords) > 10000000:
-        raise PrimersJuJuUserError(f"coordinates seem absurdly long: '{coord_str}'")
+        raise PrimersJuJuDataError(f"coordinates seem absurdly long: '{coord_str}'")
     return coords
 
 def _get_user_cols(rows):
@@ -130,7 +130,7 @@ def _add_primary_row(primer_targets, target_user_cols, transcript_user_cols, row
     try:
         _do_add_primary_row(primer_targets, target_user_cols, transcript_user_cols, row)
     except Exception as ex:
-        raise PrimersJuJuUserError(f"error parsing primary row: {str(row)}") from ex
+        raise PrimersJuJuDataError(f"error parsing primary row: {str(row)}") from ex
 
 def _do_add_continue_row(primer_targets, transcript_user_cols, row):
     _check_target_id(row.target_id)
@@ -144,7 +144,7 @@ def _add_continue_row(primer_targets, transcript_user_cols, row):
     try:
         _do_add_continue_row(primer_targets, transcript_user_cols, row)
     except Exception as ex:
-        raise PrimersJuJuUserError(f"error parsing continuation row: {str(row)}") from ex
+        raise PrimersJuJuDataError(f"error parsing continuation row: {str(row)}") from ex
 
 def _primer_targets_build(rows):
     # since no order required, two passes; one to for primary data and the
@@ -161,11 +161,11 @@ def _primer_targets_build(rows):
 
 def _check_required_columns(rows):
     if len(rows) == 0:
-        raise PrimersJuJuUserError("no data in TSV")
+        raise PrimersJuJuDataError("no data in TSV")
     row0 = rows[0]
     for col in REQUIRED_COLS:
         if col not in row0:
-            raise PrimersJuJuUserError(f"required column is missing: '{col}'")
+            raise PrimersJuJuDataError(f"required column is missing: '{col}'")
 
 def primer_targets_read(primer_targets_tsv, in_fh=None):
     """read all primer targets into PrimerTargets object"""
@@ -174,4 +174,4 @@ def primer_targets_read(primer_targets_tsv, in_fh=None):
         _check_required_columns(rows)
         return _primer_targets_build(rows)
     except Exception as ex:
-        raise PrimersJuJuUserError(f"error parsing primary target specification TSV: '{primer_targets_tsv}'") from ex
+        raise PrimersJuJuDataError(f"error parsing primary target specification TSV: '{primer_targets_tsv}'") from ex
