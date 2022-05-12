@@ -29,8 +29,9 @@ class PrimerTarget:
     """
     def __init__(self, target_id, region_5p, region_3p, user_attrs):
         self.target_id = target_id
-        self.region_5p = region_5p
-        self.region_3p = region_3p
+        self.region_5p_orig, self.region_3p_orig = region_5p, region_3p
+        # region bounds might be adjusted to match exon bounds
+        self.region_5p, self.region_3p = region_5p, region_3p
         self.user_attrs = user_attrs
         self.tracks = {}  # by [trans_track][trans_id]
 
@@ -65,7 +66,7 @@ class PrimerTargets:
 
     def add_target(self, target_id, region_5p, region_3p, user_attrs):
         if target_id in self.targets:
-            raise PrimersJuJuDataError(f"duplicate primer target_id '{target_id}")
+            raise PrimersJuJuDataError(f"duplicate primer target_id '{target_id}'")
         target = PrimerTarget(target_id, region_5p, region_3p, user_attrs)
         self.targets[target_id] = target
         return target
