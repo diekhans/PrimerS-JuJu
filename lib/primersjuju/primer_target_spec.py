@@ -1,6 +1,8 @@
-"""Primer targets specification from user.  Including Parsing and validated
-primer_targets input file
+"""
+Primer targets specification from user.  Including Parsing and validated
+primer_targets TSV input file.
 
+This does
 """
 import re
 from pycbio.tsv import TsvReader
@@ -12,7 +14,7 @@ REGION_COLS = frozenset(["region_5p", "region_3p"])
 TRANSCRIPT_COLS = frozenset(["trans_track", "trans_id"])
 REQUIRED_COLS = frozenset(frozenset(["target_id"]) | REGION_COLS | TRANSCRIPT_COLS)
 
-class TargetTranscript:
+class TargetTranscriptSpec:
     """a target transcript"""
     def __init__(self, trans_track, trans_id, user_attrs):
         self.trans_track = trans_track
@@ -23,14 +25,12 @@ class TargetTranscript:
         ua = [(k, self.user_attrs[k]) for k in sorted(self.user_attrs.keys())]
         return f"({self.trans_track}, {self.trans_id}) {ua}"
 
-class PrimerTarget:
+class PrimerTargetSpec:
     """
     A given primer target regions and associate target transcripts
     """
     def __init__(self, target_id, region_5p, region_3p, user_attrs):
         self.target_id = target_id
-        self.region_5p_orig, self.region_3p_orig = region_5p, region_3p
-        # region bounds might be adjusted to match exon bounds
         self.region_5p, self.region_3p = region_5p, region_3p
         self.user_attrs = user_attrs
         self.tracks = {}  # by [trans_track][trans_id]
@@ -41,7 +41,7 @@ class PrimerTarget:
             track = self.tracks[trans_track] = {}
         if trans_id in track:
             raise PrimersJuJuDataError(f"duplicate transcript for primer: ({trans_track}, {trans_id})")
-        trans = TargetTranscript(trans_track, trans_id, user_attrs)
+        trans = TargetTranscriptSpec(trans_track, trans_id, user_attrs)
         self.tracks[trans_track][trans_id] = trans
         return trans
 
@@ -59,15 +59,15 @@ class PrimerTarget:
                 for tid in self.tracks[tr].keys()]
 
 
-class PrimerTargets:
-    """ All specified primer targets, each with a unique id"""
+class PrimerTargetSpecs:
+    """All specified primer target transcripts, each with a unique id"""
     def __init__(self):
         self.targets = {}
 
     def add_target(self, target_id, region_5p, region_3p, user_attrs):
         if target_id in self.targets:
             raise PrimersJuJuDataError(f"duplicate primer target_id '{target_id}'")
-        target = PrimerTarget(target_id, region_5p, region_3p, user_attrs)
+        target = PrimerTargetSpec(target_id, region_5p, region_3p, user_attrs)
         self.targets[target_id] = target
         return target
 
@@ -117,48 +117,48 @@ def _get_user_cols(rows):
 def _build_column_dict(columns, row):
     return {col: row[col] for col in columns}
 
-def _do_add_primary_row(primer_targets, target_user_cols, transcript_user_cols, row):
+def _do_add_primary_row(primer_target_specs, target_user_cols, transcript_user_cols, row):
     _check_target_id(row.target_id)
     _must_not_be_empty(REQUIRED_COLS, row)
 
-    target = primer_targets.add_target(row.target_id,
-                                       _parse_coords(row.region_5p), _parse_coords(row.region_3p),
-                                       _build_column_dict(target_user_cols, row))
+    target = primer_target_specs.add_target(row.target_id,
+                                            _parse_coords(row.region_5p), _parse_coords(row.region_3p),
+                                            _build_column_dict(target_user_cols, row))
     target.add_transcript(row.trans_track, row.trans_id,
                           _build_column_dict(transcript_user_cols, row))
 
-def _add_primary_row(primer_targets, target_user_cols, transcript_user_cols, row):
+def _add_primary_row(primer_target_specs, target_user_cols, transcript_user_cols, row):
     try:
-        _do_add_primary_row(primer_targets, target_user_cols, transcript_user_cols, row)
+        _do_add_primary_row(primer_target_specs, target_user_cols, transcript_user_cols, row)
     except Exception as ex:
         raise PrimersJuJuDataError(f"error parsing primary row: {str(row)}") from ex
 
-def _do_add_continue_row(primer_targets, transcript_user_cols, row):
+def _do_add_continue_row(primer_target_specs, transcript_user_cols, row):
     _check_target_id(row.target_id)
     _must_be_empty(REGION_COLS, row)
     _must_not_be_empty(TRANSCRIPT_COLS, row)
-    target = primer_targets.access_target(row.target_id)
+    target = primer_target_specs.access_target(row.target_id)
     target.add_transcript(row.trans_track, row.trans_id,
                           _build_column_dict(transcript_user_cols, row))
 
-def _add_continue_row(primer_targets, transcript_user_cols, row):
+def _add_continue_row(primer_target_specs, transcript_user_cols, row):
     try:
-        _do_add_continue_row(primer_targets, transcript_user_cols, row)
+        _do_add_continue_row(primer_target_specs, transcript_user_cols, row)
     except Exception as ex:
         raise PrimersJuJuDataError(f"error parsing continuation row: {str(row)}") from ex
 
-def _primer_targets_build(rows):
+def _primer_target_specs_build(rows):
     # since no order required, two passes; one to for primary data and the
     # other for continuation
-    primer_targets = PrimerTargets()
+    primer_target_specs = PrimerTargetSpecs()
     target_user_cols, transcript_user_cols = _get_user_cols(rows)
     for row in rows:
         if row.region_5p != "":
-            _add_primary_row(primer_targets, target_user_cols, transcript_user_cols, row)
+            _add_primary_row(primer_target_specs, target_user_cols, transcript_user_cols, row)
     for row in rows:
         if row.region_5p == "":
-            _add_continue_row(primer_targets, transcript_user_cols, row)
-    return primer_targets
+            _add_continue_row(primer_target_specs, transcript_user_cols, row)
+    return primer_target_specs
 
 def _check_required_columns(rows):
     if len(rows) == 0:
@@ -168,11 +168,11 @@ def _check_required_columns(rows):
         if col not in row0:
             raise PrimersJuJuDataError(f"required column is missing: '{col}'")
 
-def primer_targets_read(primer_targets_tsv, in_fh=None):
+def primer_targets_specs_read(primer_targets_tsv, in_fh=None):
     """read all primer targets into PrimerTargets object"""
     try:
         rows = [row for row in TsvReader(primer_targets_tsv, inFh=in_fh)]
         _check_required_columns(rows)
-        return _primer_targets_build(rows)
+        return _primer_target_specs_build(rows)
     except Exception as ex:
         raise PrimersJuJuDataError(f"error parsing primary target specification TSV: '{primer_targets_tsv}'") from ex

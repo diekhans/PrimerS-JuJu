@@ -1,4 +1,4 @@
-# Input and output data formats used by Primers JuJu
+# Input and output data formats used by PrimerS JuJu
 
 ## Definitions and conventions
 

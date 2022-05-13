@@ -10,23 +10,23 @@ from . import PrimersJuJuDataError
 
 class Transcript(Bed):
     "transcript is a BED record with extra attributes"
-    __slots__ = ("track")
+    __slots__ = ("track_name")
 
 class Track:
     """access annotations in a bigBed track by name.  Must be a bed12.  The
     bedBed maybe a file path or URL.  srcUrl is for doc and error message"""
-    def __init__(self, track_name, bigBed, srcUrl):
+    def __init__(self, track_name, big_bed, src_url):
         self.track_name = track_name
-        self.bigBed = bigBed
-        self.srcUrl = srcUrl
+        self.big_bed = big_bed
+        self.src_url = src_url
 
     def read_by_names(self, names):
         transcript_beds = {}
-        with pipettor.Popen(['bigBedNamedItems', '-nameFile', self.bigBed, '/dev/stdin', '/dev/stdout'],
+        with pipettor.Popen(['bigBedNamedItems', '-nameFile', self.big_bed, '/dev/stdin', '/dev/stdout'],
                             stdin=pipettor.DataWriter('\n'.join(names) + '\n')) as fh:
             for b in BedReader(fh, bedClass=Transcript):
                 transcript_beds[b.name] = b
-                b.track = self
+                b.track_name = self.track_name
 
         missing_names = set(names) - set(transcript_beds.keys())
         if len(missing_names) > 0:
@@ -67,11 +67,11 @@ class Feature(Coords):
     "annotation feature"
     pass
 
-class Exon(Feature):
+class ExonRegion(Feature):
     "exon in a model"
     pass
 
-class Intron(Feature):
+class IntronRegion(Feature):
     "intron in a model"
     pass
 
@@ -87,11 +87,11 @@ def _block_features(trans, crange, csize, prev_blk, blk, features):
 
     if prev_blk is not None:
         if (prev_blk.end < crange.end) and (blk.start > crange.start):
-            features.append(_mk_feature(Intron, prev_blk.end, blk.start))
+            features.append(_mk_feature(IntronRegion, prev_blk.end, blk.start))
     if (blk.start < crange.end) and (blk.end > crange.start):
-        features.append(_mk_feature(Exon, blk.start, blk.end))
+        features.append(_mk_feature(ExonRegion, blk.start, blk.end))
 
-def transcript_crange_features(genome_data, trans, crange):
+def get_transcript_crange_features(genome_data, trans, crange):
     """Given a chromosome range in a transcript, generate of a list feature
     coords in that range.
     """

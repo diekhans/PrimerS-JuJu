@@ -128,3 +128,6 @@ dmypy.json
 .pyre/
 
 .emacs.bak/
+
+dev-venv
+tests/data
