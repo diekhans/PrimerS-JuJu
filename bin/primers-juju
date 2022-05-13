@@ -3,6 +3,7 @@
 import sys
 from os import path as osp
 import argparse
+import traceback
 
 sys.path.insert(0, osp.normpath(osp.join(osp.dirname(__file__), "../lib")))
 from primersjuju.primer_target_spec import primer_targets_specs_read

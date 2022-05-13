@@ -121,8 +121,14 @@ def _do_add_primary_row(primer_target_specs, target_user_cols, transcript_user_c
     _check_target_id(row.target_id)
     _must_not_be_empty(REQUIRED_COLS, row)
 
-    target = primer_target_specs.add_target(row.target_id,
-                                            _parse_coords(row.region_5p), _parse_coords(row.region_3p),
+    region_5p = _parse_coords(row.region_5p)
+    region_3p = _parse_coords(row.region_3p)
+    if region_3p.overlaps(region_5p):
+        raise PrimersJuJuDataError(f"region_5p ({region_5p}) overlaps region_3p ({region_3p})")
+    if region_3p.name != region_5p.name:
+        raise PrimersJuJuDataError(f"region_5p ({region_5p}) is on a different chromosome than region_3p ({region_3p})")
+
+    target = primer_target_specs.add_target(row.target_id, region_5p, region_3p,
                                             _build_column_dict(target_user_cols, row))
     target.add_transcript(row.trans_track, row.trans_id,
                           _build_column_dict(transcript_user_cols, row))
