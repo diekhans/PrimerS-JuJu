@@ -1,0 +1,16 @@
+trans_track	region_5p	region_3p	trans_id	gene_name	target_id	trans_cat	trans_structural_cat	notes	trans_notes
+WTC11_consolidated	chr4:2042042-2042366	chr4:2043863-2043922	FSM_48428	C4orf48	C4orf48+1			PB-specific	
+WTC11_consolidated	chr17:28404662-28405317	chr17:28398703-28399641	FSM_44519	SLC46A1	SLC46A1+1			PB-specific	
+WTC11_consolidated	chr19:35944582-35944982	chr19:35936839-35937541	FSM_45884	LRFN3	LRFN3+1			PB-specific	FSM present in PB but not found in ONT
+WTC11_consolidated	chr19:55648062-55648245	chr19:55652456-55652698	FSM_19966	CCDC106	CCDC106+1			PB-specific	
+WTC11_consolidated	chr19:47228328-47231039	chr19:47221198-47221914	FSM_45580	BBC3	BBC3+1			PB-specific	Design primer specific to junction highlighted in region_5p
+WTC11_consolidated	chr19:58517555-58519807	chr19:58513745-58514287	FSM_45682	ZBTB45	ZBTB45+1			PB-specific	Design primer specific to junction highlighted in region_5p
+WTC11_consolidated	chr3:49164170-49166312	chr3:49162868-49163232	FSM_25821	CCDC71	CCDC71+1			ONT-specific	
+WTC11_consolidated	chr11:66480435-66482239	chr11:66491267-66491612	FSM_374933	DPP3	DPP3+1			ONT-specific	Design primer specific to junction highlighted in region_5p
+WTC11_consolidated	chr15:52180132-52181192	chr15:52205138-52205695	FSM_12039	CERNA1	CERNA1+1			ONT-specific	
+WTC11_consolidated	chr17:997158-997333	chr17:999540-1001073	FSM_16709	TIMM22	TIMM22+1			PB-ONT-similar	Design primer specific to junction highlighted in region_3p
+WTC11_consolidated	chr1:211673509-211673695	chr1:211663476-211667185	FSM_913	NEK2	NEK2+1			PB-ONT-similar	Design primer specific to junction highlighted in region_3p
+WTC11_consolidated	chr8:102652240-102655624	chr8:102650103-102650375	FSM_34168	KLF10	KLF10+1			PB-ONT-similar	
+WTC11_consolidated	chr22:24423870-24433245	chr22:24440659-24441347	NIC_60087	ADORA2A	ADORA2A+1			PB-ONT-similar	Design primer specific to junction highlighted in region_5p
+WTC11_consolidated	chr16:695026-695252	chr16:694306-694413	NIC_57258	FBXL16	FBXL16+1			PB-ONT-similar	Design primer specific to junction highlighted in region_5p
+WTC11_consolidated	chr1:15409974-15410252	chr1:15425944-15428760	NIC_54729	EFHD2	EFHD2+1			PB-ONT-similar	

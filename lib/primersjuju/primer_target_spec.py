@@ -71,6 +71,9 @@ class PrimerTargetSpecs:
         self.targets[target_id] = target
         return target
 
+    def get_target_ids(self):
+        return list(self.targets.keys())
+
     def get_target(self, target_id):
         "target or None"
         return self.targets.get(target_id)

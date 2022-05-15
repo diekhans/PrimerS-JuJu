@@ -6,13 +6,12 @@ tests cover
 
 
 import pytest
-import os.path as osp
 import io
-from . import mydir, assert_except_msg
+from . import assert_except_msg
 from pycbio.hgdata.coords import Coords, CoordsError
+from pycbio.hgdata.bed import Bed
 from primersjuju import PrimersJuJuDataError
 from primersjuju.primer_target_spec import primer_targets_specs_read
-from primersjuju.genome_data import Transcript
 
 PRIMER_TARGETS_1 = (
     "target_id\ttrans_track\ttrans_id\t\tregion_5p\tregion_3p",
@@ -26,13 +25,11 @@ def _mk_tsv(rows):
     lines = "\n".join(rows) + '\n'
     return io.StringIO(lines)
 
-def test_primer_targets_example():
-    targets = primer_targets_specs_read(osp.join(mydir, "../../docs/primer-targets-example.tsv"))
-
-    target_ids = sorted(targets.targets.keys())
+def test_primer_targets_example(example_targets_specs):
+    target_ids = sorted(example_targets_specs.targets.keys())
     assert target_ids == ["EFNB3+1"]
 
-    target = targets.access_target("EFNB3+1")
+    target = example_targets_specs.access_target("EFNB3+1")
     trans_ids = sorted(target.get_tracks_trans())
     assert trans_ids == [('GENCODE_V39', 'ENST00000226091.3'),
                          ('WTC11_consolidated', 'FSM-45093'),
@@ -105,7 +102,7 @@ def test_get_track_annot(gdata):
     wtc11 = gdata.get_track("WTC11_consolidated")
     wrecs = wtc11.read_by_names(["FSM-45093", "NNC-318304"])
     assert len(wrecs) == 2
-    assert isinstance(wrecs['FSM-45093'], Transcript)
+    assert isinstance(wrecs['FSM-45093'], Bed)
 
 def test_get_track_missing(gdata):
     wtc11 = gdata.get_track("WTC11_consolidated")

@@ -4,13 +4,9 @@ Genome sequences and track data.
 from dataclasses import dataclass
 import twobitreader
 import pipettor
-from pycbio.hgdata.bed import Bed, BedReader
+from pycbio.hgdata.bed import BedReader
 from pycbio.hgdata import dnaOps
 from . import PrimersJuJuDataError
-
-class Transcript(Bed):
-    "transcript is a BED record with extra attributes"
-    __slots__ = ("track_name")
 
 @dataclass
 class Track:
@@ -24,9 +20,8 @@ class Track:
         transcript_beds = {}
         with pipettor.Popen(['bigBedNamedItems', '-nameFile', self.big_bed, '/dev/stdin', '/dev/stdout'],
                             stdin=pipettor.DataWriter('\n'.join(names) + '\n')) as fh:
-            for b in BedReader(fh, bedClass=Transcript):
+            for b in BedReader(fh):
                 transcript_beds[b.name] = b
-                b.track_name = self.track_name
 
         missing_names = set(names) - set(transcript_beds.keys())
         if len(missing_names) > 0:

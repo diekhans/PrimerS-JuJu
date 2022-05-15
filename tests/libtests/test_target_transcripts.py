@@ -5,7 +5,10 @@ tests cover
 
 import pytest
 from pycbio.hgdata.coords import Coords
-from primersjuju.target_transcripts import ExonRegion, IntronRegion, get_transcript_region_features
+from primersjuju.target_transcripts import (
+    ExonRegion, IntronRegion, get_transcript_region_features,
+    target_transcripts_build
+)
 
 @pytest.fixture(scope="session")
 def wtc11_fsm(gdata):
@@ -32,3 +35,7 @@ def test_get_transcript_region_exons(gdata, wtc11_fsm):
                      ExonRegion(name='chr17', start=7708634, end=7708739, strand='+', size=83257441),
                      IntronRegion(name='chr17', start=7708739, end=7709166, strand='+', size=83257441),
                      ExonRegion(name='chr17', start=7709166, end=7709256, strand='+', size=83257441)]
+
+def test_target_build(gdata, example_wtc11_targets_specs_set1):
+    target_spec = example_wtc11_targets_specs_set1.get_target("C4orf48+1")
+    target_transcripts = target_transcripts_build(gdata, target_spec)
