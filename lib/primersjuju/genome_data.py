@@ -17,15 +17,16 @@ class Track:
     src_url: str
 
     def read_by_names(self, names):
-        transcript_beds = {}
+        transcript_beds = []
         with pipettor.Popen(['bigBedNamedItems', '-nameFile', self.big_bed, '/dev/stdin', '/dev/stdout'],
                             stdin=pipettor.DataWriter('\n'.join(names) + '\n')) as fh:
             for b in BedReader(fh):
-                transcript_beds[b.name] = b
+                transcript_beds.append(b)
 
-        missing_names = set(names) - set(transcript_beds.keys())
+        missing_names = set(names) - set(b.name for b in transcript_beds)
         if len(missing_names) > 0:
-            raise PrimersJuJuDataError(f"{len(missing_names)} record(s) not found in track {self.track_name}: " + ", ".join(sorted(missing_names)))
+            plural = "s" if len(missing_names) > 1 else ""
+            raise PrimersJuJuDataError(f"record{plural} not found in track {self.track_name}: " + ", ".join(sorted(missing_names)))
         return transcript_beds
 
     def read_by_name(self, name):

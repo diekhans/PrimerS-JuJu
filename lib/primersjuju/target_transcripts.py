@@ -14,9 +14,9 @@ class Feature(Coords):
 
     def intersect(self, other):
         if isinstance(self, ExonRegion):
-            return ExonRegion(super().intersect(other))
+            return ExonRegion(*super().intersect(other))
         elif isinstance(self, IntronRegion):
-            return ExonRegion(super().intersect(other))
+            return ExonRegion(*super().intersect(other))
         else:
             raise ValueError(f"bad object type: {type(other)}")
 
@@ -37,13 +37,13 @@ class TargetTranscriptFeatures:
 @dataclass
 class TargetTranscript:
     "target transcripts for RT-PCR with features within primer regions"
-    track_name: str
+    trans_track: str
     trans: Bed
     features_5p: TargetTranscriptFeatures
     features_3p: TargetTranscriptFeatures
 
     def __str__(self):
-        return f"({self.track_name}, {self.trans.name})"
+        return f"({self.trans_track}, {self.trans.name})"
 
 def _get_features_bounds(features):
     f0 = features[0]
@@ -94,17 +94,17 @@ def _build_transcript_features(genome_data, target_transcript, region):
 
 def _build_target_transcript(genome_data, primer_target_spec, trans_spec):
     "build transcript with initial regions trimmed to exons"
-    trans = genome_data.get_track(trans_spec.track_name).read_by_name(trans_spec.trans_id)
+    trans = genome_data.get_track(trans_spec.trans_track).read_by_name(trans_spec.trans_id)
     region_5p, region_3p = _get_regions_strand(trans, primer_target_spec.region_5p,
                                                primer_target_spec.region_3p)
-    return TargetTranscript(primer_target_spec.track_name, trans,
+    return TargetTranscript(trans_spec.trans_track, trans,
                             _build_transcript_features(genome_data, trans, region_5p),
                             _build_transcript_features(genome_data, trans, region_3p))
 
 def _target_transcripts_build(genome_data, primer_target_spec):
     target_transcripts = []
     for trans_track in primer_target_spec.tracks.values():
-        for trans_spec in primer_target_spec.tracks[trans_track]:
+        for trans_spec in trans_track.values():
             target_transcripts.append(_build_target_transcript(genome_data, primer_target_spec, trans_spec))
     return target_transcripts
 
@@ -116,7 +116,7 @@ def _validate_strand(target_transcripts):
             raise PrimersJuJuDataError(f"transcript on different strands: {ttrans} vs {ttrans0}")
 
 def _find_transcripts_common_region(target_transcripts, feats_func):
-    region = feats_func(target_transcripts[0])
+    region = feats_func(target_transcripts[0]).region
     for ttrans in target_transcripts[1:]:
         region = region.intersect(feats_func(ttrans).region)
     return region
@@ -149,7 +149,7 @@ def _get_introns(target_transcript_features):
 
 def _validate_intron_count(target_transcripts, region, transcripts_introns, feats_func):
     intron_count = None
-    for trans, introns in target_transcripts, transcripts_introns:
+    for trans, introns in zip(target_transcripts, transcripts_introns):
         if len(introns) > 1:
             raise PrimersJuJuDataError(f"target transcript may span no more than two exons, {trans} spans ")
         if intron_count is None:
@@ -196,6 +196,7 @@ def _adjust_transcripts_features(target_transcripts):
     _validate_intron_spanning(target_transcripts, region_5p, features_5p_access)
     _validate_intron_spanning(target_transcripts, region_3p, features_3p_access)
 
+    return region_5p, region_3p
 
 @dataclass
 class TargetTranscripts:
@@ -212,9 +213,9 @@ def _do_target_transcripts_build(genome_data, primer_target_spec):
     target_transcripts = _target_transcripts_build(genome_data, primer_target_spec)
 
     _validate_strand(target_transcripts)
-    _adjust_transcripts_features(target_transcripts)
+    region_5p, region_3p = _adjust_transcripts_features(target_transcripts)
 
-    return TargetTranscripts(primer_target_spec.target_id, target_transcripts)
+    return TargetTranscripts(primer_target_spec.target_id, region_5p, region_3p, target_transcripts)
 
 def target_transcripts_build(genome_data, primer_target_spec):
     """build TargetTranscripts object to a give primer and validity and consistency of

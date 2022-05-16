@@ -28,4 +28,4 @@ def example_targets_specs():
 
 @pytest.fixture(scope="session")
 def example_wtc11_targets_specs_set1():
-    return primer_targets_specs_read(osp.join(mydir, "input/LRGASP_WTC11_Target_set1.tsv"))
+    return primer_targets_specs_read(osp.join(mydir, "../input/LRGASP_WTC11_Target_set1.tsv"))
