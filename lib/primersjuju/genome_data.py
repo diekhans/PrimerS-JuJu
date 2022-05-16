@@ -17,13 +17,13 @@ class Track:
     src_url: str
 
     def read_by_names(self, names):
-        transcript_beds = []
+        transcript_beds = {}
         with pipettor.Popen(['bigBedNamedItems', '-nameFile', self.big_bed, '/dev/stdin', '/dev/stdout'],
                             stdin=pipettor.DataWriter('\n'.join(names) + '\n')) as fh:
             for b in BedReader(fh):
-                transcript_beds.append(b)
+                transcript_beds[b.name] = b
 
-        missing_names = set(names) - set(b.name for b in transcript_beds)
+        missing_names = set(names) - set(transcript_beds.keys())
         if len(missing_names) > 0:
             plural = "s" if len(missing_names) > 1 else ""
             raise PrimersJuJuDataError(f"record{plural} not found in track {self.track_name}: " + ", ".join(sorted(missing_names)))
@@ -31,7 +31,7 @@ class Track:
 
     def read_by_name(self, name):
         transcript_beds = self.read_by_names([name])
-        return transcript_beds[0]
+        return transcript_beds[name]
 
 
 class GenomeData:

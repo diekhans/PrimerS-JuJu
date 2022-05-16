@@ -8,7 +8,7 @@ def _test_data_file(fname):
     return osp.join(mydir, "../data", fname)
 
 @pytest.fixture(scope="session")
-def gdata():
+def genome_data():
     test_gdata = GenomeData("hg38",
                             _test_data_file("hg38.2bit"),
                             "https://hgdownload.soe.ucsc.edu/gbdb/hg38/hg38.2bit")

@@ -49,14 +49,17 @@ def _get_features_bounds(features):
     f0 = features[0]
     return Coords(f0.name, f0.start, features[-1].end, f0.strand, f0.size)
 
-def _block_features(trans, region, csize, prev_blk, blk, features):
+def _features_to_str(features):
+    return '[' + ("\n ".join([repr(f) for f in features])) + ']'
+
+def _block_features(trans_bed, region, csize, prev_blk, blk, features):
     "get intron and exon feature intersection with region"
 
     def _mk_feature(feat_cls, start, end):
         "create Feature for intersecting the region"
-        return feat_cls(trans.chrom,
+        return feat_cls(trans_bed.chrom,
                         max(start, region.start), min(end, region.end),
-                        strand=trans.strand, size=csize)
+                        strand=trans_bed.strand, size=csize)
 
     if prev_blk is not None:
         if (prev_blk.end < region.end) and (blk.start > region.start):
@@ -64,16 +67,16 @@ def _block_features(trans, region, csize, prev_blk, blk, features):
     if (blk.start < region.end) and (blk.end > region.start):
         features.append(_mk_feature(ExonRegion, blk.start, blk.end))
 
-def get_transcript_region_features(genome_data, trans, region):
+def get_transcript_region_features(genome_data, trans_bed, region):
     """Given a chromosome region in a transcript, generate of a list feature
     coords in that region.
     """
-    csize = genome_data.get_chrom_size(trans.chrom)
+    csize = genome_data.get_chrom_size(trans_bed.chrom)
 
     features = []
     prev_blk = None
-    for blk in trans.blocks:
-        _block_features(trans, region, csize, prev_blk, blk, features)
+    for blk in trans_bed.blocks:
+        _block_features(trans_bed, region, csize, prev_blk, blk, features)
         prev_blk = blk
     return features
 
@@ -85,21 +88,21 @@ def _get_regions_strand(trans, region_5p, region_3p):
         region_5p, region_3p = region_3p, region_5p
     return region_5p, region_3p
 
-def _build_transcript_features(genome_data, target_transcript, region):
-    features = get_transcript_region_features(genome_data, target_transcript, region)
+def _build_transcript_features(genome_data, trans_bed, region):
+    features = get_transcript_region_features(genome_data, trans_bed, region)
     exon_cnt = filter(lambda f: isinstance(f, ExonRegion), features)
     if exon_cnt == 0:
-        raise PrimersJuJuDataError(f"transcript {target_transcript} has no exons in region {region}")
+        raise PrimersJuJuDataError(f"transcript {trans_bed.name} has no exons in region {region}")
     return TargetTranscriptFeatures(_get_features_bounds(features), features)
 
 def _build_target_transcript(genome_data, primer_target_spec, trans_spec):
     "build transcript with initial regions trimmed to exons"
-    trans = genome_data.get_track(trans_spec.trans_track).read_by_name(trans_spec.trans_id)
-    region_5p, region_3p = _get_regions_strand(trans, primer_target_spec.region_5p,
+    trans_bed = genome_data.get_track(trans_spec.trans_track).read_by_name(trans_spec.trans_id)
+    region_5p, region_3p = _get_regions_strand(trans_bed, primer_target_spec.region_5p,
                                                primer_target_spec.region_3p)
-    return TargetTranscript(trans_spec.trans_track, trans,
-                            _build_transcript_features(genome_data, trans, region_5p),
-                            _build_transcript_features(genome_data, trans, region_3p))
+    return TargetTranscript(trans_spec.trans_track, trans_bed,
+                            _build_transcript_features(genome_data, trans_bed, region_5p),
+                            _build_transcript_features(genome_data, trans_bed, region_3p))
 
 def _target_transcripts_build(genome_data, primer_target_spec):
     target_transcripts = []
@@ -208,6 +211,12 @@ class TargetTranscripts:
     region_5p: Coords
     region_3p: Coords
     transcripts: [TargetTranscript] = None
+
+    def get_transcript(self, trans_track, trans_id):
+        for t in self.transcripts:
+            if (t.trans_track == trans_track) and (t.trans.name == trans_id):
+                return t
+        raise PrimersJuJuDataError(f"({trans_track}, {trans_id} not found in {self.target_id}")
 
 def _do_target_transcripts_build(genome_data, primer_target_spec):
     target_transcripts = _target_transcripts_build(genome_data, primer_target_spec)

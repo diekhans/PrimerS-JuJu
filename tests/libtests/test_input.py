@@ -90,23 +90,23 @@ def test_primer_targets_dup_target_id():
     assert_except_msg(exinfo, PrimersJuJuDataError,
                       msg="duplicate primer target_id 'EFNB3+1'")
 
-def test_get_genome_seq(gdata):
+def test_get_genome_seq(genome_data):
     coords = Coords.parse("chr17:7709209-7709259")
-    assert gdata.get_genome_seq(coords) == 'CCTGCCCCCTCCCAGCATGCCTGCAGTGGCTGGGGCAGCAGGGGGGCTGG'
+    assert genome_data.get_genome_seq(coords) == 'CCTGCCCCCTCCCAGCATGCCTGCAGTGGCTGGGGCAGCAGGGGGGCTGG'
 
-def test_get_track_annot(gdata):
-    gencode = gdata.get_track("gencodeV39")
+def test_get_track_annot(genome_data):
+    gencode = genome_data.get_track("gencodeV39")
     grecs = gencode.read_by_names(["ENST00000226091.3"])
     assert len(grecs) == 1
 
-    wtc11 = gdata.get_track("WTC11_consolidated")
+    wtc11 = genome_data.get_track("WTC11_consolidated")
     wrecs = wtc11.read_by_names(["FSM-45093", "NNC-318304"])
     assert len(wrecs) == 2
     assert isinstance(wrecs['FSM-45093'], Bed)
 
-def test_get_track_missing(gdata):
-    wtc11 = gdata.get_track("WTC11_consolidated")
+def test_get_track_missing(genome_data):
+    wtc11 = genome_data.get_track("WTC11_consolidated")
 
     with pytest.raises(PrimersJuJuDataError,
-                       match="2 record\\(s\\) not found in track WTC11_consolidated: Barney, Fred"):
+                       match="records not found in track WTC11_consolidated: Barney, Fred"):
         wtc11.read_by_names(["FSM-45093", "Fred", "Barney"])
