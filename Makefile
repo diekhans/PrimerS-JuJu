@@ -46,7 +46,7 @@ devenv:
 # this gets a lot of false-positive, just use for code cleanup rather than making it
 # standard
 vulture:
-	${VULTURE} ${pyprogs} lib
+	${VULTURE} ${pyprogs} ${pytests} lib
 
 test:
 	cd tests && ${MAKE} test

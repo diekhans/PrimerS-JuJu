@@ -16,8 +16,8 @@ from primersjuju.primer_target_spec import primer_targets_specs_read
 PRIMER_TARGETS_1 = (
     "target_id\ttrans_track\ttrans_id\t\tregion_5p\tregion_3p",
     "EFNB3+1\tGENCODE_V39\tENST00000226091.3\t\tchr17:7709210-7710259\tchr17:7705244-7705707",
-    "EFNB3+1\tWTC11_consolidated\tFSM-45093\t\t\t",
-    "EFNB3+1\tWTC11_consolidated\tNNC-318304\t\t\t",
+    "EFNB3+1\tWTC11_consolidated\tFSM_45093\t\t\t",
+    "EFNB3+1\tWTC11_consolidated\tNNC_318304\t\t\t",
 )
 
 def _mk_tsv(rows):
@@ -32,16 +32,16 @@ def test_primer_targets_example(example_targets_specs):
     target = example_targets_specs.access_target("EFNB3+1")
     trans_ids = sorted(target.get_tracks_trans())
     assert trans_ids == [('GENCODE_V39', 'ENST00000226091.3'),
-                         ('WTC11_consolidated', 'FSM-45093'),
-                         ('WTC11_consolidated', 'NNC-318304')]
+                         ('WTC11_consolidated', 'FSM_45093'),
+                         ('WTC11_consolidated', 'NNC_318304')]
 
     assert isinstance(target.region_5p, Coords)
 
     trans = target.access_transcript('GENCODE_V39', 'ENST00000226091.3')
     assert str(trans) == "(GENCODE_V39, ENST00000226091.3) [('trans_cat', ''), ('trans_notes', ''), ('trans_structural_cat', '')]"
 
-    trans = target.access_transcript('WTC11_consolidated', 'FSM-45093')
-    assert str(trans) == "(WTC11_consolidated, FSM-45093) [('trans_cat', 'FSM'), ('trans_notes', ''), ('trans_structural_cat', 'PB-specific')]"
+    trans = target.access_transcript('WTC11_consolidated', 'FSM_45093')
+    assert str(trans) == "(WTC11_consolidated, FSM_45093) [('trans_cat', 'FSM'), ('trans_notes', ''), ('trans_structural_cat', 'PB-specific')]"
 
 
 def test_primer_targets_bad_header():
@@ -100,13 +100,13 @@ def test_get_track_annot(genome_data):
     assert len(grecs) == 1
 
     wtc11 = genome_data.get_track("WTC11_consolidated")
-    wrecs = wtc11.read_by_names(["FSM-45093", "NNC-318304"])
+    wrecs = wtc11.read_by_names(["FSM_45093", "NNC_318304"])
     assert len(wrecs) == 2
-    assert isinstance(wrecs['FSM-45093'], Bed)
+    assert isinstance(wrecs['FSM_45093'], Bed)
 
 def test_get_track_missing(genome_data):
     wtc11 = genome_data.get_track("WTC11_consolidated")
 
     with pytest.raises(PrimersJuJuDataError,
                        match="records not found in track WTC11_consolidated: Barney, Fred"):
-        wtc11.read_by_names(["FSM-45093", "Fred", "Barney"])
+        wtc11.read_by_names(["FSM_45093", "Fred", "Barney"])

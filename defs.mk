@@ -10,7 +10,7 @@ PIP = ${PYTHON} -m pip
 FLAKE8 = ${PYTHON} -m flake8
 export PYTHONPATH = ${ROOT}/lib
 TWINE = ${PYTHON} -m twine
-VULTURE = vulture
+VULTURE = ${PYTHON} -m vulture
 
 PYTEST_FLAGS = -s -vv --tb=native
 PYTEST = ${PYTHON} -m pytest ${PYTEST_FLAGS}

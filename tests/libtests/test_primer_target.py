@@ -3,8 +3,6 @@ tests cover
    primersjuju.primer_target
 """
 
-import pytest
-from pycbio.hgdata.coords import Coords
 from primersjuju.primer_target import primer_target_build
 from primersjuju.target_transcripts import target_transcripts_build
 

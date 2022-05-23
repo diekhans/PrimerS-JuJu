@@ -33,7 +33,6 @@ class Track:
         transcript_beds = self.read_by_names([name])
         return transcript_beds[name]
 
-
 class GenomeData:
     "genome sequence and annotations tracks"
 
