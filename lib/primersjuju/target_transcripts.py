@@ -28,32 +28,6 @@ class IntronRegion(Feature):
     "intron in a model"
     pass
 
-def _features_get_bounds(features):
-    f0 = features[0]
-    return Coords(f0.name, f0.start, features[-1].end, f0.strand, f0.size)
-
-def _features_to_str(features):
-    return '[' + ("\n ".join([repr(f) for f in features])) + ']'
-
-def _features_sort(features):
-    "sort into transcription order"
-    return sorted(features, key=lambda f: f.start if f.strand == '+' else -f.end)
-
-def _features_count(features, ftype):
-    # True == 1, False == 0
-    return sum([isinstance(f, ftype) for f in features])
-
-def _primer_region_check_features(desc, track_name, trans_id, features):
-    "check that features are sane, desc is used in error messages"
-    exon_cnt = _features_count(features, ExonRegion)
-    intron_cnt = _features_count(features, IntronRegion)
-    if not (((exon_cnt == 1) and (intron_cnt == 0)) or ((exon_cnt == 2) and (intron_cnt == 1))):
-        raise PrimersJuJuDataError(f"{desc} for transcript ({track_name}, {trans_id}) must contain either one exon, or two exons and an intron: {_features_to_str(features)}")
-    if not (isinstance(features[0], ExonRegion) and
-            isinstance(features[-1], ExonRegion)):
-        raise PrimersJuJuDataError(f"{desc} transcript ({track_name}, {trans_id}) primer region does not end in exons: {_features_to_str(features)}")
-
-
 @dataclass
 class PrimerRegionFeatures:
     """Coords and features of a transcript for 5' or 3' region.  """
@@ -118,6 +92,32 @@ class TargetTranscripts:
             if (t.track_name == track_name) and (t.bed.name == trans_id):
                 return t
         raise PrimersJuJuDataError(f"({track_name}, {trans_id}) not found in {self.target_id}")
+
+def _features_get_bounds(features):
+    f0 = features[0]
+    return Coords(f0.name, f0.start, features[-1].end, f0.strand, f0.size)
+
+def _features_to_str(features):
+    return '[' + ("\n ".join([repr(f) for f in features])) + ']'
+
+def _features_sort(features):
+    "sort into transcription order"
+    return sorted(features, key=lambda f: f.start if f.strand == '+' else -f.end)
+
+def _features_count(features, ftype):
+    # True == 1, False == 0
+    return sum([isinstance(f, ftype) for f in features])
+
+def _primer_region_check_features(desc, track_name, trans_id, features):
+    "check that features are sane, desc is used in error messages"
+    exon_cnt = _features_count(features, ExonRegion)
+    intron_cnt = _features_count(features, IntronRegion)
+    if not (((exon_cnt == 1) and (intron_cnt == 0)) or ((exon_cnt == 2) and (intron_cnt == 1))):
+        raise PrimersJuJuDataError(f"{desc} for transcript ({track_name}, {trans_id}) must contain either one exon, or two exons and an intron: {_features_to_str(features)}")
+    if not (isinstance(features[0], ExonRegion) and
+            isinstance(features[-1], ExonRegion)):
+        raise PrimersJuJuDataError(f"{desc} transcript ({track_name}, {trans_id}) primer region does not end in exons: {_features_to_str(features)}")
+
 
 def _block_features(trans_bed, region, csize, prev_blk, blk, features):
     "get intron and exon feature intersection with a genomic range"

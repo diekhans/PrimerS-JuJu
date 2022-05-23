@@ -4,7 +4,7 @@ Primer selection for a target.
 from dataclasses import dataclass
 from pycbio.sys.objDict import ObjDict
 from pycbio.hgdata.coords import Coords
-# from . import PrimersJuJuDataError
+from . import PrimersJuJuDataError
 from .target_transcripts import TargetTranscripts
 
 @dataclass
@@ -28,12 +28,13 @@ def primer_target_build(genome_data, target_transcripts):
 
     return PrimerTarget(target_transcripts, region_seq_5p, region_seq_3p)
 
-
 def primer3_query(primer_target):
     seq_args = ObjDict()
     seq_args.SEQUENCE_ID = primer_target.target_id
 
-#    SEQUENCE_TEMPLATE (nucleotide sequence; default empty)
+
+
+    #    SEQUENCE_TEMPLATE (nucleotide sequence; default empty)
 
 # The sequence from which to choose primers. The sequence must be presented 5'
 # -> 3' (i.e, in the normal way). In general, the bases may be upper or lower

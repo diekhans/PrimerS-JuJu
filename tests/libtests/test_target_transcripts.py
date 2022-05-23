@@ -6,6 +6,7 @@ tests cover
 import pytest
 import re
 from pycbio.hgdata.coords import Coords
+from pycbio.sys import fileOps
 from primersjuju.target_transcripts import (
     ExonRegion, IntronRegion, get_transcript_region_features,
     target_transcripts_build
@@ -14,6 +15,18 @@ from primersjuju.target_transcripts import (
 @pytest.fixture(scope="session")
 def wtc11(genome_data):
     return genome_data.get_track("WTC11_consolidated")
+
+def _dump_trans_region(trans_track, trans_id, target_transcript):
+    """use to write test info to files for testing in primer3"""
+    with open(trans_id + ".txt", 'w') as fh:
+        tt = target_transcript
+        fileOps.prRowv(fh, "trans_id", trans_track, trans_id)
+        fileOps.prRowv(fh, "region_5p", tt.region_5p.format(oneBased=True), len(tt.region_5p))
+        fileOps.prRowv(fh, "region_3p", tt.region_3p.format(oneBased=True), len(tt.region_3p))
+        fileOps.prRowv(fh, "amplicon_len", len(tt.amplicon))
+        fileOps.prRowv(fh, "ampl_region_5p", '{}-{}'.format(1, len(tt.region_5p)))
+        fileOps.prRowv(fh, "ampl_region_3p", '{}-{}'.format((len(tt.amplicon) - len(tt.region_3p)) + 1, len(tt.amplicon)))
+        fileOps.prRowv(fh, "amplicon", tt.amplicon)
 
 def transcript_region_check(genome_data, wtc11, trans_id, crange, expected_feats):
     fsm = wtc11.read_by_name(trans_id)
@@ -71,6 +84,9 @@ def _check_target_transcript(target_transcripts, trans_track, trans_id, amplicon
     assert target_transcript.features_5p.features == features_5p
     assert target_transcript.features_3p.features == features_3p
     assert len(target_transcript.amplicon) == amplicon_len
+
+    #FIXME: tmp
+    _dump_trans_region(trans_track, trans_id, target_transcript)
 
 def test_target_build(genome_data, example_wtc11_targets_specs_set1):
     region_5p = Coords("chr4", 2042041, 2042366, strand='+', size=190214555)
