@@ -29,7 +29,7 @@ def test_primer_targets_example(example_targets_specs):
     target_ids = sorted(example_targets_specs.targets.keys())
     assert target_ids == ["EFNB3+1"]
 
-    target = example_targets_specs.access_target("EFNB3+1")
+    target = example_targets_specs.get_target("EFNB3+1")
     trans_ids = sorted(target.get_tracks_trans())
     assert trans_ids == [('GENCODE_V39', 'ENST00000226091.3'),
                          ('WTC11_consolidated', 'FSM_45093'),
@@ -37,10 +37,10 @@ def test_primer_targets_example(example_targets_specs):
 
     assert isinstance(target.region_5p, Coords)
 
-    trans = target.access_transcript('GENCODE_V39', 'ENST00000226091.3')
+    trans = target.get_transcript('GENCODE_V39', 'ENST00000226091.3')
     assert str(trans) == "(GENCODE_V39, ENST00000226091.3) [('trans_cat', ''), ('trans_notes', ''), ('trans_structural_cat', '')]"
 
-    trans = target.access_transcript('WTC11_consolidated', 'FSM_45093')
+    trans = target.get_transcript('WTC11_consolidated', 'FSM_45093')
     assert str(trans) == "(WTC11_consolidated, FSM_45093) [('trans_cat', 'FSM'), ('trans_notes', ''), ('trans_structural_cat', 'PB-specific')]"
 
 

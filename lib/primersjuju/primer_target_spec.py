@@ -45,7 +45,7 @@ class PrimerTargetSpec:
         self.tracks[trans_track][trans_id] = trans
         return trans
 
-    def access_transcript(self, trans_track, trans_id):
+    def get_transcript(self, trans_track, trans_id):
         "transcript or error"
         try:
             return self.tracks[trans_track][trans_id]
@@ -142,7 +142,7 @@ def _do_add_continue_row(primer_target_specs, transcript_user_cols, row):
     _check_target_id(row.target_id)
     _must_be_empty(REGION_COLS, row)
     _must_not_be_empty(TRANSCRIPT_COLS, row)
-    target = primer_target_specs.access_target(row.target_id)
+    target = primer_target_specs.get_target(row.target_id)
     target.add_transcript(row.trans_track, row.trans_id,
                           _build_column_dict(transcript_user_cols, row))
 
