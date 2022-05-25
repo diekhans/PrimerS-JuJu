@@ -30,7 +30,6 @@ spans an intron, then.
 
 * Validate input to make sure it is consistent with the requirements:
 ** Allow for slight fuzziness in region boundaries and adjust to match exons
-** The coordinate range pairs must meet the primer3 requirement that at least one of the two sequences is less than 60 bp in length.
 ** Check intron-spanning requirements.
 * Call primer3 to produce a list of possible primer pairs.
 * Double-check delta-G for secondary structures of any self-dimers, hairpins, and heterodimers that should be weaker (more positive) than -9.0 kcal/mole.

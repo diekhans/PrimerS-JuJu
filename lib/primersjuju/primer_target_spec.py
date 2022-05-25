@@ -75,14 +75,10 @@ class PrimerTargetSpecs:
         return list(self.targets.keys())
 
     def get_target(self, target_id):
-        "target or None"
-        return self.targets.get(target_id)
-
-    def access_target(self, target_id):
         "target or error"
         target = self.targets.get(target_id)
         if target is None:
-            raise PrimersJuJuDataError(f"unknown primer target_id references '{target_id}")
+            raise PrimersJuJuDataError(f"unknown primer target_id '{target_id}")
         return target
 
 def _check_target_id(target_id):

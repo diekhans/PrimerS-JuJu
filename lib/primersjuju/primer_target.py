@@ -32,8 +32,6 @@ def primer3_query(primer_target):
     seq_args = ObjDict()
     seq_args.SEQUENCE_ID = primer_target.target_id
 
-
-
     #    SEQUENCE_TEMPLATE (nucleotide sequence; default empty)
 
 # The sequence from which to choose primers. The sequence must be presented 5'

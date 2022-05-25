@@ -2,31 +2,45 @@
 Target transcripts analysis.  Includes validation, and trimming of primer
 regions to match exons.
 """
+from collections import namedtuple
 from typing import Sequence
 from dataclasses import dataclass
 from pycbio.hgdata.coords import Coords
 from . import PrimersJuJuDataError
 from pycbio.hgdata.bed import Bed
 
+class Feature(namedtuple("Feature", ("genome", "trans"))):
+    """annotation feature, both genome and transcript coordinates (for Exons)"""
 
-class Feature(Coords):
-    "annotation feature"
-
-    def intersect(self, other):
-        if isinstance(self, ExonRegion):
-            return ExonRegion(*super().intersect(other))
+    def intersect_genome(self, other):
+        "intersect with genomic coordinates, None if no interjection"
+        if not isinstance(other,Coords):
+            raise ValueError(f"bad object type: {type(other)}, expected{Coords}")
+        genome = self.genome.intersect(other)
+        if len(genome) == 0:
+            return  None
+        elif isinstance(self, ExonRegion):
+            trans_start = self.trans.start + abs(self.genome.start - genome.start)
+            trans = Coords(self.trans.name,
+                           trans_start,
+                           trans_start + len(genome),
+                           self.trans.strand,
+                           self.trans.size)
+            assert len(trans) == len(genome)
+            return ExonRegion(genome, trans)
         elif isinstance(self, IntronRegion):
-            return IntronRegion(*super().intersect(other))
-        else:
-            raise ValueError(f"bad object type: {type(other)}")
+            assert len(self.trans) == 0
+            return IntronRegion(genome, self.trans)
 
 class ExonRegion(Feature):
-    "exon in a model"
+    "exon in a model, with genome and trans coordinates "
     pass
 
+
 class IntronRegion(Feature):
-    "intron in a model"
+    "intron in a model with zero length transcript coordinates of the intron location"
     pass
+
 
 @dataclass
 class PrimerRegionFeatures:
@@ -94,8 +108,8 @@ class TargetTranscripts:
         raise PrimersJuJuDataError(f"({track_name}, {trans_id}) not found in {self.target_id}")
 
 def _features_get_bounds(features):
-    f0 = features[0]
-    return Coords(f0.name, f0.start, features[-1].end, f0.strand, f0.size)
+    f0 = features[0].genome
+    return Coords(f0.name, f0.start, features[-1].genome.end, f0.strand, f0.size)
 
 def _features_to_str(features):
     return '[' + ("\n ".join([repr(f) for f in features])) + ']'
@@ -119,31 +133,47 @@ def _primer_region_check_features(desc, track_name, trans_id, features):
         raise PrimersJuJuDataError(f"{desc} transcript ({track_name}, {trans_id}) primer region does not end in exons: {_features_to_str(features)}")
 
 
-def _block_features(trans_bed, region, csize, prev_blk, blk, features):
-    "get intron and exon feature intersection with a genomic range"
+def _block_features(trans_bed, trans_off, trans_size, region, genome_size, prev_blk, blk, features):
+    """get intron and exon feature intersection with a genomic range.  trans_off is in the genomic
+    direction, not direction of transcription"""
 
-    def _mk_feature(feat_cls, start, end):
-        "create Feature for intersecting the region"
-        return feat_cls(trans_bed.chrom,
-                        max(start, region.start), min(end, region.end),
-                        strand=trans_bed.strand, size=csize)
+    def _mk_genome(start, end):
+        "create genomic range for intersecting the region"
+        return Coords(trans_bed.chrom,
+                      max(start, region.start), min(end, region.end),
+                      strand=trans_bed.strand, size=genome_size)
 
-    if prev_blk is not None:
-        if (prev_blk.end < region.end) and (blk.start > region.start):
-            features.append(_mk_feature(IntronRegion, prev_blk.end, blk.start))
+    def _mk_trans(start, end):
+        "create transcript range for intersecting the region"
+        trans = Coords(trans_bed.name, start, end,
+                       strand=trans_bed.strand, size=trans_size)
+        if trans.strand == '-':
+            trans = trans.reverse()
+        return trans
+
+    if (prev_blk is not None) and (prev_blk.end < region.end) and (blk.start > region.start):
+        features.append(IntronRegion(_mk_genome(prev_blk.end, blk.start),
+                                     _mk_trans(trans_off, trans_off)))
     if (blk.start < region.end) and (blk.end > region.start):
-        features.append(_mk_feature(ExonRegion, blk.start, blk.end))
+        genome = _mk_genome(blk.start, blk.end)
+        trans_start = trans_off + (genome.start - blk.start)
+        trans = _mk_trans(trans_start,
+                          trans_start + len(genome))
+        features.append(ExonRegion(genome, trans))
 
 def get_transcript_region_features(genome_data, trans_bed, region):
     """Given a chromosome region in a transcript, generate of a list feature
     coords in that region.
     """
-    csize = genome_data.get_chrom_size(trans_bed.chrom)
+    genome_size = genome_data.get_chrom_size(trans_bed.chrom)
+    trans_off = 0
+    trans_size = trans_bed.coverage
 
     features = []
     prev_blk = None
     for blk in trans_bed.blocks:
-        _block_features(trans_bed, region, csize, prev_blk, blk, features)
+        _block_features(trans_bed, trans_off, trans_size, region, genome_size, prev_blk, blk, features)
+        trans_off += len(blk)
         prev_blk = blk
     return features
 
@@ -193,8 +223,8 @@ def _adjust_transcript_region_features(target_transcript, common_region, feats_f
     orig_features = feats_func(target_transcript).features
     adj_features = []
     for ofeat in orig_features:
-        if ofeat.overlaps(common_region):
-            adj_features.append(ofeat.intersect(common_region))
+        if ofeat.genome.overlaps(common_region):
+            adj_features.append(ofeat.intersect_genome(common_region))
 
     _primer_region_check_features("common adjusted primer region", target_transcript.track_name, target_transcript.trans_id, adj_features)
 
