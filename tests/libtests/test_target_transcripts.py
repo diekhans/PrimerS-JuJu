@@ -21,8 +21,8 @@ def _dump_trans_region(trans_track, trans_id, target_transcript):
     with open(trans_id + ".txt", 'w') as fh:
         tt = target_transcript
         fileOps.prRowv(fh, "trans_id", trans_track, trans_id)
-        fileOps.prRowv(fh, "region_5p", tt.region_5p.format(oneBased=True), len(tt.region_5p))
-        fileOps.prRowv(fh, "region_3p", tt.region_3p.format(oneBased=True), len(tt.region_3p))
+        fileOps.prRowv(fh, "region_5p", tt.region_5p, len(tt.region_5p))
+        fileOps.prRowv(fh, "region_3p", tt.region_3p, len(tt.region_3p))
         fileOps.prRowv(fh, "amplicon_len", len(tt.amplicon))
         fileOps.prRowv(fh, "ampl_region_5p", tt.region_5p, '{}..{}'.format(1, len(tt.region_5p)))
         fileOps.prRowv(fh, "ampl_region_3p", tt.region_3p, '{}..{}'.format((len(tt.amplicon) - len(tt.region_3p)) + 1, len(tt.region_3p)))
@@ -133,7 +133,7 @@ def test_target_build_junc(genome_data, example_wtc11_targets_specs_set1):
                               IntronRegion(genome=Coords(name='chr4', start=2042068, end=2042326, strand='+', size=190214555),
                                            trans=Coords(name='FSM_48428', start=72, end=72, strand='+', size=422)),
                               ExonRegion(genome=Coords(name='chr4', start=2042326, end=2042366, strand='+', size=190214555),
-                                         trans=Coords(name='FSM_48428', start=72, end=112, strand='+', size=422)),],
+                                         trans=Coords(name='FSM_48428', start=72, end=112, strand='+', size=422))],
                              [ExonRegion(genome=Coords(name='chr4', start=2043862, end=2043922, strand='+', size=190214555),
                                          trans=Coords(name='FSM_48428', start=321, end=381, strand='+', size=422))])
 

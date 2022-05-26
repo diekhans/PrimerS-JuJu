@@ -98,7 +98,7 @@ def _must_be_empty(columns, row):
 def _parse_coords(coord_str):
     coords = Coords.parse(coord_str, oneBased=True)
     if len(coords) > 10000000:
-        raise PrimersJuJuDataError(f"coordinates seem absurdly long: '{coord_str}'")
+        raise PrimersJuJuDataError(f"coordinates seems absurdly long: '{coord_str}'")
     return coords
 
 def _get_user_cols(rows):
