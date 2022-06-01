@@ -31,6 +31,8 @@ class Feature(namedtuple("Feature", ("genome", "trans"))):
         elif isinstance(self, IntronRegion):
             assert len(self.trans) == 0
             return IntronRegion(genome, self.trans)
+        elif isinstance(self, Feature):
+            raise PrimersJuJuDataError("intersect_genome not support on base Feature class")
 
 class ExonRegion(Feature):
     "exon in a model, with genome and trans coordinates "
@@ -45,7 +47,7 @@ class IntronRegion(Feature):
 @dataclass
 class PrimerRegionFeatures:
     """Coords and features of a transcript for 5' or 3' region.  """
-    region: Coords
+    region: Feature  # genomic and trans may not be the same length
     features: Sequence[Feature]
 
 @dataclass
@@ -55,9 +57,9 @@ class TargetTranscript:
     bed: Bed
     features_5p: PrimerRegionFeatures
     features_3p: PrimerRegionFeatures
-    # these are the putative amplicon
-    amplicon_features: Sequence[Feature] = None  # includes target regions
-    amplicon: str = None
+    # these are the putative amplicon, including full primer target regions
+    amplicon_features: Sequence[Feature] = None
+    rna: str = None
 
     @property
     def trans_id(self):
@@ -79,16 +81,26 @@ class TargetTranscript:
         return f"({self.track_name}, {self.trans_id})"
 
     @property
-    def amplicon_range(self):
+    def amplicon_genome_range(self) -> Coords:
+        genome_5p = self.region_5p.genome
+        genome_3p = self.region_3p.genome
         if self.strand == '+':
-            return Coords(self.region_5p.name,
-                          self.region_5p.start, self.region_3p.end,
-                          self.region_5p.strand, self.region_5p.size)
+            return Coords(genome_5p.name,
+                          genome_3p.start, genome_5p.end,
+                          genome_5p.strand, genome_5p.size)
         else:
-            return Coords(self.region_5p.name,
-                          self.region_3p.start, self.region_5p.end,
-                          self.region_5p.strand, self.region_5p.size)
+            return Coords(genome_5p.name,
+                          genome_5p.start, genome_3p.end,
+                          genome_5p.strand, genome_5p.size)
 
+    @property
+    def amplicon_trans_range(self) -> Coords:
+        "coordinates on transcript (reverse of primers)"
+        trans_5p = self.region_5p.trans
+        trans_3p = self.region_3p.trans
+        return Coords(trans_5p.name,
+                      trans_3p.start, trans_5p.end,
+                      trans_5p.strand, trans_5p.size)
 
 @dataclass
 class TargetTranscripts:
@@ -110,8 +122,10 @@ class TargetTranscripts:
         raise PrimersJuJuDataError(f"({track_name}, {trans_id}) not found in {self.target_id}")
 
 def _features_get_bounds(features):
-    f0 = features[0].genome
-    return Coords(f0.name, f0.start, features[-1].genome.end, f0.strand, f0.size)
+    f0 = features[0]
+    fN = features[-1]
+    return Feature(f0.genome.adjrange(f0.genome.start, fN.genome.end),
+                   f0.trans.adjrange(f0.trans.start, fN.trans.end))
 
 def _features_to_str(features):
     return '[' + ("\n ".join([repr(f) for f in features])) + ']'
@@ -179,11 +193,10 @@ def get_transcript_region_features(genome_data, trans_bed, region):
         prev_blk = blk
     return features
 
-def _get_regions_strand(trans, region_5p, region_3p):
-    # swap regions if needed so they match strand
-    pos_order = region_5p.end < region_3p.start
-    if ((trans.strand == '+' and not pos_order) or
-        (trans.strand == '-' and pos_order)):
+def _get_regions_primer_orient(trans, region_5p, region_3p):
+    "swap regions if needed to be in primer orientation (reverse of transcript strand)"
+    genome_orient = '+' if (region_5p.end < region_3p.start) else '-'
+    if trans.strand == genome_orient:
         region_5p, region_3p = region_3p, region_5p
     return region_5p, region_3p
 
@@ -195,8 +208,8 @@ def _build_region_transcript_features(genome_data, track_name, trans_bed, region
 def _build_target_transcript(genome_data, primer_target_spec, trans_spec):
     "build transcript with initial regions trimmed to exons"
     trans_bed = genome_data.get_track(trans_spec.trans_track).read_by_name(trans_spec.trans_id)
-    region_5p, region_3p = _get_regions_strand(trans_bed, primer_target_spec.region_5p,
-                                               primer_target_spec.region_3p)
+    region_5p, region_3p = _get_regions_primer_orient(trans_bed, primer_target_spec.region_5p,
+                                                      primer_target_spec.region_3p)
     return TargetTranscript(trans_spec.trans_track, trans_bed,
                             _build_region_transcript_features(genome_data, trans_spec.trans_track, trans_bed, region_5p),
                             _build_region_transcript_features(genome_data, trans_spec.trans_track, trans_bed, region_3p))
@@ -216,9 +229,9 @@ def _validate_strand(target_transcripts):
             raise PrimersJuJuDataError(f"transcript on different strands: {ttrans} vs {ttrans0}")
 
 def _find_transcripts_common_region(target_transcripts, feats_func):
-    region = feats_func(target_transcripts[0]).region
+    region = feats_func(target_transcripts[0]).region.genome
     for ttrans in target_transcripts[1:]:
-        region = region.intersect(feats_func(ttrans).region)
+        region = region.intersect(feats_func(ttrans).region.genome)
     return region
 
 def _adjust_transcript_region_features(target_transcript, common_region, feats_func):
@@ -232,7 +245,8 @@ def _adjust_transcript_region_features(target_transcript, common_region, feats_f
 
     # this updates transcript features
     feats_func(target_transcript,
-               PrimerRegionFeatures(common_region, adj_features))
+               PrimerRegionFeatures(_features_get_bounds(adj_features),
+                                    adj_features))
 
 def _adjust_transcripts_region_features(target_transcripts, feats_func):
     common_region = _find_transcripts_common_region(target_transcripts, feats_func)
@@ -259,29 +273,32 @@ def _adjust_transcripts_features(target_transcripts):
     region_3p = _adjust_transcripts_region_features(target_transcripts, features_3p_access)
     return region_5p, region_3p
 
-def _get_amplicaton_sequence(genome_data, target_transcript):
+def _get_rna_sequence(genome_data, target_transcript):
+    bed = target_transcript.bed
+    genome_size = genome_data.get_chrom_size(bed.chrom)
     exon_seqs = []
-    for feat in target_transcript.amplicon_features:
-        if isinstance(feat, ExonRegion):
-            exon_seqs.append(genome_data.get_genome_seq(feat.genome))
-    if target_transcript.strand == '-':
+    for blk in bed.blocks:
+        exon_seqs.append(genome_data.get_genome_seq(Coords(bed.chrom, blk.start, blk.end,
+                                                           strand=bed.strand, size=genome_size)))
+    if bed.strand == '-':
         exon_seqs = reversed(exon_seqs)
     return "".join(exon_seqs)
 
-def _add_amplicaton_features(genome_data, target_transcript):
-    target_transcript.amplicon_features = get_transcript_region_features(genome_data, target_transcript.bed, target_transcript.amplicon_range)
-    target_transcript.amplicon = _get_amplicaton_sequence(genome_data, 1target_transcript)
+def _add_features(genome_data, target_transcript):
+    target_transcript.amplicon_features = get_transcript_region_features(genome_data, target_transcript.bed,
+                                                                         target_transcript.amplicon_genome_range)
+    target_transcript.rna = _get_rna_sequence(genome_data, target_transcript)
 
-def _add_amplicatons_features(genome_data, target_transcripts):
+def _add_transcripts_features(genome_data, target_transcripts):
     for target_transcript in target_transcripts:
-        _add_amplicaton_features(genome_data, target_transcript)
+        _add_features(genome_data, target_transcript)
 
 def _do_target_transcripts_build(genome_data, primer_target_spec):
     target_transcripts = _target_transcripts_build(genome_data, primer_target_spec)
 
     _validate_strand(target_transcripts)
     region_5p, region_3p = _adjust_transcripts_features(target_transcripts)
-    _add_amplicatons_features(genome_data, target_transcripts)
+    _add_transcripts_features(genome_data, target_transcripts)
 
     return TargetTranscripts(primer_target_spec.target_id, region_5p, region_3p,
                              genome_data.get_genome_seq(region_5p),

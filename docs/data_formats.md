@@ -23,7 +23,9 @@ target transcripts.
   identify the particular target.
 * *region_5p* - genomic coordinates of the 5' region, in the form of valid UCSC browser
   display coordinates, such as chrX:15,547,624-15,602,400.  Note what the browser
-  displays are one-based coordinates.  Commas are optional.
+  displays are one-based coordinates.  Commas are optional.  Note this can be either
+  the transcript or primer pair 5' end.  The coordinates are swapped to represent
+  5' -> 3' primer direction based on the strand of the transcript.
 * *region_3p* - genomic coordinates of the 3' region.
 * *trans_track* - symbolic name of track that contains the target transcript. A list of valid
   tracks names and their corresponding file will be defined for the project.

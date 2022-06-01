@@ -2,7 +2,7 @@
 tests cover
    primersjuju.primer3_interface
 """
-from primersjuju.primer3_interface import primer3_parse_results
+from primersjuju.primer3_interface import parse_results
 
 
 def test_primer3_parse_example():
@@ -125,7 +125,7 @@ def test_primer3_parse_example():
                   'PRIMER_RIGHT_EXPLAIN': 'considered 195, low tm 47, high tm 51, ok 97',
                   'PRIMER_RIGHT_NUM_RETURNED': 5,
                   }
-    results = primer3_parse_results(p3_results)
+    results = parse_results(p3_results)
     assert len(results) == 5
     assert results[4].PRIMER_RIGHT == (108, 20)
     assert results[4].PRIMER_RIGHT_GC_PERCENT == 55.0
