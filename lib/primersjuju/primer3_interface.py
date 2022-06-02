@@ -104,7 +104,6 @@ def primer3_global_defaults():
 def primer3_design(target_transcript, *, global_args=_global_args_defaults, misprime_lib=None, mishyb_lib=None, debug=False):
     "main entry to run primer3"
 
-    #
     seq_args = _build_seq_args(target_transcript)
     global_args = _build_global_args(target_transcript, global_args)
 

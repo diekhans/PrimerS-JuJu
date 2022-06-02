@@ -13,13 +13,15 @@ class Feature(namedtuple("Feature", ("genome", "trans"))):
     """annotation feature, both genome and transcript coordinates (for Exons)"""
 
     def intersect_genome(self, other):
-        "intersect with genomic coordinates, None if no interjection"
+        "intersect with genomic coordinates, None if no intersection"
         if not isinstance(other, Coords):
-            raise ValueError(f"bad object type: {type(other)}, expected{Coords}")
+            raise ValueError(f"bad object type: {type(other)}, expected {Coords}")
+        if other.name != self.genome.name:
+            raise ValueError(f"mismatch genome sequence name '{other.name}', expected '{self.genome.name}'")
         genome = self.genome.intersect(other)
         if len(genome) == 0:
             return None
-        elif isinstance(self, ExonRegion):
+        elif isinstance(self, ExonFeature):
             trans_start = self.trans.start + abs(self.genome.start - genome.start)
             trans = Coords(self.trans.name,
                            trans_start,
@@ -27,19 +29,42 @@ class Feature(namedtuple("Feature", ("genome", "trans"))):
                            self.trans.strand,
                            self.trans.size)
             assert len(trans) == len(genome)
-            return ExonRegion(genome, trans)
-        elif isinstance(self, IntronRegion):
+            return ExonFeature(genome, trans)
+        elif isinstance(self, IntronFeature):
             assert len(self.trans) == 0
-            return IntronRegion(genome, self.trans)
-        elif isinstance(self, Feature):
+            return IntronFeature(genome, self.trans)
+        else:
             raise PrimersJuJuDataError("intersect_genome not support on base Feature class")
 
-class ExonRegion(Feature):
+    def intersect_transcript(self, other):
+        "intersect with transcript coordinates, None if no intersection"
+        if not isinstance(other, Coords):
+            raise ValueError(f"bad object type: {type(other)}, expected {Coords}")
+        if other.name != self.trans.name:
+            raise ValueError(f"mismatch transcript name '{other.name}', expected '{self.trans.name}'")
+        if isinstance(self, IntronFeature):
+            return None
+        trans = self.trans.intersect(other)
+        if len(trans) == 0:
+            return None
+        if isinstance(self, ExonFeature):
+            genome_start = self.trans.start + abs(self.trans.start - trans.start)
+            genome = Coords(self.genome.name,
+                            genome_start,
+                            genome_start + len(trans),
+                            self.genome.strand,
+                            self.genome.size)
+            assert len(genome) == len(trans)
+            return ExonFeature(genome, trans)
+        else:
+            raise PrimersJuJuDataError("intersect_genome not support on base Feature class")
+
+class ExonFeature(Feature):
     "exon in a model, with genome and trans coordinates "
     pass
 
 
-class IntronRegion(Feature):
+class IntronFeature(Feature):
     "intron in a model with zero length transcript coordinates of the intron location"
     pass
 
@@ -57,8 +82,8 @@ class TargetTranscript:
     bed: Bed
     features_5p: PrimerRegionFeatures
     features_3p: PrimerRegionFeatures
-    # these are the putative amplicon, including full primer target regions
-    amplicon_features: Sequence[Feature] = None
+    # features of transcript
+    trans_features: Sequence[Feature] = None
     rna: str = None
 
     @property
@@ -140,12 +165,12 @@ def _features_count(features, ftype):
 
 def _primer_region_check_features(desc, track_name, trans_id, features):
     "check that features are sane, desc is used in error messages"
-    exon_cnt = _features_count(features, ExonRegion)
-    intron_cnt = _features_count(features, IntronRegion)
+    exon_cnt = _features_count(features, ExonFeature)
+    intron_cnt = _features_count(features, IntronFeature)
     if not (((exon_cnt == 1) and (intron_cnt == 0)) or ((exon_cnt == 2) and (intron_cnt == 1))):
         raise PrimersJuJuDataError(f"{desc} for transcript ({track_name}, {trans_id}) must contain either one exon, or two exons and an intron: {_features_to_str(features)}")
-    if not (isinstance(features[0], ExonRegion) and
-            isinstance(features[-1], ExonRegion)):
+    if not (isinstance(features[0], ExonFeature) and
+            isinstance(features[-1], ExonFeature)):
         raise PrimersJuJuDataError(f"{desc} transcript ({track_name}, {trans_id}) primer region does not end in exons: {_features_to_str(features)}")
 
 
@@ -168,22 +193,25 @@ def _block_features(trans_bed, trans_off, trans_size, region, genome_size, prev_
         return trans
 
     if (prev_blk is not None) and (prev_blk.end < region.end) and (blk.start > region.start):
-        features.append(IntronRegion(_mk_genome(prev_blk.end, blk.start),
-                                     _mk_trans(trans_off, trans_off)))
+        features.append(IntronFeature(_mk_genome(prev_blk.end, blk.start),
+                                      _mk_trans(trans_off, trans_off)))
     if (blk.start < region.end) and (blk.end > region.start):
         genome = _mk_genome(blk.start, blk.end)
         trans_start = trans_off + (genome.start - blk.start)
         trans = _mk_trans(trans_start,
                           trans_start + len(genome))
-        features.append(ExonRegion(genome, trans))
+        features.append(ExonFeature(genome, trans))
 
-def get_transcript_region_features(genome_data, trans_bed, region):
+def get_transcript_region_features(genome_data, trans_bed, region=None):
     """Given a chromosome region in a transcript, generate of a list feature
-    coords in that region.
+    coords in the region.  Full transcript if region is None.
     """
     genome_size = genome_data.get_chrom_size(trans_bed.chrom)
     trans_off = 0
     trans_size = trans_bed.coverage
+    if region is None:
+        region = Coords(trans_bed.chrom, trans_bed.chromStart, trans_bed.chromEnd, trans_bed.strand,
+                        size=genome_size)
 
     features = []
     prev_blk = None
@@ -285,8 +313,7 @@ def _get_rna_sequence(genome_data, target_transcript):
     return "".join(exon_seqs)
 
 def _add_features(genome_data, target_transcript):
-    target_transcript.amplicon_features = get_transcript_region_features(genome_data, target_transcript.bed,
-                                                                         target_transcript.amplicon_genome_range)
+    target_transcript.trans_features = get_transcript_region_features(genome_data, target_transcript.bed)
     target_transcript.rna = _get_rna_sequence(genome_data, target_transcript)
 
 def _add_transcripts_features(genome_data, target_transcripts):
@@ -313,3 +340,13 @@ def target_transcripts_build(genome_data, primer_target_spec):
         return _do_target_transcripts_build(genome_data, primer_target_spec)
     except PrimersJuJuDataError as ex:
         raise PrimersJuJuDataError(f"target {primer_target_spec.target_id} failed") from ex
+
+def transcript_range_to_genome(target_transcript, trange):
+    """convert transcript coordinates to one or more Feature coordinates"""
+    exon_regions = []
+    for feat in target_transcript.trans_features:
+        if isinstance(feat, ExonFeature):
+            exon_region = feat.intersect_transcript(trange)
+            if exon_region is not None:
+                exon_regions.extend(exon_region)
+    return exon_regions
