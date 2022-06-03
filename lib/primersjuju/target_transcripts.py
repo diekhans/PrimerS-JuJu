@@ -6,8 +6,8 @@ from collections import namedtuple
 from typing import Sequence
 from dataclasses import dataclass
 from pycbio.hgdata.coords import Coords
-from . import PrimersJuJuDataError
 from pycbio.hgdata.bed import Bed
+from . import PrimersJuJuError, PrimersJuJuDataError
 
 class Feature(namedtuple("Feature", ("genome", "trans"))):
     """annotation feature, both genome and transcript coordinates (for Exons)"""
@@ -34,7 +34,7 @@ class Feature(namedtuple("Feature", ("genome", "trans"))):
             assert len(self.trans) == 0
             return IntronFeature(genome, self.trans)
         else:
-            raise PrimersJuJuDataError("intersect_genome not support on base Feature class")
+            raise PrimersJuJuError("intersect_genome not support on base Feature class")
 
     def intersect_transcript(self, other):
         "intersect with transcript coordinates, None if no intersection"
@@ -48,7 +48,7 @@ class Feature(namedtuple("Feature", ("genome", "trans"))):
         if len(trans) == 0:
             return None
         if isinstance(self, ExonFeature):
-            genome_start = self.trans.start + abs(self.trans.start - trans.start)
+            genome_start = self.genome.start + abs(self.trans.start - trans.start)
             genome = Coords(self.genome.name,
                             genome_start,
                             genome_start + len(trans),
@@ -57,7 +57,7 @@ class Feature(namedtuple("Feature", ("genome", "trans"))):
             assert len(genome) == len(trans)
             return ExonFeature(genome, trans)
         else:
-            raise PrimersJuJuDataError("intersect_genome not support on base Feature class")
+            raise PrimersJuJuError("intersect_genome not support on base Feature class")
 
 class ExonFeature(Feature):
     "exon in a model, with genome and trans coordinates "
@@ -338,8 +338,8 @@ def target_transcripts_build(genome_data, primer_target_spec):
     """
     try:
         return _do_target_transcripts_build(genome_data, primer_target_spec)
-    except PrimersJuJuDataError as ex:
-        raise PrimersJuJuDataError(f"target {primer_target_spec.target_id} failed") from ex
+    except PrimersJuJuError as ex:
+        raise PrimersJuJuError(f"target {primer_target_spec.target_id} failed") from ex
 
 def transcript_range_to_genome(target_transcript, trange):
     """convert transcript coordinates to one or more Feature coordinates"""
@@ -348,5 +348,25 @@ def transcript_range_to_genome(target_transcript, trange):
         if isinstance(feat, ExonFeature):
             exon_region = feat.intersect_transcript(trange)
             if exon_region is not None:
-                exon_regions.extend(exon_region)
+                assert isinstance(exon_region, ExonFeature)
+                exon_regions.append(exon_region)
     return exon_regions
+
+
+def _get_regions_genome_orient(target_transcripts):
+    "swap regions if needed to be in genome orientation"
+    if target_transcripts.region_5p.end < target_transcripts.region_3p.start:
+        return target_transcripts.region_5p, target_transcripts.region_3p
+    else:
+        return target_transcripts.region_3p, target_transcripts.region_5p
+
+def build_target_bed(target_transcripts, color):
+    region_5p, region_3p = _get_regions_genome_orient(target_transcripts)
+    bed = Bed(region_5p.name, region_5p.start, region_3p.end,
+              target_transcripts.target_id,
+              strand=region_5p.strand,
+              thickStart=region_5p.start, thickEnd=region_3p.end,
+              itemRgb=color.toRgb8Str(),
+              blocks=[Bed.Block(region_5p.start, region_5p.end),
+                      Bed.Block(region_3p.start, region_3p.end)])
+    return bed
