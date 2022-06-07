@@ -1,16 +1,16 @@
 """
 tests cover
    primersjuju.target_transcripts
+   primersjuju.transcript_features
 """
 
 import pytest
 import re
 from pycbio.hgdata.coords import Coords
 from pycbio.sys import fileOps
-from primersjuju.target_transcripts import (
-    ExonFeature, IntronFeature, get_transcript_region_features,
-    target_transcripts_build
-)
+from primersjuju.transcript_features import ExonFeature, IntronFeature, bed_to_features, features_intersect_genome
+from primersjuju.target_transcripts import target_transcripts_build
+
 
 @pytest.fixture(scope="session")
 def wtc11(genome_data):
@@ -34,11 +34,12 @@ def _dump_trans_region(target_id, trans_track, trans_id, target_transcript):
         fileOps.prRowv(fh, "amplicon", len(target_transcript.amplicon_trans_range), target_transcript.amplicon_trans_range)
         fileOps.prRowv(fh, "rna", len(tt.rna), tt.rna)
 
-def transcript_region_check(genome_data, wtc11, trans_id, crange, expected_feats):
-    fsm = wtc11.read_by_name(trans_id)
-    feats = get_transcript_region_features(genome_data, fsm, crange)
-    assert len(feats) == len(expected_feats)
-    assert feats == expected_feats
+def transcript_region_check(genome_data, wtc11, trans_id, region, expected_feats):
+    trans_bed = wtc11.read_by_name(trans_id)
+    feats = bed_to_features(genome_data, trans_bed)
+    subfeats = features_intersect_genome(feats, region)
+    assert len(subfeats) == len(expected_feats)
+    assert subfeats == expected_feats
 
 def test_get_transcript_region_exon(genome_data, wtc11):
     transcript_region_check(genome_data, wtc11, "FSM_45093",

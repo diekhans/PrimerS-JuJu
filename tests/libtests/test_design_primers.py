@@ -33,7 +33,7 @@ def test_exon_contained(genome_data, example_wtc11_targets_specs_set1):
     assert bed_rows[0] == ("chr20	49983005	49988359	SNAI1+1+pp1	0	+	49983005	49988359	139,0,139	2	20,20,	0,5334,	"
                            "1133	12.50	5.03	0.42	(27, 20)	GGTTCTTCTGCGCTACTGCT	4.24	55.00	36.97	0.39	9.73	0.00	60.39	(1159, 20)	CAAAAACCCACGCAGACAGG	4.00	55.00	0.00	0.03	0.00	0.00	59.97")
 
-    from pycbio.sys import fileOps #TMP
+    from pycbio.sys import fileOps  #TMP
     fileOps.writeLines("primers.bed", bed_rows)
 
     tbed = build_target_bed(target_transcripts, SvgColors.blue)

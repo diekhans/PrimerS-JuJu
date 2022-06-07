@@ -7,7 +7,8 @@ from pycbio.hgdata.coords import Coords
 from pycbio.hgdata.bed import Bed
 from . import PrimersJuJuError
 from .primer3_interface import Primer3Result, primer3_design
-from primersjuju.target_transcripts import TargetTranscripts, TargetTranscript, ExonFeature, transcript_range_to_genome
+from .target_transcripts import TargetTranscripts, TargetTranscript, ExonFeature
+from .transcript_features import transcript_range_to_features
 
 @dataclass
 class PrimerDesign:
@@ -32,7 +33,7 @@ def _get_exon_features(target_transcript, primer3_coords):
     end = start + primer3_coords[1]  # has length
     trans_coords = Coords(some_feat.trans.name, start, end,
                           strand=some_feat.trans.strand, size=some_feat.trans.size)
-    return transcript_range_to_genome(target_transcript, trans_coords)
+    return transcript_range_to_features(target_transcript.features, trans_coords)
 
 def _validate_primer_features(features_5p, features_3p):
     for feature_5p in features_5p:
