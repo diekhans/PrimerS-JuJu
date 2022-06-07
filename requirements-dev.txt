@@ -4,3 +4,4 @@ bumpversion
 twine
 vulture
 pytest
+pipettor

@@ -19,7 +19,7 @@ class Feature(namedtuple("Feature", ("genome", "trans"))):
         if len(genome_intr) == 0:
             return None
         elif isinstance(self, ExonFeature):
-            assert other.contains(genome_intr), f"{other}.contains({genome_intr})"  #TMP
+            assert other.contains(genome_intr), f"{other}.contains({genome_intr})"
             assert self.genome.contains(genome_intr), f"{self.genome}.contains({genome_intr})"
             genome_off = (genome_intr.start - self.genome.start)
             if self.trans.strand == self.genome.strand:
@@ -52,23 +52,23 @@ class Feature(namedtuple("Feature", ("genome", "trans"))):
         if len(trans_intr) == 0:
             return None
         if isinstance(self, ExonFeature):
-            assert other.contains(genome_intr), f"{other}.contains({genome_intr})"  #TMP
-            assert self.genome.contains(genome_intr), f"{self.genome}.contains({genome_intr})"
-            genome_off = (genome_intr.start - self.genome.start)
-            if self.trans.strand == self.genome.strand:
-                trans_start = self.trans.start + genome_off
-                trans_end = trans_start + len(genome_intr)
+            assert other.contains(trans_intr), f"{other}.contains({trans_intr})"
+            assert self.trans.contains(trans_intr), f"{self.trans}.contains({trans_intr})"
+            trans_off = (trans_intr.start - self.trans.start)
+            if self.genome.strand == self.trans.strand:
+                genome_start = self.genome.start + trans_off
+                genome_end = genome_start + len(trans_intr)
             else:
-                trans_end = self.trans.end - genome_off
-                trans_start = trans_end - len(genome_intr)
+                genome_end = self.genome.end - trans_off
+                genome_start = genome_end - len(trans_intr)
 
-            assert trans_start < trans_end
-            trans_intr = Coords(self.trans.name, trans_start, trans_end,
-                                self.trans.strand, self.trans.size)
-            assert len(trans_intr) == len(genome_intr)
+            assert genome_start < genome_end
+            genome_intr = Coords(self.genome.name, genome_start, genome_end,
+                                self.genome.strand, self.genome.size)
+            assert len(genome_intr) == len(trans_intr)
             return ExonFeature(genome_intr, trans_intr)
         else:
-            raise PrimersJuJuError("intersect_genome not support on base Feature class")
+            raise PrimersJuJuError("intersect_transcript not support on base Feature class")
 
 class ExonFeature(Feature):
     "exon in a model, with genome and trans coordinates "
