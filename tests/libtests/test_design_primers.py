@@ -21,6 +21,7 @@ def test_exon_contained(genome_data, example_wtc11_targets_specs_set1):
     assert primers.target_id == 'SNAI1+1'
     assert len(primers.designs) == 5
 
+    # SNAI1
     p3r = primers.designs[0].primer3_result
     assert p3r.PRIMER_LEFT == (27, 20)
     assert p3r.PRIMER_RIGHT == (1159, 20)

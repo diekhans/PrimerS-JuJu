@@ -16,22 +16,17 @@ class Track:
     big_bed: str
     src_url: str
 
-    def read_by_names(self, names):
-        transcript_beds = {}
-        with pipettor.Popen(['bigBedNamedItems', '-nameFile', self.big_bed, '/dev/stdin', '/dev/stdout'],
-                            stdin=pipettor.DataWriter('\n'.join(names) + '\n')) as fh:
-            for b in BedReader(fh):
-                transcript_beds[b.name] = b
-
-        missing_names = set(names) - set(transcript_beds.keys())
-        if len(missing_names) > 0:
-            plural = "s" if len(missing_names) > 1 else ""
-            raise PrimersJuJuDataError(f"record{plural} not found in track {self.track_name}: " + ", ".join(sorted(missing_names)))
-        return transcript_beds
-
     def read_by_name(self, name):
-        transcript_beds = self.read_by_names([name])
-        return transcript_beds[name]
+        try:
+            return big_bed_read_by_name(self.big_bed, name)
+        except Exception as ex:
+            raise PrimersJuJuDataError(f"failed to read {name} from track {self.track_name}") from ex
+
+    def read_by_names(self, names):
+        try:
+            return big_bed_read_by_names(self.big_bed, names)
+        except Exception as ex:
+            raise PrimersJuJuDataError(f"track {self.track_name}: {ex}") from ex
 
 class GenomeData:
     "genome sequence and annotations tracks"
@@ -61,3 +56,21 @@ class GenomeData:
             return self.tracks[track_name]
         except KeyError:
             raise PrimersJuJuDataError(f"unknown annotation track: '{track_name}'")
+
+
+def big_bed_read_by_names(big_bed, names):
+    transcript_beds = {}
+    with pipettor.Popen(['bigBedNamedItems', '-nameFile', big_bed, '/dev/stdin', '/dev/stdout'],
+                        stdin=pipettor.DataWriter('\n'.join(names) + '\n')) as fh:
+        for b in BedReader(fh):
+            transcript_beds[b.name] = b
+
+    missing_names = set(names) - set(transcript_beds.keys())
+    if len(missing_names) > 0:
+        plural = "s" if len(missing_names) > 1 else ""
+        raise PrimersJuJuDataError(f"record{plural} not found in bigBed {big_bed}: " + ", ".join(sorted(missing_names)))
+    return transcript_beds
+
+def big_bed_read_by_name(big_bed, name):
+    transcript_beds = big_bed_read_by_names(big_bed, [name])
+    return transcript_beds[name]

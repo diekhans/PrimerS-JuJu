@@ -64,7 +64,7 @@ class Feature(namedtuple("Feature", ("genome", "trans"))):
 
             assert genome_start < genome_end
             genome_intr = Coords(self.genome.name, genome_start, genome_end,
-                                self.genome.strand, self.genome.size)
+                                 self.genome.strand, self.genome.size)
             assert len(genome_intr) == len(trans_intr)
             return ExonFeature(genome_intr, trans_intr)
         else:

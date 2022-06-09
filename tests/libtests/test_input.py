@@ -108,5 +108,5 @@ def test_get_track_missing(genome_data):
     wtc11 = genome_data.get_track("WTC11_consolidated")
 
     with pytest.raises(PrimersJuJuDataError,
-                       match="records not found in track WTC11_consolidated: Barney, Fred"):
+                       match='track WTC11_consolidated: records not found in bigBed.*: Barney, Fred'):
         wtc11.read_by_names(["FSM_45093", "Fred", "Barney"])

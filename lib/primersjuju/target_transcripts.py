@@ -41,6 +41,7 @@ class TargetTranscript:
     @property
     def region_3p(self):
         return self.features_3p.region
+
     def __str__(self):
         return f"({self.track_name}, {self.trans_id})"
 
