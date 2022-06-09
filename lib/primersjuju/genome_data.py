@@ -1,11 +1,13 @@
 """
 Genome sequences and track data.
 """
+import os
 from dataclasses import dataclass
 import twobitreader
 import pipettor
 from pycbio.hgdata.bed import BedReader
 from pycbio.hgdata import dnaOps
+from pycbio.sys import fileOps
 from . import PrimersJuJuDataError
 
 @dataclass
@@ -59,11 +61,18 @@ class GenomeData:
 
 
 def big_bed_read_by_names(big_bed, names):
+    # FIXME:
+    # stdin=pipettor.DataWriter('\n'.join(names) + '\n')
+    # for some reason work on MacOS, but not Linux
     transcript_beds = {}
+
+    tmpNamesFile = fileOps.tmpFileGet()
+    fileOps.writeLines(tmpNamesFile, names)
     with pipettor.Popen(['bigBedNamedItems', '-nameFile', big_bed, '/dev/stdin', '/dev/stdout'],
-                        stdin=pipettor.DataWriter('\n'.join(names) + '\n')) as fh:
+                        stdin=tmpNamesFile) as fh:
         for b in BedReader(fh):
             transcript_beds[b.name] = b
+    os.unlink(tmpNamesFile)
 
     missing_names = set(names) - set(transcript_beds.keys())
     if len(missing_names) > 0:
