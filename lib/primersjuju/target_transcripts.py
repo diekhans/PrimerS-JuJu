@@ -4,6 +4,7 @@ regions to match exons.
 """
 from typing import Sequence
 from dataclasses import dataclass
+import pprint
 from pycbio.hgdata.coords import Coords
 from pycbio.hgdata.bed import Bed
 from . import PrimersJuJuError, PrimersJuJuDataError
@@ -67,6 +68,20 @@ class TargetTranscript:
                       trans_3p.start, trans_5p.end,
                       trans_5p.strand, trans_5p.size)
 
+    def dump(self, dump_fh):
+        pp = pprint.PrettyPrinter(stream=dump_fh, sort_dicts=False, indent=4)
+        print("transcript:", self.track_name, self.trans_id, file=dump_fh)
+        print("region_5p:", self.region_5p, file=dump_fh)
+        print("region_3p:", self.region_3p, file=dump_fh)
+        print("features_5p:", file=dump_fh)
+        pp.pprint(self.features_5p)
+        print("features_3p:", file=dump_fh)
+        pp.pprint(self.features_3p)
+        print("features:", file=dump_fh)
+        pp.pprint(self.features)
+        print("rna:", self.rna, file=dump_fh)
+
+
 @dataclass
 class TargetTranscripts:
     """Target tracksuit for primer regions with, with features in regions for
@@ -76,7 +91,7 @@ class TargetTranscripts:
     target_id: str
     region_5p: Coords
     region_3p: Coords
-    sequence_5p: str
+    sequence_5p: str   # FIXME: is this actually used?
     sequence_3p: str
     transcripts: [TargetTranscript]
 
@@ -85,6 +100,17 @@ class TargetTranscripts:
             if (t.track_name == track_name) and (t.bed.name == trans_id):
                 return t
         raise PrimersJuJuDataError(f"({track_name}, {trans_id}) not found in {self.target_id}")
+
+    def dump(self, dump_fh):
+        pp = pprint.PrettyPrinter(stream=dump_fh, sort_dicts=False, indent=4)
+        print("target_id:", self.target_id, file=dump_fh)
+        print("region_5p:", self.region_5p, file=dump_fh)
+        print("region_3p:", self.region_3p, file=dump_fh)
+        print("transcripts:", file=dump_fh)
+        for t in self.transcripts:
+            t.dump(dump_fh)
+
+
 
 def _primer_region_check_features(desc, track_name, trans_id, features):
     "check that features are sane, desc is used in error messages"
@@ -135,7 +161,10 @@ def _get_regions_primer_orient(trans, region_5p, region_3p):
 def _build_region_transcript_features(track_name, trans_name, features, region):
     region_features = features_intersect_genome(features, region)
     _primer_region_check_features("initially specified primer region", track_name, trans_name, region_features)
-    return PrimerRegionFeatures(region_features.get_bounds(), region_features)
+    prf = PrimerRegionFeatures(region_features.get_bounds(), region_features)
+    assert len(prf.region.genome) > 0
+    assert len(prf.region.trans) > 0
+    return prf
 
 def _build_target_transcript(genome_data, primer_target_spec, trans_spec):
     "build transcript with initial regions trimmed to exons"

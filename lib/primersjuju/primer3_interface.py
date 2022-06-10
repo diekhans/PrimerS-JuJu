@@ -3,6 +3,7 @@ Interface to primer3 python module
 """
 import re
 import copy
+import pprint
 import primer3
 from pycbio.sys.objDict import ObjDict
 from . import PrimersJuJuDataError
@@ -70,7 +71,7 @@ def _build_junction_overlap(features):
     # to the right of that position in the template sequence on the strand
     # given as input.
     if len(features) == 3:
-        return (features[1].trans.start + 1)
+        return (features[1].trans.start + 1,)
     else:
         return ()
 
@@ -101,12 +102,26 @@ def primer3_global_defaults():
     "get a copy to modify"
     return copy.copy(_global_args_defaults)
 
-def primer3_design(target_transcript, *, global_args=_global_args_defaults, misprime_lib=None, mishyb_lib=None, debug=False):
+def _dump_primer3_info(target_transcript, global_args, seq_args, results, dump_fh):
+    pp = pprint.PrettyPrinter(stream=dump_fh, sort_dicts=False, indent=4)
+    print("global_args:", file=dump_fh)
+    pp.pprint(global_args)
+    print("seq_args:", file=dump_fh)
+    pp.pprint(seq_args)
+    print("results:", file=dump_fh)
+    pp.pprint(results)
+
+
+def primer3_design(target_transcript, *, global_args=_global_args_defaults, misprime_lib=None, mishyb_lib=None, debug=False,
+                   dump_fh=None):
     "main entry to run primer3"
 
-    seq_args = _build_seq_args(target_transcript)
     global_args = _build_global_args(target_transcript, global_args)
+    seq_args = _build_seq_args(target_transcript)
 
-    return parse_results(primer3.bindings.designPrimers(seq_args, global_args,
-                                                        misprime_lib=misprime_lib, mishyb_lib=mishyb_lib,
-                                                        debug=debug))
+    results = parse_results(primer3.bindings.designPrimers(seq_args, global_args,
+                                                           misprime_lib=misprime_lib, mishyb_lib=mishyb_lib,
+                                                           debug=debug))
+    if dump_fh is not None:
+        _dump_primer3_info(target_transcript, global_args, seq_args, results, dump_fh)
+    return results

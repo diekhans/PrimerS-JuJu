@@ -99,8 +99,16 @@ class Features(list):
     def get_bounds(self):
         f0 = self[0]
         fN = self[-1]
-        return Feature(f0.genome.adjrange(f0.genome.start, fN.genome.end),
-                       f0.trans.adjrange(f0.trans.start, fN.trans.end))
+        assert f0.trans.strand == '+'
+        gcoords = f0.genome.adjrange(f0.genome.start, fN.genome.end)
+        if f0.trans.strand == f0.genome.strand:
+            tcoords = f0.trans.adjrange(f0.trans.start, fN.trans.end)
+        else:
+            tsize = f0.trans.size
+            tstart = tsize - f0.trans.end
+            tend = tsize - fN.trans.start
+            tcoords = f0.trans.adjrange(tsize - tend, tsize-tstart)
+        return Feature(gcoords, tcoords)
 
 def _bed_block_features(trans_bed, trans_off, trans_size, genome_size, prev_blk, blk, features):
     """get intron and exon features for a BED block.  trans_off is in the genomic
@@ -190,7 +198,7 @@ def transcript_range_to_features(features, trange):
                 exon_regions.append(exon_region)
     return exon_regions
 
-def genome_range_to_featyres(features, grange):
+def genome_range_to_features(features, grange):
     """convert transcript coordinates to one or more Feature coordinates"""
     exon_regions = Features()
     for feat in features:

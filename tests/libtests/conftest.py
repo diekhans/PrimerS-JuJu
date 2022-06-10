@@ -39,8 +39,9 @@ def hg38_ispcr_spec():
 @pytest.fixture(scope="session")
 def gencode_ispcr_spec():
     # hg38KgSeqV39
-    return IsPcrServerSpec("blat1a.soe.ucsc.edu", 17907, osp.join(mydir, "../data"))
+    return IsPcrServerSpec("blat1a.soe.ucsc.edu", 17907, osp.join(mydir, "../data"),
+                           trans_bigbed=osp.join(mydir, "../data/gencodeV39.bb"))
 
 @pytest.fixture(scope="session")
-def hg38_uniqueness_query(hg38_ispcr_spec, gencode_ispcr_spec):
-    return UniquenessQuery(hg38_ispcr_spec, gencode_ispcr_spec)
+def hg38_uniqueness_query(genome_data, hg38_ispcr_spec, gencode_ispcr_spec):
+    return UniquenessQuery(genome_data, hg38_ispcr_spec, gencode_ispcr_spec)

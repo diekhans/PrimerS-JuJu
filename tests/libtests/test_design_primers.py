@@ -21,7 +21,6 @@ def test_exon_contained(genome_data, example_wtc11_targets_specs_set1):
     assert primers.target_id == 'SNAI1+1'
     assert len(primers.designs) == 5
 
-    # SNAI1
     p3r = primers.designs[0].primer3_result
     assert p3r.PRIMER_LEFT == (27, 20)
     assert p3r.PRIMER_RIGHT == (1159, 20)
@@ -34,6 +33,24 @@ def test_exon_contained(genome_data, example_wtc11_targets_specs_set1):
     assert bed_rows[0] == ("chr20	49983005	49988359	SNAI1+1+pp1	0	+	49983005	49988359	139,0,139	2	20,20,	0,5334,	"
                            "1133	12.50	5.03	0.42	(27, 20)	GGTTCTTCTGCGCTACTGCT	4.24	55.00	36.97	0.39	9.73	0.00	60.39	(1159, 20)	CAAAAACCCACGCAGACAGG	4.00	55.00	0.00	0.03	0.00	0.00	59.97")
 
+def test_intron_containing(genome_data, example_wtc11_targets_specs_set1):
+    target_transcripts = _get_target_transcripts(genome_data, example_wtc11_targets_specs_set1, "BBC3+1")
+
+    dump_fh = open("test_intron_containing.log", 'w')
+    primers = design_primers(genome_data, target_transcripts, dump_fh=dump_fh)
+    assert primers.target_id == 'BBC3+1'
+
+    print("\n@@@", primers.designs)
+    for d in primers.designs:
+        print(repr(d))
+
+    #assert len(primers.designs) == 5
+
+
+    bed_rows = _get_bed_lines(primers)
+    assert len(bed_rows) == 5
+
+    return
     from pycbio.sys import fileOps  #TMP
     fileOps.writeLines("primers.bed", bed_rows)
 

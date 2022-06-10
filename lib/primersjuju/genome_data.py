@@ -15,18 +15,18 @@ class Track:
     """access annotations in a bigBed track by name.  Must be a bed12.  The
     bedBed maybe a file path or URL.  srcUrl is for doc and error message"""
     track_name: str
-    big_bed: str
+    bigbed: str
     src_url: str
 
     def read_by_name(self, name):
         try:
-            return big_bed_read_by_name(self.big_bed, name)
+            return bigbed_read_by_name(self.bigbed, name)
         except Exception as ex:
             raise PrimersJuJuDataError(f"failed to read {name} from track {self.track_name}") from ex
 
     def read_by_names(self, names):
         try:
-            return big_bed_read_by_names(self.big_bed, names)
+            return bigbed_read_by_names(self.bigbed, names)
         except Exception as ex:
             raise PrimersJuJuDataError(f"track {self.track_name}: {ex}") from ex
 
@@ -60,7 +60,7 @@ class GenomeData:
             raise PrimersJuJuDataError(f"unknown annotation track: '{track_name}'")
 
 
-def big_bed_read_by_names(big_bed, names):
+def bigbed_read_by_names(bigbed, names):
     # FIXME:
     # stdin=pipettor.DataWriter('\n'.join(names) + '\n')
     # for some reason work on MacOS, but not Linux
@@ -68,7 +68,7 @@ def big_bed_read_by_names(big_bed, names):
 
     tmpNamesFile = fileOps.tmpFileGet()
     fileOps.writeLines(tmpNamesFile, names)
-    with pipettor.Popen(['bigBedNamedItems', '-nameFile', big_bed, '/dev/stdin', '/dev/stdout'],
+    with pipettor.Popen(['bigBedNamedItems', '-nameFile', bigbed, tmpNamesFile, '/dev/stdout'],
                         stdin=tmpNamesFile) as fh:
         for b in BedReader(fh):
             transcript_beds[b.name] = b
@@ -77,9 +77,9 @@ def big_bed_read_by_names(big_bed, names):
     missing_names = set(names) - set(transcript_beds.keys())
     if len(missing_names) > 0:
         plural = "s" if len(missing_names) > 1 else ""
-        raise PrimersJuJuDataError(f"record{plural} not found in bigBed {big_bed}: " + ", ".join(sorted(missing_names)))
+        raise PrimersJuJuDataError(f"record{plural} not found in bigBed {bigbed}: " + ", ".join(sorted(missing_names)))
     return transcript_beds
 
-def big_bed_read_by_name(big_bed, name):
-    transcript_beds = big_bed_read_by_names(big_bed, [name])
+def bigbed_read_by_name(bigbed, name):
+    transcript_beds = bigbed_read_by_names(bigbed, [name])
     return transcript_beds[name]
