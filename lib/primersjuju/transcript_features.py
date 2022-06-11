@@ -65,6 +65,11 @@ class Feature(namedtuple("Feature", ("genome", "trans"))):
         else:
             raise PrimersJuJuError("intersect_transcript not support on base Feature class")
 
+    def reverse(self):
+        """strand-reverse all features, creating instances of derived class"""
+        return type(self)(self.genome.reverse(), self.trans.reverse())
+
+
 class ExonFeature(Feature):
     "exon in a model, with genome and trans coordinates "
     pass
@@ -96,6 +101,10 @@ class Features(list):
         fN = self[-1]
         return Feature(f0.genome.adjrange(f0.genome.start, fN.genome.end),
                        f0.trans.adjrange(f0.trans.start, fN.trans.end))
+
+    def reverse(self):
+        """new Features object with strand-reverse coordinates and reversed order"""
+        return Features([f.reverse() for f in reversed(self)])
 
 def _bed_block_features(trans_bed, trans_start, trans_size, genome_size, prev_blk, blk, features):
     """get intron and exon features for a BED block.  trans_start is in the

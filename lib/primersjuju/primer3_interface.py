@@ -23,7 +23,10 @@ FIVE_PRIME_NUM_STRONG_MATCH = 2
 class Primer3Result:
     """One result set from primer3, files are primer three result names with
     number dropped.  So PRIMER_LEFT_0_GC_PERCENT becomes PRIMER_LEFT_GC_PERCENT.
-    result_num has the result number"""
+    result_num has the result number.
+    See https://www.primer3plus.com/primer3plusHelp.html#outputTags
+    for tag description
+    """
     def __init__(self, result_num):
         self.result_num = result_num
 
@@ -118,7 +121,10 @@ def _dump_primer3_info(target_transcript, global_args, seq_args, results, dump_f
 
 def primer3_design(target_transcript, *, global_args=_global_args_defaults, misprime_lib=None, mishyb_lib=None, debug=False,
                    dump_fh=None):
-    "main entry to run primer3"
+    """main entry to run primer3
+    global_args defined here:
+    https://www.primer3plus.com/primer3plusHelp.html#globalTags
+    """
 
     global_args = _build_global_args(target_transcript, global_args)
     seq_args = _build_seq_args(target_transcript)

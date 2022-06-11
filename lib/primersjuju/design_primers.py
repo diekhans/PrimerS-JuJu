@@ -9,6 +9,7 @@ from . import PrimersJuJuError
 from .primer3_interface import Primer3Result, primer3_design
 from .target_transcripts import TargetTranscripts, TargetTranscript, ExonFeature
 from .transcript_features import transcript_range_to_features
+from .uniqueness_query import GenomeHit, TranscriptomeHit
 
 @dataclass
 class PrimerDesign:
@@ -17,6 +18,8 @@ class PrimerDesign:
     primer3_result: Primer3Result
     features_5p: Sequence[ExonFeature]
     features_3p: Sequence[ExonFeature]
+    genome_off_targets: Sequence[GenomeHit]
+    transcriptome_off_targets: Sequence[TranscriptomeHit]
 
 @dataclass
 class PrimerDesigns:
@@ -43,18 +46,40 @@ def _validate_primer_features(features_5p, features_3p):
             if feature_5p.genome.overlaps(feature_3p.genome):
                 raise PrimersJuJuError(f"primer3 pairs overlap in genome space {features_5p} and {features_3p}")
 
+def _find_genome_off_targets(uniqueness_query, target_transcript, primer3_result):
+    max_size = 1_000_000  # arbitrary
+    hits = uniqueness_query.query_genome(name, left_primer, right_primer, max_size)
+    off_targets = []
+    for hit in hits:
+        if is_genome_off_target(uniqueness_query, target_transcript, hit):
+            off_targets.append()
 
-def _build_primer_design(target_transcript, target_id, result_num, primer3_result):
+
+def _find_transcriptome_off_targets(uniqueness_query, target_transcript, primer3_result):
+    max_size = 500_000  # arbitrary
+    hits = uniqueness_query.query_transcriptome(name, left_primer, right_primer, max_size)
+    off_targets = []
+    pass
+
+
+def _build_primer_design(target_transcript, target_id, result_num, primer3_result, uniqueness_query):
     ppair_id = "{}+pp{}".format(target_id, result_num)
     features_5p = _get_exon_features(target_transcript, primer3_result.PRIMER_LEFT)
     features_3p = _get_exon_features(target_transcript, primer3_result.PRIMER_RIGHT)
     _validate_primer_features(features_5p, features_3p)
-    return PrimerDesign(ppair_id, primer3_result, features_5p, features_3p)
 
-def _build_primer_designs(target_transcripts, target_transcript, primer3_results):
+    if uniqueness_query is None:
+        genome_off_targets = transcriptome_off_targets = None
+    else:
+        genome_off_targets = _find_genome_off_targets(uniqueness_query, target_transcript, primer3_result)
+        transcriptome_off_targets = _find_transcriptome_off_targets(uniqueness_query, target_transcript, primer3_result)
+
+    return PrimerDesign(ppair_id, primer3_result, features_5p, features_3p, genome_off_targets, transcriptome_off_targets)
+
+def _build_primer_designs(target_transcripts, target_transcript, primer3_results, uniqueness_query):
     return PrimerDesigns(target_transcripts.target_id,
                          target_transcripts, target_transcript,
-                         [_build_primer_design(target_transcript, target_transcripts.target_id, i + 1, r)
+                         [_build_primer_design(target_transcript, target_transcripts.target_id, i + 1, r, uniqueness_query)
                           for i, r in enumerate(primer3_results)])
 
 def design_primers(genome_data, target_transcripts, *, uniqueness_query=None, dump_fh=None):
@@ -62,8 +87,7 @@ def design_primers(genome_data, target_transcripts, *, uniqueness_query=None, du
     target_transcript = target_transcripts.transcripts[0]
     primer3_results = primer3_design(target_transcript, dump_fh=dump_fh)
 
-    return _build_primer_designs(target_transcripts, target_transcript,
-                                 primer3_results)
+    return _build_primer_designs(target_transcripts, target_transcript, primer3_results, uniqueness_query)
 
 _primer_bed_columns = (
     'PRIMER_PAIR_PRODUCT_SIZE',    # 1133

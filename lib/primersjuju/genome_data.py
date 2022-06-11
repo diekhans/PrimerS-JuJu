@@ -8,6 +8,7 @@ import pipettor
 from pycbio.hgdata.bed import BedReader
 from pycbio.hgdata import dnaOps
 from pycbio.sys import fileOps
+from pycbio.ncbi.assembly import AssemblyReport
 from . import PrimersJuJuDataError
 
 @dataclass
@@ -33,11 +34,10 @@ class Track:
 class GenomeData:
     "genome sequence and annotations tracks"
 
-    def __init__(self, genome_name, genome2bit, genome_url):
+    def __init__(self, genome_name, genome2bit, assembly_report=None):
         self.genome_name = genome_name
-        self.genome2bit = genome2bit
         self.genome_seqs = twobitreader.TwoBitFile(genome2bit)
-        self.genome_url = genome_url
+        self.assembly_info = AssemblyReport(assembly_report) if assembly_report is not None else None
         self.tracks = {}
 
     def add_track(self, track_name, bigBed, srcUrl):
@@ -61,7 +61,6 @@ class GenomeData:
             return self.tracks[track_name]
         except KeyError:
             raise PrimersJuJuDataError(f"unknown annotation track: '{track_name}'")
-
 
 def bigbed_read_by_names(bigbed, names):
     # FIXME:
