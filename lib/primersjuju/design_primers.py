@@ -60,9 +60,6 @@ def _build_primer_designs(target_transcripts, target_transcript, primer3_results
 def design_primers(genome_data, target_transcripts, *, uniqueness_query=None, dump_fh=None):
     """design transcripts """
     target_transcript = target_transcripts.transcripts[0]
-    if dump_fh is not None:
-        print(64*"=", file=dump_fh)
-        target_transcripts.dump(dump_fh)
     primer3_results = primer3_design(target_transcript, dump_fh=dump_fh)
 
     return _build_primer_designs(target_transcripts, target_transcript,

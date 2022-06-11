@@ -22,13 +22,8 @@ class Feature(namedtuple("Feature", ("genome", "trans"))):
             assert other.contains(genome_intr), f"{other}.contains({genome_intr})"
             assert self.genome.contains(genome_intr), f"{self.genome}.contains({genome_intr})"
             genome_off = (genome_intr.start - self.genome.start)
-            if self.trans.strand == self.genome.strand:
-                trans_start = self.trans.start + genome_off
-                trans_end = trans_start + len(genome_intr)
-            else:
-                trans_end = self.trans.end - genome_off
-                trans_start = trans_end - len(genome_intr)
-
+            trans_start = self.trans.start + genome_off
+            trans_end = trans_start + len(genome_intr)
             assert trans_start < trans_end
             trans_intr = Coords(self.trans.name, trans_start, trans_end,
                                 self.trans.strand, self.trans.size)
@@ -99,56 +94,43 @@ class Features(list):
     def get_bounds(self):
         f0 = self[0]
         fN = self[-1]
-        assert f0.trans.strand == '+'
-        gcoords = f0.genome.adjrange(f0.genome.start, fN.genome.end)
-        if f0.trans.strand == f0.genome.strand:
-            tcoords = f0.trans.adjrange(f0.trans.start, fN.trans.end)
-        else:
-            tsize = f0.trans.size
-            tstart = tsize - f0.trans.end
-            tend = tsize - fN.trans.start
-            tcoords = f0.trans.adjrange(tsize - tend, tsize-tstart)
-        return Feature(gcoords, tcoords)
+        return Feature(f0.genome.adjrange(f0.genome.start, fN.genome.end),
+                       f0.trans.adjrange(f0.trans.start, fN.trans.end))
 
-def _bed_block_features(trans_bed, trans_off, trans_size, genome_size, prev_blk, blk, features):
-    """get intron and exon features for a BED block.  trans_off is in the genomic
-    direction, not direction of transcription
-    """
+def _bed_block_features(trans_bed, trans_start, trans_size, genome_size, prev_blk, blk, features):
+    """get intron and exon features for a BED block.  trans_start is in the
+    genomic direction, not the direction of transcription.  """
 
     def _mk_genome(start, end):
-        "create genomic range for intersecting the region"
+        "create genomic range for a region"
         return Coords(trans_bed.chrom, start, end,
-                      strand=trans_bed.strand, size=genome_size)
+                      strand='+', size=genome_size)
 
     def _mk_trans(start, end):
-        "create transcript range for intersecting the region"
+        "create transcript range for a region"
         trans = Coords(trans_bed.name, start, end,
                        strand=trans_bed.strand, size=trans_size)
-        if trans.strand == '-':
-            trans = trans.reverse()
         return trans
 
     if prev_blk is not None:
         features.append(IntronFeature(_mk_genome(prev_blk.end, blk.start),
-                                      _mk_trans(trans_off, trans_off)))
+                                      _mk_trans(trans_start, trans_start)))
     genome = _mk_genome(blk.start, blk.end)
-    trans_start = trans_off + (genome.start - blk.start)
-    trans = _mk_trans(trans_start,
-                      trans_start + len(genome))
+    trans = _mk_trans(trans_start, trans_start + len(genome))
     features.append(ExonFeature(genome, trans))
 
 def bed_to_features(genome_data, trans_bed) -> Features:
     """Generate features list from a transcript BED
     """
     genome_size = genome_data.get_chrom_size(trans_bed.chrom)
-    trans_off = 0
     trans_size = trans_bed.coverage
+    trans_start = 0
 
     features = Features()
     prev_blk = None
     for blk in trans_bed.blocks:
-        _bed_block_features(trans_bed, trans_off, trans_size, genome_size, prev_blk, blk, features)
-        trans_off += len(blk)
+        _bed_block_features(trans_bed, trans_start, trans_size, genome_size, prev_blk, blk, features)
+        trans_start += len(blk)
         prev_blk = blk
     features_contig_assert(features)
     return features
@@ -182,8 +164,8 @@ def get_features_rna(genome_data, features):
     exon_seqs = []
     for feat in features:
         if isinstance(feat, ExonFeature):
-            exon_seqs.append(genome_data.get_genome_seq(feat.genome))
-    if features[0].genome.strand == '-':
+            exon_seqs.append(genome_data.get_genome_seq(feat.genome, strand=feat.trans.strand))
+    if features[0].trans.strand == '-':
         exon_seqs = reversed(exon_seqs)
     return "".join(exon_seqs)
 

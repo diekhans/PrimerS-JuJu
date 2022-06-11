@@ -21,7 +21,7 @@ class TargetTranscript:
     "a target transcript for RT-PCR with features within primer regions"
     track_name: str
     bed: Bed
-    features_5p: PrimerRegionFeatures
+    features_5p: PrimerRegionFeatures  # 5' on transcript
     features_3p: PrimerRegionFeatures
     # features of transcript
     features: Features
@@ -46,28 +46,6 @@ class TargetTranscript:
     def __str__(self):
         return f"({self.track_name}, {self.trans_id})"
 
-    @property
-    def amplicon_genome_range(self) -> Coords:
-        genome_5p = self.region_5p.genome
-        genome_3p = self.region_3p.genome
-        if self.strand == '+':
-            return Coords(genome_5p.name,
-                          genome_3p.start, genome_5p.end,
-                          genome_5p.strand, genome_5p.size)
-        else:
-            return Coords(genome_5p.name,
-                          genome_5p.start, genome_3p.end,
-                          genome_5p.strand, genome_5p.size)
-
-    @property
-    def amplicon_trans_range(self) -> Coords:
-        "coordinates on transcript (reverse of primers)"
-        trans_5p = self.region_5p.trans
-        trans_3p = self.region_3p.trans
-        return Coords(trans_5p.name,
-                      trans_3p.start, trans_5p.end,
-                      trans_5p.strand, trans_5p.size)
-
     def dump(self, dump_fh):
         pp = pprint.PrettyPrinter(stream=dump_fh, sort_dicts=False, indent=4)
         print("transcript:", self.track_name, self.trans_id, file=dump_fh)
@@ -91,8 +69,6 @@ class TargetTranscripts:
     target_id: str
     region_5p: Coords
     region_3p: Coords
-    sequence_5p: str   # FIXME: is this actually used?
-    sequence_3p: str
     transcripts: [TargetTranscript]
 
     def get_transcript(self, track_name, trans_id):
@@ -102,15 +78,12 @@ class TargetTranscripts:
         raise PrimersJuJuDataError(f"({track_name}, {trans_id}) not found in {self.target_id}")
 
     def dump(self, dump_fh):
-        pp = pprint.PrettyPrinter(stream=dump_fh, sort_dicts=False, indent=4)
         print("target_id:", self.target_id, file=dump_fh)
         print("region_5p:", self.region_5p, file=dump_fh)
         print("region_3p:", self.region_3p, file=dump_fh)
         print("transcripts:", file=dump_fh)
         for t in self.transcripts:
             t.dump(dump_fh)
-
-
 
 def _primer_region_check_features(desc, track_name, trans_id, features):
     "check that features are sane, desc is used in error messages"
@@ -151,10 +124,10 @@ def _block_features(trans_bed, trans_off, trans_size, region, genome_size, prev_
                           trans_start + len(genome))
         features.append(ExonFeature(genome, trans))
 
-def _get_regions_primer_orient(trans, region_5p, region_3p):
-    "swap regions if needed to be in primer orientation (reverse of transcript strand)"
+def _get_regions_transcript_orient(trans, region_5p, region_3p):
+    "swap regions if needed to be in transcript orientation"
     genome_orient = '+' if (region_5p.end < region_3p.start) else '-'
-    if trans.strand == genome_orient:
+    if trans.strand != genome_orient:
         region_5p, region_3p = region_3p, region_5p
     return region_5p, region_3p
 
@@ -171,8 +144,8 @@ def _build_target_transcript(genome_data, primer_target_spec, trans_spec):
     trans_bed = genome_data.get_track(trans_spec.trans_track).read_by_name(trans_spec.trans_id)
     features = bed_to_features(genome_data, trans_bed)
     rna = get_features_rna(genome_data, features)
-    region_5p, region_3p = _get_regions_primer_orient(trans_bed, primer_target_spec.region_5p,
-                                                      primer_target_spec.region_3p)
+    region_5p, region_3p = _get_regions_transcript_orient(trans_bed, primer_target_spec.region_5p,
+                                                          primer_target_spec.region_3p)
     return TargetTranscript(trans_spec.trans_track, trans_bed,
                             _build_region_transcript_features(trans_spec.trans_track, trans_spec.trans_id, features, region_5p),
                             _build_region_transcript_features(trans_spec.trans_track, trans_spec.trans_id, features, region_3p),
@@ -244,8 +217,6 @@ def _do_target_transcripts_build(genome_data, primer_target_spec):
     region_5p, region_3p = _adjust_transcripts_features(target_transcripts)
 
     return TargetTranscripts(primer_target_spec.target_id, region_5p, region_3p,
-                             genome_data.get_genome_seq(region_5p),
-                             genome_data.get_genome_seq(region_3p),
                              target_transcripts)
 
 def target_transcripts_build(genome_data, primer_target_spec):

@@ -43,10 +43,13 @@ class GenomeData:
     def add_track(self, track_name, bigBed, srcUrl):
         self.tracks[track_name] = Track(track_name, bigBed, srcUrl)
 
-    def get_genome_seq(self, coords):
-        "reverse-complements if coords has '-' strand"
-        bases = self.genome_seqs[coords.name][coords.start:coords.end]
+    def get_genome_seq(self, coords, *, strand='+'):
+        """reverses coordinates if has '-' strand; with reverse-complement of sequence will
+        be don't if strand is '-' """
         if coords.strand == '-':
+            coords = coords.reverse()
+        bases = self.genome_seqs[coords.name][coords.start:coords.end]
+        if strand == '-':
             bases = dnaOps.reverseComplement(bases)
         return bases
 
