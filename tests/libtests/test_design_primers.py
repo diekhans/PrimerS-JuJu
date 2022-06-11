@@ -32,7 +32,8 @@ def _run_primer_design_test(request, genome_data, target_transcripts):
     _write_beds([target_bed], osp.join("output", request.node.name + ".target.bed"))
     return primers, primer_beds, target_bed
 
-def test_exon_contained(request, genome_data, example_wtc11_targets_specs_set1):
+def test_SNAI1(request, genome_data, example_wtc11_targets_specs_set1):
+    # both regions in exons
     target_transcripts = _get_target_transcripts(genome_data, example_wtc11_targets_specs_set1, "SNAI1+1")
 
     primers, primer_beds, target_bed = _run_primer_design_test(request, genome_data, target_transcripts)
@@ -51,11 +52,21 @@ def test_exon_contained(request, genome_data, example_wtc11_targets_specs_set1):
     assert str(primer_beds[0]) == ("chr20	49983005	49988359	SNAI1+1+pp1	0	+	49983005	49988359	139,0,139	2	20,20,	0,5334,	"
                                    "1133	12.50	5.03	0.42	(27, 20)	GGTTCTTCTGCGCTACTGCT	4.24	55.00	36.97	0.39	9.73	0.00	60.39	(1159, 20)	CAAAAACCCACGCAGACAGG	4.00	55.00	0.00	0.03	0.00	0.00	59.97")
 
-def test_intron_containing(request, genome_data, example_wtc11_targets_specs_set1):
-    # this doesn't find anything
+def test_BBC3(request, genome_data, example_wtc11_targets_specs_set1):
+    # intron in one region, no primer3 results
     target_transcripts = _get_target_transcripts(genome_data, example_wtc11_targets_specs_set1, "BBC3+1")
 
     primers, primer_beds, target_bed = _run_primer_design_test(request, genome_data, target_transcripts)
     assert primers.target_id == 'BBC3+1'
     assert len(primers.designs) == 0
     assert len(primer_beds) == 0
+
+
+def test_ZBTB45(request, genome_data, example_wtc11_targets_specs_set1):
+    # intron in one region
+    target_transcripts = _get_target_transcripts(genome_data, example_wtc11_targets_specs_set1, "ZBTB45+1")
+
+    primers, primer_beds, target_bed = _run_primer_design_test(request, genome_data, target_transcripts)
+    assert primers.target_id == 'ZBTB45+1'
+    assert len(primers.designs) == 5
+    assert len(primer_beds) == 5
