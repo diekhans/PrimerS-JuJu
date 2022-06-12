@@ -4,10 +4,15 @@ ROOT = ..
 include ${ROOT}/defs.mk
 
 
-test: lib_tests
+test: lib-tests
 
-lib_tests:
+fast-test: lib-tests-fast
+
+lib-tests:
 	${PYTEST} ${tests}
+
+lib-tests-fast:
+	${PYTEST} --ignore=libtests/test_design_primers.py ${tests}
 
 lint:
 	cd .. && ${MAKE} lint

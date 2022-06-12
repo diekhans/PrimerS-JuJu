@@ -52,7 +52,7 @@ test:
 	cd tests && ${MAKE} test
 
 clean: test_clean
-	rm -rf build/ dist/ ${testenv}/ lib/*.egg-info/ lib/primersjuju/__pycache__/
+	rm -rf build/ dist/ ${testenv}/ lib/*.egg-info/ lib/primersjuju/__pycache__/ dev-venv/
 
 test_clean:
 	cd tests && ${MAKE} clean
