@@ -12,7 +12,7 @@ def _test_data_file(fname):
 def genome_data():
     test_gdata = GenomeData("hg38",
                             _test_data_file("hg38.2bit"),
-                            _test_data_file("GCF_000001405.39_GRCh38.p13_assembly_report.txt"))
+                            assembly_report=_test_data_file("GCF_000001405.39_GRCh38.p13_assembly_report.txt"))
     test_gdata.add_track("gencodeV39",
                          _test_data_file("gencodeV39.bb"),
                          "https://hgdownload.soe.ucsc.edu/gbdb/hg38/gencode/gencodeV39.bb")

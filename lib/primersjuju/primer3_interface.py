@@ -6,7 +6,7 @@ import copy
 import pprint
 import primer3
 from pycbio.sys.objDict import ObjDict
-from . import PrimersJuJuDataError
+from . import PrimersJuJuDataError, PrimersJuJuError
 
 _global_args_defaults = ObjDict(PRIMER_TASK="generic",
                                 PRIMER_PICK_LEFT_PRIMER=1,
@@ -20,8 +20,8 @@ _global_args_defaults = ObjDict(PRIMER_TASK="generic",
 # these might me configured in the future
 FIVE_PRIME_NUM_STRONG_MATCH = 2
 
-class Primer3Result:
-    """One result set from primer3, files are primer three result names with
+class Primer3Pair(ObjDict):
+    """One result pair set from primer3, files are primer three result names with
     number dropped.  So PRIMER_LEFT_0_GC_PERCENT becomes PRIMER_LEFT_GC_PERCENT.
     result_num has the result number.
     See https://www.primer3plus.com/primer3plusHelp.html#outputTags
@@ -30,39 +30,54 @@ class Primer3Result:
     def __init__(self, result_num):
         self.result_num = result_num
 
-class Primer3Results(list):
-    """results from primer3, an order list of Primer3Result objects"""
-    def __init__(self, results):
-        self.PRIMER_LEFT_EXPLAIN = results.PRIMER_LEFT_EXPLAIN
-        self.PRIMER_PAIR_EXPLAIN = results.PRIMER_PAIR_EXPLAIN
-        self.PRIMER_RIGHT_EXPLAIN = results.PRIMER_RIGHT_EXPLAIN
-        super().__init__(results)
+    def dump(self, fh):
+        pp = pprint.PrettyPrinter(stream=fh, sort_dicts=False, indent=4)
+        print(f"Primer3Pair {self.result_num}:", file=fh)
+        pp.pprint(self)
 
-def _parse_result(results, result_num):
-    result_name_re = re.compile(f"^([A-Z_]+)_{result_num}(_[A-Z_]+)?$")
-    result = Primer3Result(result_num)
-    for fld, val in results.items():
-        m = result_name_re.match(fld)
+
+class Primer3Results(ObjDict):
+    """results from primer3, contains an order Primer3Result objects,
+    as well as all tags returned by primer3 as attributes"""
+
+    def __init__(self, p3_output):
+        # initialize with all result tags, include ones later split out into
+        # Primer3Result objects
+        for n in p3_output.keys():
+            setattr(self, n, getattr(p3_output, n))
+        self.pairs = []
+
+    def dump(self, fh):
+        print(f">>> Primer3Results: {len(self.pairs)} results <<<", file=fh)
+        for r in self.pairs:
+            r.dump(fh)
+
+def _parse_result(p3_output, result_num):
+    "parse out the results for a give result number"
+    pair_name_re = re.compile(f"^([A-Z_]+)_{result_num}(_[A-Z_]+)?$")
+    pair = Primer3Pair(result_num)
+    for fld, val in p3_output.items():
+        m = pair_name_re.match(fld)
         if m is not None:
             name = m.group(1) + (m.group(2) if m.group(2) is not None else '')
-            setattr(result, name, val)
-    return result
+            setattr(pair, name, val)
+    return pair
 
-def parse_results(results):
+def primer3_parse_output(p3_output):
     """convert primer3 results into a Primer3Results object"""
-    if not isinstance(results, ObjDict):
-        results = ObjDict(results)
-    primer3_results = []
-    if ((results.PRIMER_LEFT_NUM_RETURNED != results.PRIMER_PAIR_NUM_RETURNED) or
-        (results.PRIMER_RIGHT_NUM_RETURNED != results.PRIMER_PAIR_NUM_RETURNED)):
+    if not isinstance(p3_output, ObjDict):
+        p3_output = ObjDict(p3_output)
+    results = Primer3Results(p3_output)
+    if ((p3_output.PRIMER_LEFT_NUM_RETURNED != p3_output.PRIMER_PAIR_NUM_RETURNED) or
+        (p3_output.PRIMER_RIGHT_NUM_RETURNED != p3_output.PRIMER_PAIR_NUM_RETURNED)):
         raise PrimersJuJuDataError(f"primer3 NUM_RETURN inconsistent, don't know how to deal with this: "
-                                   f"PRIMER_LEFT_NUM_RETURNED ({results.PRIMER_LEFT_NUM_RETURNED}) != "
-                                   f"PRIMER_PAIR_NUM_RETURNED ({results.PRIMER_PAIR_NUM_RETURNED}) != "
-                                   f"PRIMER_RIGHT_NUM_RETURNED ({results.PRIMER_RIGHT_NUM_RETURNED})")
-    for result_num in range(results.PRIMER_PAIR_NUM_RETURNED):
-        primer3_results.append(_parse_result(results, result_num))
+                                   f"PRIMER_LEFT_NUM_RETURNED ({p3_output.PRIMER_LEFT_NUM_RETURNED}) != "
+                                   f"PRIMER_PAIR_NUM_RETURNED ({p3_output.PRIMER_PAIR_NUM_RETURNED}) != "
+                                   f"PRIMER_RIGHT_NUM_RETURNED ({p3_output.PRIMER_RIGHT_NUM_RETURNED})")
+    for result_num in range(p3_output.PRIMER_PAIR_NUM_RETURNED):
+        results.pairs.append(_parse_result(p3_output, result_num))
 
-    return primer3_results
+    return results
 
 def make_ok_region(target_transcript):
     # positive transcript strand
@@ -87,7 +102,7 @@ def _build_seq_args(target_transcript):
     match_5p = FIVE_PRIME_NUM_STRONG_MATCH * 'S'
 
     ok_regions = make_ok_region(target_transcript)
-    junction_overlaps = _build_junction_overlap(target_transcript.features_5p.features) + _build_junction_overlap(target_transcript.features_3p.features)
+    junction_overlaps = _build_junction_overlap(target_transcript.features_5p) + _build_junction_overlap(target_transcript.features_3p)
     seq_args = ObjDict(SEQUENCE_ID=target_transcript.trans_id,
                        SEQUENCE_TEMPLATE=target_transcript.rna,
                        SEQUENCE_PRIMER_PAIR_OK_REGION_LIST=ok_regions,
@@ -108,19 +123,7 @@ def primer3_global_defaults():
     "get a copy to modify"
     return copy.copy(_global_args_defaults)
 
-def _dump_primer3_info(target_transcript, global_args, seq_args, results, dump_fh):
-    pp = pprint.PrettyPrinter(stream=dump_fh, sort_dicts=False, indent=4)
-    print("global_args:", file=dump_fh)
-    pp.pprint(global_args)
-    print("seq_args:", file=dump_fh)
-    pp.pprint(seq_args)
-    print("results:", file=dump_fh)
-    for r in results:
-        pp.pprint(vars(r))
-
-
-def primer3_design(target_transcript, *, global_args=_global_args_defaults, misprime_lib=None, mishyb_lib=None, debug=False,
-                   dump_fh=None):
+def primer3_design(target_transcript, *, global_args=_global_args_defaults, misprime_lib=None, mishyb_lib=None, debug=False):
     """main entry to run primer3
     global_args defined here:
     https://www.primer3plus.com/primer3plusHelp.html#globalTags
@@ -129,12 +132,27 @@ def primer3_design(target_transcript, *, global_args=_global_args_defaults, misp
     global_args = _build_global_args(target_transcript, global_args)
     seq_args = _build_seq_args(target_transcript)
 
-    results = parse_results(primer3.bindings.designPrimers(seq_args, global_args,
-                                                           misprime_lib=misprime_lib, mishyb_lib=mishyb_lib,
-                                                           debug=debug))
-    if dump_fh is not None:
-        _dump_primer3_info(target_transcript, global_args, seq_args, results, dump_fh)
+    p3_output = primer3.bindings.designPrimers(seq_args, global_args,
+                                               misprime_lib=misprime_lib, mishyb_lib=mishyb_lib,
+                                               debug=debug)
+
+    results = primer3_parse_output(p3_output)
+    if "PRIMER_ERRORS" in results:
+        raise PrimersJuJuError(f"primer3 errors: {results.PRIMER_ERRORS}")
+    if "PRIMER_WARNINGS" in results:
+        raise PrimersJuJuError(f"primer3 warnings: {results.PRIMER_WARNINGS}")
     return results
+
+def primer3_dump_args(fh, target_transcript, *, global_args=_global_args_defaults):
+    "print the arguments that will be used for this design"
+    pp = pprint.PrettyPrinter(stream=fh, sort_dicts=False, indent=4)
+    print(">>> primer3_args <<<", file=fh)
+    print("global_args:", file=fh)
+    pp.pprint(global_args)
+    print("seq_args:", file=fh)
+    pp.pprint(seq_args)
+    results.dump(fh)
+    print("", file=fh)
 
 def _make_point_char_inserts(point_list, mark_char):
     # primer3 point 1-based index position before junction
@@ -148,7 +166,7 @@ def _make_region_char_inserts(region_lists, start_char, end_char):
     for region_list in region_lists:
         for i in range(0, len(region_list), 2):
             start = region_list[i]
-            end = start + region_list[i+1]
+            end = start + region_list[i + 1]
             inserts.append((start - 1, start_char))
             inserts.append((end, end_char))
     return inserts

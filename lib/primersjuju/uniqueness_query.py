@@ -3,12 +3,14 @@ Query for uniqueness in genome and transcriptome
 """
 from typing import Sequence
 from dataclasses import dataclass, KW_ONLY
+
 import pipettor
 from pycbio.hgdata.psl import PslReader
 from pycbio.hgdata.coords import Coords
+
 from .genome_data import bigbed_read_by_names
 from .transcript_features import Features, bed_to_features, transcript_range_to_features
-from . import PrimersJuJuError, PrimersJuJuDataError
+from . import PrimersJuJuError
 
 @dataclass
 class IsPcrServerSpec:
@@ -27,7 +29,6 @@ class GenomeHit:
     "one isPcr hit to the genome, in positive genomic coords"
     left_coords: Coords
     right_coords: Coords
-    chrom_type: str  # from assembly report Assigned-Molecule-Location/Type column; None if not available
 
 @dataclass
 class TranscriptomeHit:
@@ -36,7 +37,6 @@ class TranscriptomeHit:
     gene_name: str
     left_features: Features
     right_features: Features
-    chrom_type: str  # from assembly report Assigned-Molecule-Location/Type column ; None if not available
 
 class UniquenessQuery:
     """Interface to UCSC isPCR server to query for uniqueness."""
@@ -57,15 +57,6 @@ class UniquenessQuery:
         with pipettor.Popen(cmd) as fh:
             return [p for p in PslReader(fh)]
 
-    def _get_chrom_type(self, name):
-        "look up chromosome type"
-        if self.genome_data.assembly_info is None:
-            return None
-        chrom_info = self.genome_data.assembly_info.byUcscStyleName.get(name)
-        if chrom_info is None:
-            raise PrimersJuJuDataError(f"chromosome sequence '{name}' not found in assembly report for '{self.genome_data.genome_name}'")
-        return chrom_info.locationType
-
     def _check_psl(self, psl):
         if len(psl.blocks) != 2:
             raise PrimersJuJuError(f"expected a two-block result back from isPcr, got: {psl}")
@@ -75,7 +66,7 @@ class UniquenessQuery:
         self._check_psl(psl)
         coords = [Coords(psl.tName, psl.blocks[i].tStart, psl.blocks[i].tEnd, psl.tStrand, psl.tSize).abs()
                   for i in range(2)]
-        return GenomeHit(*coords, self._get_chrom_type(coords[0].name))
+        return GenomeHit(*coords)
 
     def query_genome(self, name, left_primer, right_primer, max_size) -> Sequence[GenomeHit]:
         """query for primer hits in genome"""
@@ -110,8 +101,7 @@ class UniquenessQuery:
         features_list = [self._trans_range_to_features(trans_features, coords)
                          for coords in coords_list]
 
-        return TranscriptomeHit(trans_id, gene_name, *features_list,
-                                self._get_chrom_type(features_list[0][0].genome.name))
+        return TranscriptomeHit(trans_id, gene_name, *features_list)
 
     def query_transcriptome(self, name, left_primer, right_primer, max_size) -> Sequence[TranscriptomeHit]:
         """query for primer hits in transcriptome"""

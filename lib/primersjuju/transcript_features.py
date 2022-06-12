@@ -86,17 +86,18 @@ class Features(list):
     def __str__(self):
         return '[' + ("\n ".join([repr(f) for f in self])) + ']'
 
-    def sort_genome_order(self):
-        self.sort(key=lambda f: (f.genome.start, f.genome.end))
-
-    def sort_transcript_order(self):
-        self.sort(key=lambda f: (f.trans.start, f.trans.end))
-
     def count_type(self, ftype):
         # True == 1, False == 0
         return sum([isinstance(f, ftype) for f in self])
 
-    def get_bounds(self):
+    def iter_type(self, ftype):
+        "generator over a feature type"
+        for f in self:
+            if isinstance(f, ftype):
+                yield f
+
+    @property
+    def bounds(self):
         f0 = self[0]
         fN = self[-1]
         return Feature(f0.genome.adjrange(f0.genome.start, fN.genome.end),
@@ -159,6 +160,12 @@ def features_contig_assert(features):
             assert _contig(feat.genome, prev_feat.genome), f"genome coords not contiguous {prev_feat} => {feat}"
         prev_feat = feat
 
+def features_sort_genome(features: Features):
+    features.sort(key=lambda f: (f.genome.start, f.genome.end))
+
+def features_sort_transcript(features: Features):
+    features.sort(key=lambda f: (f.trans.start, f.trans.end))
+
 def features_intersect_genome(features, region) -> Features:
     """get a sub-range of features based on genomic coordinates, sorted in genomic order"""
     subfeatures = Features([])
@@ -199,3 +206,7 @@ def genome_range_to_features(features, grange):
                 assert isinstance(exon_region, ExonFeature)
                 exon_regions.append(exon_region)
     return exon_regions
+
+def features_to_genomic_coords(features, feature_filter=Feature):
+    """create list of genomic coordinates, only keep features of time feature_filter"""
+    return [f.genome for f in features if isinstance(f, feature_filter)]

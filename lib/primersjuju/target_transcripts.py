@@ -11,18 +11,12 @@ from . import PrimersJuJuError, PrimersJuJuDataError
 from .transcript_features import Feature, IntronFeature, ExonFeature, Features, bed_to_features, features_intersect_genome, get_features_rna
 
 @dataclass
-class PrimerRegionFeatures:
-    """Coords and features of a transcript for 5' or 3' region.  """
-    region: Feature  # genomic and trans may not be the same length
-    features: Sequence[Feature]
-
-@dataclass
 class TargetTranscript:
     "a target transcript for RT-PCR with features within primer regions"
     track_name: str
     bed: Bed
-    features_5p: PrimerRegionFeatures  # 5' on transcript
-    features_3p: PrimerRegionFeatures
+    features_5p: Features  # 5' on transcript
+    features_3p: Features
     # features of transcript
     features: Features
     rna: str
@@ -37,11 +31,11 @@ class TargetTranscript:
 
     @property
     def region_5p(self):
-        return self.features_5p.region
+        return self.features_5p.bounds
 
     @property
     def region_3p(self):
-        return self.features_3p.region
+        return self.features_3p.bounds
 
     def __str__(self):
         return f"({self.track_name}, {self.trans_id})"
@@ -134,10 +128,7 @@ def _get_regions_transcript_orient(trans, region_5p, region_3p):
 def _build_region_transcript_features(track_name, trans_name, features, region):
     region_features = features_intersect_genome(features, region)
     _primer_region_check_features("initially specified primer region", track_name, trans_name, region_features)
-    prf = PrimerRegionFeatures(region_features.get_bounds(), region_features)
-    assert len(prf.region.genome) > 0
-    assert len(prf.region.trans) > 0
-    return prf
+    return region_features
 
 def _build_target_transcript(genome_data, primer_target_spec, trans_spec):
     "build transcript with initial regions trimmed to exons"
@@ -166,13 +157,13 @@ def _validate_strand(target_transcripts):
             raise PrimersJuJuDataError(f"transcript on different strands: {ttrans} vs {ttrans0}")
 
 def _find_transcripts_common_region(target_transcripts, feats_func):
-    region = feats_func(target_transcripts[0]).region.genome
+    region = feats_func(target_transcripts[0]).bounds.genome
     for ttrans in target_transcripts[1:]:
-        region = region.intersect(feats_func(ttrans).region.genome)
+        region = region.intersect(feats_func(ttrans).bounds.genome)
     return region
 
 def _adjust_transcript_region_features(target_transcript, common_region, feats_func):
-    orig_features = feats_func(target_transcript).features
+    orig_features = feats_func(target_transcript)
     adj_features = Features()
     for ofeat in orig_features:
         if ofeat.genome.overlaps(common_region):
@@ -181,9 +172,7 @@ def _adjust_transcript_region_features(target_transcript, common_region, feats_f
     _primer_region_check_features("common adjusted primer region", target_transcript.track_name, target_transcript.trans_id, adj_features)
 
     # this updates transcript features
-    feats_func(target_transcript,
-               PrimerRegionFeatures(adj_features.get_bounds(),
-                                    adj_features))
+    feats_func(target_transcript, adj_features)
 
 def _adjust_transcripts_region_features(target_transcripts, feats_func):
     common_region = _find_transcripts_common_region(target_transcripts, feats_func)

@@ -34,7 +34,7 @@ class Track:
 class GenomeData:
     "genome sequence and annotations tracks"
 
-    def __init__(self, genome_name, genome2bit, assembly_report=None):
+    def __init__(self, genome_name, genome2bit, *, assembly_report=None):
         self.genome_name = genome_name
         self.genome_seqs = twobitreader.TwoBitFile(genome2bit)
         self.assembly_info = AssemblyReport(assembly_report) if assembly_report is not None else None

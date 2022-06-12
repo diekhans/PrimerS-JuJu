@@ -25,8 +25,8 @@ def _dump_trans_region(target_id, trans_track, trans_id, target_transcript):
                                          len(tt.region_3p.trans))
         fileOps.prRowv(fh, "target_id", target_id)
         fileOps.prRowv(fh, "trans_id", trans_track, trans_id)
-        fileOps.prRowv(fh, "region_5p", tt.region_5p.genome, len(tt.region_5p.genome), "features:", len(tt.features_5p.features))
-        fileOps.prRowv(fh, "region_3p", tt.region_3p.genome, len(tt.region_3p.genome), "features:", len(tt.features_3p.features))
+        fileOps.prRowv(fh, "region_5p", tt.region_5p.genome, len(tt.region_5p.genome), "features:", len(tt.features_5p))
+        fileOps.prRowv(fh, "region_3p", tt.region_3p.genome, len(tt.region_3p.genome), "features:", len(tt.features_3p))
         fileOps.prRowv(fh, "ampl_region_5p", tt.region_5p.trans.format(oneBased=True))
         fileOps.prRowv(fh, "ampl_region_3p", tt.region_3p.trans.format(oneBased=True))
         fileOps.prRowv(fh, "SEQUENCE_PRIMER_PAIR_OK_REGION", ok_region)
@@ -95,8 +95,8 @@ def _check_target_transcripts(target_transcripts, region_5p, region_3p):
 def _check_target_transcript(target_transcripts, trans_track, trans_id, rna_len,
                              features_5p, features_3p):
     target_transcript = target_transcripts.get_transcript(trans_track, trans_id)
-    assert target_transcript.features_5p.features == features_5p
-    assert target_transcript.features_3p.features == features_3p
+    assert target_transcript.features_5p == features_5p
+    assert target_transcript.features_3p == features_3p
     assert len(target_transcript.rna) == rna_len
 
 def test_target_build_exonic(genome_data, example_wtc11_targets_specs_set1):

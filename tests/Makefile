@@ -9,4 +9,8 @@ test: lib_tests
 lib_tests:
 	${PYTEST} ${tests}
 
+lint:
+	cd .. && ${MAKE} lint
+
 clean:
+	rm -rf output
