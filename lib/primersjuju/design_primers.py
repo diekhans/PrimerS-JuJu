@@ -4,11 +4,10 @@ Primer selection for a target.
 from typing import Sequence
 from dataclasses import dataclass
 from pycbio.hgdata.coords import Coords
-from pycbio.hgdata.bed import Bed
 from . import PrimersJuJuError
 from .primer3_interface import Primer3Results, Primer3Pair, primer3_design
-from .target_transcripts import TargetTranscripts, TargetTranscript, ExonFeature
-from .transcript_features import Features, transcript_range_to_features, features_to_genomic_coords
+from .target_transcripts import TargetTranscripts, TargetTranscript
+from .transcript_features import Features, transcript_range_to_features
 from .uniqueness_query import GenomeHit, TranscriptomeHit
 
 @dataclass
@@ -173,95 +172,3 @@ def design_primers(genome_data, target_transcripts, *, uniqueness_query=None):
     primer3_results = primer3_design(target_transcript)
 
     return _build_primer_designs(target_transcripts, target_transcript, primer3_results, uniqueness_query)
-
-_primer_bed_columns = (
-    'PRIMER_PAIR_PRODUCT_SIZE',    # 1133
-    'PRIMER_PAIR_COMPL_ANY_TH',    # 12.498152433966595
-    'PRIMER_PAIR_COMPL_END_TH',    # 5.033689592343535
-    'PRIMER_PAIR_PENALTY',         # 0.42111006752037383
-    'PRIMER_LEFT',                 # (27, 20)
-    'PRIMER_LEFT_SEQUENCE',        # 'GGTTCTTCTGCGCTACTGCT'
-    'PRIMER_LEFT_END_STABILITY',   # 4.24
-    'PRIMER_LEFT_GC_PERCENT',      # 55.0
-    'PRIMER_LEFT_HAIRPIN_TH',      # 36.97289132676252
-    'PRIMER_LEFT_PENALTY',         # 0.3904716385882807
-    'PRIMER_LEFT_SELF_ANY_TH',     # 9.732052967213463
-    'PRIMER_LEFT_SELF_END_TH',     # 0.0
-    'PRIMER_LEFT_TM',              # 60.39047163858828
-    'PRIMER_RIGHT',                # (1159, 20)
-    'PRIMER_RIGHT_SEQUENCE',       # 'CAAAAACCCACGCAGACAGG'
-    'PRIMER_RIGHT_END_STABILITY',  # 4.0
-    'PRIMER_RIGHT_GC_PERCENT',     # 55.0
-    'PRIMER_RIGHT_HAIRPIN_TH',     # 0.0
-    'PRIMER_RIGHT_PENALTY',        # 0.03063842893209312
-    'PRIMER_RIGHT_SELF_ANY_TH',    # 0.0
-    'PRIMER_RIGHT_SELF_END_TH',    # 0.0
-    'PRIMER_RIGHT_TM',             # 59.96936157106791
-)
-
-def _get_extra_cols(primer_design):
-    """get extra BED columns from primer design"""
-    extra_cols = []
-    for col_name in _primer_bed_columns:
-        col = getattr(primer_design.primer3_pair, col_name)
-        if isinstance(col, float):
-            col = "{:.2f}".format(col)
-        extra_cols.append(col)
-    return extra_cols
-
-def _coords_to_bed(name, color, coords_list, extra_cols=None):
-    coords_list = sorted(coords_list, key=lambda c: (c.name, c.start, c.end))
-    first = coords_list[0]
-    last = coords_list[-1]
-
-    bed = Bed(first.name, first.start, last.end, name,
-              strand=first.strand, thickStart=first.start, thickEnd=last.end,
-              itemRgb=color.toRgb8Str(), numStdCols=12, blocks=[],
-              extraCols=extra_cols)
-    for coords in coords_list:
-        bed.addBlock(coords.start, coords.end)
-    return bed
-
-def _primer_to_bed(primer_design, color):
-    coords_list = (features_to_genomic_coords(primer_design.features_5p, ExonFeature) +
-                   features_to_genomic_coords(primer_design.features_3p, ExonFeature))
-    return _coords_to_bed(primer_design.ppair_id, color, coords_list,
-                          _get_extra_cols(primer_design))
-
-def build_primer_beds(primer_designs, color):
-    return sorted([_primer_to_bed(pd, color) for pd in primer_designs.designs],
-                  key=Bed.genome_sort_key)
-
-def _genome_hit_to_bed(hit, name, color):
-    return _coords_to_bed(name, color, (hit.left_coords, hit.right_coords))
-
-def _genome_hits_to_bed(hits, name, color):
-    if hits is None:
-        return []  # no data
-    return [_genome_hit_to_bed(hit, name, color) for hit in hits]
-
-def _transcriptome_hit_to_bed(hit, name_pre, color):
-    return _coords_to_bed(name_pre + '|' + hit.trans_id + '|' + hit.gene_name, color,
-                          features_to_genomic_coords(hit.left_features, ExonFeature) +
-                          features_to_genomic_coords(hit.right_features, ExonFeature))
-
-def _transcriptome_hits_to_bed(hits, name_pre, color):
-    if hits is None:
-        return []  # no data
-    return [_transcriptome_hit_to_bed(hit, name_pre, color) for hit in hits]
-
-def _build_design_uniqueness_hits_beds(primer_design, on_color, off_color, non_color):
-    beds = []
-    beds += _genome_hits_to_bed(primer_design.genome_on_targets, "on=" + primer_design.ppair_id, on_color)
-    beds += _genome_hits_to_bed(primer_design.genome_off_targets, "off=" + primer_design.ppair_id, off_color)
-    beds += _genome_hits_to_bed(primer_design.genome_off_targets, "non=" + primer_design.ppair_id, non_color)
-    beds += _transcriptome_hits_to_bed(primer_design.transcriptome_on_targets, "on=" + primer_design.ppair_id, on_color)
-    beds += _transcriptome_hits_to_bed(primer_design.transcriptome_off_targets, "off=" + primer_design.ppair_id, off_color)
-    beds += _transcriptome_hits_to_bed(primer_design.transcriptome_non_targets, "non=" + primer_design.ppair_id, non_color)
-    return beds
-
-def build_uniqueness_hits_beds(primer_designs, on_color, off_color, non_color):
-    beds = []
-    for primer_design in primer_designs.designs:
-        beds += _build_design_uniqueness_hits_beds(primer_design, on_color, off_color, non_color)
-    return sorted(beds, key=Bed.genome_sort_key)

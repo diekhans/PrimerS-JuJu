@@ -1,7 +1,7 @@
 import pytest
 import os.path as osp
-from primersjuju.genome_data import GenomeData
 from . import mydir
+from primersjuju.genome_data import GenomeData
 from primersjuju.primer_target_spec import primer_targets_specs_read
 from primersjuju.uniqueness_query import IsPcrServerSpec, UniquenessQuery
 

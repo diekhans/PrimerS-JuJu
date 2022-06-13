@@ -145,14 +145,13 @@ def primer3_design(target_transcript, *, global_args=_global_args_defaults, misp
 
 def primer3_dump_args(fh, target_transcript, *, global_args=_global_args_defaults):
     "print the arguments that will be used for this design"
+    seq_args = _build_seq_args(target_transcript)
     pp = pprint.PrettyPrinter(stream=fh, sort_dicts=False, indent=4)
     print(">>> primer3_args <<<", file=fh)
     print("global_args:", file=fh)
     pp.pprint(global_args)
     print("seq_args:", file=fh)
     pp.pprint(seq_args)
-    results.dump(fh)
-    print("", file=fh)
 
 def _make_point_char_inserts(point_list, mark_char):
     # primer3 point 1-based index position before junction

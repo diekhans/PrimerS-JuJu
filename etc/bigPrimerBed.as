@@ -13,6 +13,8 @@ table bigPrimerBed
     int blockCount;    "Number of blocks"
     int[blockCount] blockSizes; "Comma separated list of block sizes"
     int[blockCount] chromStarts; "Start positions relative to chromStart"
+    int transcritome_off_target_cnt  "transcriptome off-target hits"
+    int genome_off_target_cnt  "genomic off-target hits"
     int    PRIMER_PAIR_PRODUCT_SIZE;      "PAIR_PRODUCT_SIZE"
     float  PRIMER_PAIR_COMPL_ANY_TH;      "PAIR_COMPL_ANY_TH"
     float  PRIMER_PAIR_COMPL_END_TH;      "PAIR_COMPL_END_TH"

@@ -5,7 +5,13 @@ from os import path as osp
 import argparse
 import traceback
 
-sys.path.insert(0, osp.normpath(osp.join(osp.dirname(__file__), "../lib")))
+from pycbio.sys.configInPy import evalConfigFile
+
+from primersjuju import PrimersJuJuError, PrimersJuJuDataError
+from primersjuju.config import PrimersJuJuConfig, AssemblyConfig
+
+rootdir = osp.normpath(osp.join(osp.dirname(__file__), '..'))
+sys.path.insert(0, osp.normpath(osp.join(rootdir, "lib")))
 from primersjuju.primer_target_spec import primer_targets_specs_read
 
 def parse_args():
@@ -16,18 +22,30 @@ def parse_args():
     """
 
     def _add_primer_targets(parser):
+        parser.add_argument("-a", "--assembly", dest="assembly",
+                            help="assembly name, often name in UCSC browser; required if configuration files contains multiple assemblies")
         parser.add_argument("primer_targets_tsv",
                             help="primers target TSV")
 
     parser = argparse.ArgumentParser(description=desc)
+    parser.add_argument("-c", "--conf", dest="config_py", default=osp.join(rootdir, "etc/config.py"),
+                        help="configuration file as a python module")
     parser.add_argument("-d", "--debug", action="store_true",
                         help="enable debugging info, include stack traces")
     subparsers = parser.add_subparsers(dest='subcommand', required=True,
-                                       help="sub-commands help")
+                                       help="sub-command help")
     # check
     sp_check = subparsers.add_parser("check",
                                      help="check validity of input files")
     _add_primer_targets(sp_check)
+
+    # design
+    sp_design = subparsers.add_parser("design",
+                                      help="run primer design")
+    _add_primer_targets(sp_design)
+    sp_design.add_argument("outdir",
+                           help="output directory, which is created if it doesn't exist")
+
     args = parser.parse_args()
     return args
 
@@ -44,15 +62,43 @@ def handle_prog_errors(ex, debug):
         exc = exc.__cause__
     exit(1)
 
+def _do_load_config(config_py, assembly) -> AssemblyConfig:
+    config_vars = evalConfigFile(config_py)
+    config = config_vars.get("config")
+    if config is None:
+        raise PrimersJuJuDataError("variable 'config' is not set")
+    if len(config.assemblies) == 0:
+        raise PrimersJuJuDataError("no assemblies specified in config PrimersJuJuConfig object")
+    if assembly is None:
+        if len(config.assemblies) > 1:
+            raise PrimersJuJuDataError("assembly not specified and multiple assemblies specified in configuration")
+        assembly = next(config.assemblies.keys())
+    return config.assemblies[assembly]
+
+def _load_config(config_py, assembly) -> AssemblyConfig:
+    """local config and return assembly configuration for assembly.  If no
+    assembly is not specified and there is only on assembly in configuration, it
+    is returned as the default"""
+    try:
+        return _do_load_config(config_py, assembly)
+    except Exception as ex:
+        raise PrimersJuJuDataError(f"error process configuration file '{config_py}'") from ex
 
 def check_subcommand(args):
+    "config and validated input files just by loading"
+    _load_config(args.config_py, args.assembly)
     primer_targets_specs_read(args.primer_targets_tsv)
 
+def design_subcommand(args):
+    config = _load_config(args.config_py, args.assembly)
+    primer_targets_specs = primer_targets_specs_read(args.primer_targets_tsv)
 
 def primersJuJu(args):
     try:
         if args.subcommand == "check":
             check_subcommand(args)
+        elif args.subcommand == "design":
+            design_subcommand(args)
     except Exception as ex:
         handle_prog_errors(ex, args.debug)
 

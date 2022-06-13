@@ -2,13 +2,12 @@
 Target transcripts analysis.  Includes validation, and trimming of primer
 regions to match exons.
 """
-from typing import Sequence
 from dataclasses import dataclass
 import pprint
 from pycbio.hgdata.coords import Coords
 from pycbio.hgdata.bed import Bed
 from . import PrimersJuJuError, PrimersJuJuDataError
-from .transcript_features import Feature, IntronFeature, ExonFeature, Features, bed_to_features, features_intersect_genome, get_features_rna
+from .transcript_features import IntronFeature, ExonFeature, Features, bed_to_features, features_intersect_genome, get_features_rna
 
 @dataclass
 class TargetTranscript:
@@ -216,22 +215,3 @@ def target_transcripts_build(genome_data, primer_target_spec):
         return _do_target_transcripts_build(genome_data, primer_target_spec)
     except PrimersJuJuError as ex:
         raise PrimersJuJuError(f"target {primer_target_spec.target_id} failed") from ex
-
-
-def _get_regions_genome_orient(target_transcripts):
-    "swap regions if needed to be in genome orientation"
-    if target_transcripts.region_5p.end < target_transcripts.region_3p.start:
-        return target_transcripts.region_5p, target_transcripts.region_3p
-    else:
-        return target_transcripts.region_3p, target_transcripts.region_5p
-
-def build_target_bed(target_transcripts, color):
-    region_5p, region_3p = _get_regions_genome_orient(target_transcripts)
-    bed = Bed(region_5p.name, region_5p.start, region_3p.end,
-              target_transcripts.target_id,
-              strand=region_5p.strand,
-              thickStart=region_5p.start, thickEnd=region_3p.end,
-              itemRgb=color.toRgb8Str(),
-              blocks=[Bed.Block(region_5p.start, region_5p.end),
-                      Bed.Block(region_3p.start, region_3p.end)])
-    return bed
