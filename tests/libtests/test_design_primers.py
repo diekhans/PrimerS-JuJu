@@ -3,6 +3,7 @@ tests cover
    primersjuju.design_primers
 """
 import os.path as osp
+import pipettor
 from primersjuju.target_transcripts import target_transcripts_build
 from primersjuju.design_primers import design_primers
 from primersjuju.output import output_target_designs
@@ -16,14 +17,19 @@ def _write_beds(beds, bed_file):
         for bed in beds:
             bed.write(fh)
 
+def diff_expected(rel_name):
+    pipettor.run(["diff", "-u",
+                  osp.join("expected", rel_name),
+                  osp.join("output", rel_name)])
+
 def _run_primer_design_test(request, genome_data, target_transcripts, uniqueness_query):
     outdir = osp.join("output", request.node.name)
-    target_transcript = target_transcripts.transcripts[0]
-
     primer_designs = design_primers(genome_data, target_transcripts, uniqueness_query=uniqueness_query)
 
     output_target_designs(outdir, target_transcripts, primer_designs)
 
+    for suffix in (".debug.txt", ".designs.tsv", ".primers.bed", ".target.bed", ".uniqueness.bed"):
+        diff_expected(osp.join(request.node.name, target_transcripts.target_id + suffix))
     return primer_designs
 
 def test_SNAI1(request, genome_data, example_wtc11_targets_specs_set1, hg38_uniqueness_query):

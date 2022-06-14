@@ -1,1 +1,4 @@
 * TargetTranscripts is a poor name, this really describe the whole design target
+DesignTarget?
+* renamed ppair_id
+* primer_design -> design_pairs

@@ -2,9 +2,7 @@
 # your config.py should import this and construct a instance of
 # PrimersJuJuConfig in a variable named 'config'
 #
-from primersjuju.genome_data import GenomeData
 from primersjuju.uniqueness_query import IsPcrServerSpec
-
 
 class AssemblyConfig:
     "Configuration for a particular assembly"

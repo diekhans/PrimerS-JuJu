@@ -61,8 +61,8 @@ _primer_bed_columns = (
 
 def _get_extra_cols(primer_design):
     """get extra BED columns from primer design"""
-    extra_cols = [len(primer_design.transcriptome_off_targets),
-                  len(primer_design.genome_off_targets)]
+    extra_cols = [primer_design.transcriptome_off_target_cnt(),
+                  primer_design.genome_off_target_cnt()]
     # directly from primer3
     for col_name in _primer_bed_columns:
         col = getattr(primer_design.primer3_pair, col_name)
@@ -72,9 +72,9 @@ def _get_extra_cols(primer_design):
     return extra_cols
 
 def _primer_color(primer_design):
-    if len(primer_design.transcriptome_off_targets) > 0:
+    if primer_design.transcriptome_off_target_cnt() > 0:
         return PRIMERS_OFF_TRANSCRIPTOME_COLOR
-    elif len(primer_design.genome_off_targets) > 0:
+    elif primer_design.genome_off_target_cnt() > 0:
         return PRIMERS_OFF_GENOME_COLOR
     else:
         return PRIMERS_ON_COLOR
@@ -137,8 +137,32 @@ def output_target_design_file(outdir, target_transcripts):
     """
     return _get_out_path(outdir, target_transcripts, ".design.tsv")
 
-_design_tsv_header = ()
+_design_tsv_header = ("target_id", "design_status", "transcript_id",
+                      "primer_id", "left_primer", "right_primer",
+                      "transcriptome_off_targets", "genome_off_targets")
 
+def _write_primer_pair_design(fh, primer_designs, primer_design):
+    "write one design, if primer_design is None, it means there were no primers found"
+    row = [primer_designs.target_transcripts.target_id,
+           primer_designs.status, primer_designs.target_transcripts.transcripts[0].trans_id]
+    if primer_design is None:
+        row += 5 * ['']
+    else:
+        row += [primer_design.ppair_id,
+                primer_design.primer3_pair.PRIMER_LEFT_SEQUENCE,
+                primer_design.primer3_pair.PRIMER_RIGHT_SEQUENCE,
+                primer_design.transcriptome_off_target_cnt(),
+                primer_design.genome_off_target_cnt()]
+    fileOps.prRow(fh, row)
+
+def _write_primer_designs(primer_designs, tsv_file):
+    with open(tsv_file, "w") as fh:
+        fileOps.prRow(fh, _design_tsv_header)
+        if len(primer_designs.designs) == 0:
+            _write_primer_pair_design(fh, primer_designs, None)
+        else:
+            for primer_design in primer_designs.designs:
+                _write_primer_pair_design(fh, primer_designs, primer_design)
 
 def output_target_designs(outdir, target_transcripts, primer_designs):
     """output primer TSV, BEDs, and debug information for one target.  The $target_id..design.tsv file
@@ -166,4 +190,5 @@ def output_target_designs(outdir, target_transcripts, primer_designs):
     _write_beds(build_uniqueness_hits_beds(primer_designs),
                 _get_out_path(outdir, target_transcripts, "uniqueness.bed"))
 
-    #FIXME: need to output TSV
+    with fileOps.AtomicFileCreate(_get_out_path(outdir, target_transcripts, "designs.tsv")) as tmp_tsv:
+        _write_primer_designs(primer_designs, tmp_tsv)

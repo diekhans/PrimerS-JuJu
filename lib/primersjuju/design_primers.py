@@ -3,12 +3,20 @@ Primer selection for a target.
 """
 from typing import Sequence
 from dataclasses import dataclass
+from pycbio.sys.symEnum import SymEnum
 from pycbio.hgdata.coords import Coords
 from . import PrimersJuJuError
 from .primer3_interface import Primer3Results, Primer3Pair, primer3_design
 from .target_transcripts import TargetTranscripts, TargetTranscript
 from .transcript_features import Features, transcript_range_to_features
 from .uniqueness_query import GenomeHit, TranscriptomeHit
+
+class DesignStatus(SymEnum):
+    """Status of the design for a given target.  Smaller is better"""
+    GOOD = 0
+    NOT_GENOME_UNIQUE = 1
+    NOT_TRANSCRIPTOME_UNIQUE = 2
+    NO_PRIMERS = 3
 
 @dataclass
 class PrimerDesign:
@@ -25,6 +33,12 @@ class PrimerDesign:
     transcriptome_on_targets: Sequence[TranscriptomeHit]
     transcriptome_off_targets: Sequence[TranscriptomeHit]
     transcriptome_non_targets: Sequence[TranscriptomeHit]
+
+    def genome_off_target_cnt(self):
+        return len(self.genome_off_targets)
+
+    def transcriptome_off_target_cnt(self):
+        return len(self.transcriptome_off_targets)
 
     def dump(self, fh):
         print(">>> PrimerDesign <<<", file=fh)
@@ -47,6 +61,7 @@ class PrimerDesigns:
     target_transcript: TargetTranscript
     primer3_results: Primer3Results
     designs: Sequence[PrimerDesign]
+    status: DesignStatus
 
     def dump(self, fh):
         print(f">>> PrimerDesigns {len(self.designs)} <<<", file=fh)
@@ -160,11 +175,27 @@ def _build_primer_design(target_transcript, target_id, result_num, primer3_pair,
                         genome_on_targets, genome_off_targets, genome_non_targets,
                         transcriptome_on_targets, transcriptome_off_targets, transcriptome_non_targets)
 
+def _calc_design_status(primer_design) -> DesignStatus:
+    if primer_design.transcriptome_off_target_cnt() > 0:
+        return DesignStatus.NOT_TRANSCRIPTOME_UNIQUE
+    elif primer_design.genome_off_target_cnt() > 0:
+        return DesignStatus.NOT_GENOME_UNIQUE
+    else:
+        return DesignStatus.GOOD
+
+def get_design_status(primer_design_list) -> DesignStatus:
+    "determine status base on primer3 and uniqueness"
+    design_status = DesignStatus.NO_PRIMERS  # worst
+    for primer_design in primer_design_list:
+        design_status = min(design_status, _calc_design_status(primer_design))
+    return design_status
+
 def _build_primer_designs(target_transcripts, target_transcript, primer3_results, uniqueness_query):
+    primer_design_list = [_build_primer_design(target_transcript, target_transcripts.target_id, i + 1, pair, uniqueness_query)
+                          for i, pair in enumerate(primer3_results.pairs)]
     return PrimerDesigns(target_transcripts.target_id,
                          target_transcripts, target_transcript, primer3_results,
-                         [_build_primer_design(target_transcript, target_transcripts.target_id, i + 1, pair, uniqueness_query)
-                          for i, pair in enumerate(primer3_results.pairs)])
+                         primer_design_list, get_design_status(primer_design_list))
 
 def design_primers(genome_data, target_transcripts, *, uniqueness_query=None):
     """design transcripts """
