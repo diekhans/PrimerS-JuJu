@@ -1,10 +1,13 @@
 ROOT = .
 include ${ROOT}/defs.mk
 
+
 pyprogs = $(shell file -F $$'\t' bin/* | awk '/Python script/{print $$1}')
 pytests =  tests/libtests/*.py
 pypi_url = https://upload.pypi.org/simple/
 testpypi_url = https://test.pypi.org/simple/
+
+pycbio = ${HOME}/compbio/code/pycbio
 
 version = $(shell PYTHONPATH=lib ${PYTHON} -c "import primersjuju; print(primersjuju.__version__)")
 
@@ -15,6 +18,7 @@ have_mdlinkcheck = $(shell which markdown-link-check >&/dev/null && echo yes || 
 
 help:
 	@echo "clean - remove all build, test, coverage and Python artifacts"
+	@echo "real-clean - remove dev-venv as well"
 	@echo "devenv - setup local venv"
 	@echo "doc - build various pieces of the doc"
 	@echo "lint - check style with flake8"
@@ -25,7 +29,7 @@ help:
 	@echo "test - run tests quickly with the default Python"
 	@echo "install - install the package to the active Python's site-packages"
 	@echo "dist - package"
-	@echo "test-${PIP} - test install the package using pip"
+	@echo "test-pip - test install the package using pip"
 	@echo "release-testpypi - test upload to testpypi"
 	@echo "test-release-testpypi - install from testpypi"
 	@echo "release - package and upload a release"
@@ -40,8 +44,10 @@ devenv:
 	test -x ${devenv} || ${SYS_PYTHON} -m venv ${devenv}
 	${PIP} install --upgrade pip
 	${PIP} install --upgrade wheel
-	${PIP} install -r requirements-dev.txt
-	${PIP} install -e .
+	${PIP} install --upgrade -r requirements-dev.txt
+	${PIP} install --upgrade -r ${pycbio}/requirements.txt
+	${PIP} install --upgrade -e ${pycbio}
+	${PIP} install --upgrade -e .
 
 # this gets a lot of false-positive, just use for code cleanup rather than making it
 # standard
@@ -51,8 +57,11 @@ vulture:
 test:
 	cd tests && ${MAKE} test
 
+real_clean: clean
+	rm -rf dev-venv/
+
 clean: test_clean
-	rm -rf build/ dist/ ${testenv}/ lib/*.egg-info/ lib/primersjuju/__pycache__/ dev-venv/
+	rm -rf build/ dist/ ${testenv}/ lib/*.egg-info/ lib/primersjuju/__pycache__/ tests/.pytest_cache/
 
 test_clean:
 	cd tests && ${MAKE} clean
