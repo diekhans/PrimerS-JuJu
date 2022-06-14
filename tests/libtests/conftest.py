@@ -2,7 +2,7 @@ import pytest
 import os.path as osp
 from . import mydir
 from primersjuju.genome_data import GenomeData
-from primersjuju.primer_target_spec import primer_targets_specs_read
+from primersjuju.primer_target_spec import primer_target_specs_read
 from primersjuju.uniqueness_query import IsPcrServerSpec, UniquenessQuery
 
 def _test_data_file(fname):
@@ -24,12 +24,12 @@ def genome_data():
 
 @pytest.fixture(scope="session")
 def example_targets_specs():
-    return primer_targets_specs_read(osp.join(mydir, "../../docs/primer-targets-example.tsv"))
+    return primer_target_specs_read(osp.join(mydir, "../../docs/primer-targets-example.tsv"))
 
 
 @pytest.fixture(scope="session")
 def example_wtc11_targets_specs_set1():
-    return primer_targets_specs_read(osp.join(mydir, "../input/LRGASP_WTC11_Target_set1.tsv"))
+    return primer_target_specs_read(osp.join(mydir, "../input/LRGASP_WTC11_Target_set1.tsv"))
 
 @pytest.fixture(scope="session")
 def hg38_ispcr_spec():

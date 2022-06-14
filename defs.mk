@@ -14,3 +14,5 @@ VULTURE = ${PYTHON} -m vulture
 
 PYTEST_FLAGS = -s -vv --tb=native
 PYTEST = ${PYTHON} -m pytest ${PYTEST_FLAGS}
+
+primers_juju = source ${devenv}/bin/activate && ${ROOT}/bin/primers-juju

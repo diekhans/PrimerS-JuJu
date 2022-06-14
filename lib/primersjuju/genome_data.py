@@ -3,7 +3,7 @@ Genome sequences and track data.
 """
 import os
 from dataclasses import dataclass
-import twobitreader
+from twobitreader import TwoBitFile
 import pipettor
 from pycbio.hgdata.bed import BedReader
 from pycbio.hgdata import dnaOps
@@ -32,13 +32,29 @@ class Track:
             raise PrimersJuJuDataError(f"track {self.track_name}: {ex}") from ex
 
 class GenomeData:
-    "genome sequence and annotations tracks"
+    """Genome sequence and annotations tracks.  Files are opened in a lazy manner,
+    so this can be specified in a configuration for multiple genomes with overhead
+    of opening all of the files"""
 
     def __init__(self, genome_name, genome2bit, *, assembly_report=None):
         self.genome_name = genome_name
-        self.genome_seqs = twobitreader.TwoBitFile(genome2bit)
-        self.assembly_info = AssemblyReport(assembly_report) if assembly_report is not None else None
+        self.genome2bit = genome2bit
+        self.__genome_seqs = None  # lazy
+        self.assembly_report = assembly_report
+        self.__assembly_info = None  # lazy
         self.tracks = {}
+
+    @property
+    def genome_seqs(self) -> TwoBitFile:
+        if self.__genome_seqs is None:
+            self.__genome_seqs = TwoBitFile(self.genome2bit)
+        return self.__genome_seqs
+
+    @property
+    def assembly_info(self) -> AssemblyReport:
+        if (self.__assembly_info is None) and (self.assembly_report is not None):
+            self.__assembly_info = AssemblyReport(self.assembly_report)
+        return self.__assembly_info
 
     def add_track(self, track_name, bigBed, srcUrl):
         self.tracks[track_name] = Track(track_name, bigBed, srcUrl)

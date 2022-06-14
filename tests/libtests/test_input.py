@@ -11,7 +11,7 @@ from . import assert_except_msg
 from pycbio.hgdata.coords import Coords, CoordsError
 from pycbio.hgdata.bed import Bed
 from primersjuju import PrimersJuJuDataError
-from primersjuju.primer_target_spec import primer_targets_specs_read
+from primersjuju.primer_target_spec import primer_target_specs_read
 
 PRIMER_TARGETS_1 = (
     "target_id\ttrans_track\ttrans_id\t\tregion_5p\tregion_3p",
@@ -49,7 +49,7 @@ def test_primer_targets_bad_header():
     tsv[0] = tsv[0].replace("region_5p", "fred_5p")
     tsv_fh = _mk_tsv(tsv)
     with pytest.raises(PrimersJuJuDataError) as exinfo:
-        primer_targets_specs_read("<test>", in_fh=tsv_fh)
+        primer_target_specs_read("<test>", in_fh=tsv_fh)
     assert_except_msg(exinfo, PrimersJuJuDataError,
                       msg="required column is missing: 'region_5p'")
 
@@ -58,7 +58,7 @@ def test_primer_targets_bad_coords():
     tsv[1] = tsv[1].replace("chr17:7709210-7710259", "chr17:77XZ210-7710259")
     tsv_fh = _mk_tsv(tsv)
     with pytest.raises(PrimersJuJuDataError) as exinfo:
-        primer_targets_specs_read("<test>", in_fh=tsv_fh)
+        primer_target_specs_read("<test>", in_fh=tsv_fh)
     assert_except_msg(exinfo, CoordsError,
                       msg="invalid coordinates: 'chr17:77XZ210-7710259'")
 
@@ -68,7 +68,7 @@ def test_primer_targets_overlapping_coords():
     tsv[1] = tsv[1].replace("chr17:7705244-7705707", "chr17:7709220-7710299")
     tsv_fh = _mk_tsv(tsv)
     with pytest.raises(PrimersJuJuDataError) as exinfo:
-        primer_targets_specs_read("<test>", in_fh=tsv_fh)
+        primer_target_specs_read("<test>", in_fh=tsv_fh)
     assert_except_msg(exinfo, PrimersJuJuDataError,
                       msg="region_5p (chr17:7709209-7710259) overlaps region_3p (chr17:7709219-7710299)")
 
@@ -77,7 +77,7 @@ def test_primer_targets_diff_chrom_coords():
     tsv[1] = tsv[1].replace("chr17:7709210-7710259", "chr22:7709210-7710259")
     tsv_fh = _mk_tsv(tsv)
     with pytest.raises(PrimersJuJuDataError) as exinfo:
-        primer_targets_specs_read("<test>", in_fh=tsv_fh)
+        primer_target_specs_read("<test>", in_fh=tsv_fh)
     assert_except_msg(exinfo, PrimersJuJuDataError,
                       msg="region_5p (chr22:7709209-7710259) is on a different chromosome than region_3p (chr17:7705243-7705707)")
 
@@ -86,7 +86,7 @@ def test_primer_targets_dup_target_id():
     tsv.append(PRIMER_TARGETS_1[1])
     tsv_fh = _mk_tsv(tsv)
     with pytest.raises(PrimersJuJuDataError) as exinfo:
-        primer_targets_specs_read("<test>", in_fh=tsv_fh)
+        primer_target_specs_read("<test>", in_fh=tsv_fh)
     assert_except_msg(exinfo, PrimersJuJuDataError,
                       msg="duplicate primer target_id 'EFNB3+1'")
 

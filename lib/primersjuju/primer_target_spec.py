@@ -72,7 +72,7 @@ class PrimerTargetSpecs:
         return target
 
     def get_target_ids(self):
-        return list(self.targets.keys())
+        return sorted(self.targets.keys())
 
     def get_target(self, target_id):
         "target or error"
@@ -173,7 +173,7 @@ def _check_required_columns(rows):
         if col not in row0:
             raise PrimersJuJuDataError(f"required column is missing: '{col}'")
 
-def primer_targets_specs_read(primer_targets_tsv, in_fh=None):
+def primer_target_specs_read(primer_targets_tsv, in_fh=None):
     """read all primer targets into PrimerTargets object"""
     try:
         rows = [row for row in TsvReader(primer_targets_tsv, inFh=in_fh)]
