@@ -1,11 +1,13 @@
 MAKEFLAGS = --no-builtin-rules
 SHELL = /bin/bash
 
-devenv = ${ROOT}/dev-venv
-testenv = ${ROOT}/test-venv
+pycbio = ${HOME}/compbio/code/pycbio
+
+dev_venv = ${ROOT}/dev-venv
+dev_venv_acct = source ${dev_venv}/bin/activate
 
 SYS_PYTHON = python3
-PYTHON = source ${devenv}/bin/activate && ${devenv}/bin/python3
+PYTHON = ${dev_venv_acct} && python3
 PIP = ${PYTHON} -m pip
 FLAKE8 = ${PYTHON} -m flake8
 export PYTHONPATH = ${ROOT}/lib
@@ -15,4 +17,4 @@ VULTURE = ${PYTHON} -m vulture
 PYTEST_FLAGS = -s -vv --tb=native
 PYTEST = ${PYTHON} -m pytest ${PYTEST_FLAGS}
 
-primers_juju = source ${devenv}/bin/activate && ${ROOT}/bin/primers-juju
+primers_juju = ${dev_venv_acct} && ${ROOT}/bin/primers-juju

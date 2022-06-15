@@ -7,8 +7,6 @@ pytests =  tests/libtests/*.py
 pypi_url = https://upload.pypi.org/simple/
 testpypi_url = https://test.pypi.org/simple/
 
-pycbio = ${HOME}/compbio/code/pycbio
-
 version = $(shell PYTHONPATH=lib ${PYTHON} -c "import primersjuju; print(primersjuju.__version__)")
 
 # mdl is an uncommon program to verify markdown
@@ -19,7 +17,7 @@ have_mdlinkcheck = $(shell which markdown-link-check >&/dev/null && echo yes || 
 help:
 	@echo "clean - remove all build, test, coverage and Python artifacts"
 	@echo "real-clean - remove dev-venv as well"
-	@echo "devenv - setup local venv"
+	@echo "venv - setup local venv"
 	@echo "doc - build various pieces of the doc"
 	@echo "lint - check style with flake8"
 	@echo "lint-doc - check documentation"
@@ -39,9 +37,9 @@ help:
 lint:
 	${FLAKE8} ${pyprogs} ${pytests} lib
 
-.PHONY: devenv
-devenv:
-	test -x ${devenv} || ${SYS_PYTHON} -m venv ${devenv}
+.PHONY: venv
+venv:
+	test -x ${dev_venv} || ${SYS_PYTHON} -m venv ${dev_venv}
 	${PIP} install --upgrade pip
 	${PIP} install --upgrade wheel
 	${PIP} install --upgrade -r requirements-dev.txt
