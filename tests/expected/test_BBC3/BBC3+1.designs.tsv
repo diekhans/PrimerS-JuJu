@@ -1,2 +1,2 @@
-target_id	design_status	transcript_id	primer_id	left_primer	right_primer	transcriptome_off_targets	genome_off_targets
-BBC3+1	NO_PRIMERS	FSM_45580					
+target_id	design_status	transcript_id	primer_id	left_primer	right_primer	transcriptome_off_targets	genome_off_targets	browser
+BBC3+1	NO_PRIMERS	FSM_45580						https://genome.ucsc.edu/cgi-bin/hgTracks?position=chr19:47220823-47231194&db=hg38&genome=hg38&hubUrl=http://test.org/JuJu/hub.txt

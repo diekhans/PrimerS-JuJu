@@ -26,3 +26,4 @@ lint:
 
 clean:
 	rm -rf output
+	cd progtests && ${MAKE} clean

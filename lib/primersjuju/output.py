@@ -1,6 +1,7 @@
 # common output functions
 
 import os.path as osp
+# import urllib.parse
 from pycbio.sys import fileOps
 from pycbio.sys.svgcolors import SvgColors
 from pycbio.hgdata.bed import Bed
@@ -139,9 +140,21 @@ def output_target_design_file(outdir, target_transcripts):
 
 _design_tsv_header = ("target_id", "design_status", "transcript_id",
                       "primer_id", "left_primer", "right_primer",
-                      "transcriptome_off_targets", "genome_off_targets")
+                      "transcriptome_off_targets", "genome_off_targets", "browser")
 
-def _write_primer_pair_design(fh, primer_designs, primer_design):
+def _make_browser_link(primer_designs, hub_urls):
+    browser_url = "https://genome.ucsc.edu/cgi-bin/hgTracks"
+
+    cgi_args = ["position=" + str(primer_designs.target_transcript.trans_coords),
+                "db=" + primer_designs.target_transcripts.genome_name,
+                "genome=" + primer_designs.target_transcripts.genome_name]
+    for hub_url in hub_urls:
+        cgi_args.append("hubUrl=" + hub_url)
+    # FIXME: browser can't handle decoding
+    # return browser_url + "?" + "&".join([urllib.parse.quote(a) for a in cgi_args])
+    return browser_url + "?" + "&".join(cgi_args)
+
+def _write_primer_pair_design(fh, primer_designs, primer_design, hub_urls):
     "write one design, if primer_design is None, it means there were no primers found"
     row = [primer_designs.target_transcripts.target_id,
            primer_designs.status, primer_designs.target_transcripts.transcripts[0].trans_id]
@@ -153,22 +166,27 @@ def _write_primer_pair_design(fh, primer_designs, primer_design):
                 primer_design.primer3_pair.PRIMER_RIGHT_SEQUENCE,
                 primer_design.transcriptome_off_target_cnt(),
                 primer_design.genome_off_target_cnt()]
+    row.append(_make_browser_link(primer_designs, hub_urls) if hub_urls is not None else "")
     fileOps.prRow(fh, row)
 
-def _write_primer_designs(primer_designs, tsv_file):
+def _write_primer_designs(primer_designs, tsv_file, hub_urls):
     with open(tsv_file, "w") as fh:
         fileOps.prRow(fh, _design_tsv_header)
         if len(primer_designs.designs) == 0:
-            _write_primer_pair_design(fh, primer_designs, None)
+            _write_primer_pair_design(fh, primer_designs, None, hub_urls)
         else:
             for primer_design in primer_designs.designs:
-                _write_primer_pair_design(fh, primer_designs, primer_design)
+                _write_primer_pair_design(fh, primer_designs, primer_design, hub_urls)
 
-def output_target_designs(outdir, target_transcripts, primer_designs):
-    """output primer TSV, BEDs, and debug information for one target.  The $target_id..design.tsv file
-    is created atomically, so it can be used as a marker that this design is complete"""
+def output_target_designs(outdir, target_transcripts, primer_designs, hub_urls=None):
+    """output primer TSV, BEDs, and debug information for one target.  The
+    $target_id.design.tsv file is created atomically, so it can be used as a
+    marker that this design is complete.  If hub_urls is specified, the
+    design.tsv file will contain links to the target region in the UCSC
+    browser.
+    """
+
     target_transcript = target_transcripts.transcripts[0]
-
     fileOps.ensureDir(outdir)
 
     # debugging
@@ -191,4 +209,4 @@ def output_target_designs(outdir, target_transcripts, primer_designs):
                 _get_out_path(outdir, target_transcripts, "uniqueness.bed"))
 
     with fileOps.AtomicFileCreate(_get_out_path(outdir, target_transcripts, "designs.tsv")) as tmp_tsv:
-        _write_primer_designs(primer_designs, tmp_tsv)
+        _write_primer_designs(primer_designs, tmp_tsv, hub_urls)

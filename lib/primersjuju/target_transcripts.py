@@ -25,6 +25,10 @@ class TargetTranscript:
         return self.bed.name
 
     @property
+    def trans_coords(self):
+        return self.features.bounds.genome
+
+    @property
     def strand(self):
         return self.bed.strand
 
@@ -60,6 +64,7 @@ class TargetTranscripts:
     transcript for primer experiment.
     """
     target_id: str
+    genome_name: str
     region_5p: Coords
     region_3p: Coords
     transcripts: [TargetTranscript]
@@ -204,7 +209,7 @@ def _do_target_transcripts_build(genome_data, primer_target_spec):
     _validate_strand(target_transcripts)
     region_5p, region_3p = _adjust_transcripts_features(target_transcripts)
 
-    return TargetTranscripts(primer_target_spec.target_id, region_5p, region_3p,
+    return TargetTranscripts(primer_target_spec.target_id, genome_data.genome_name, region_5p, region_3p,
                              target_transcripts)
 
 def target_transcripts_build(genome_data, primer_target_spec):

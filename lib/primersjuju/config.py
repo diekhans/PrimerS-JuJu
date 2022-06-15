@@ -27,7 +27,7 @@ class GenomeConfig:
         if ((self.__uniqueness_query is None) and
             ((self.genome_ispcr_spec is not None) or (self.transcriptome_ispcr_spec is not None))):
             self.__uniqueness_query = UniquenessQuery(self.genome_data,
-                                                       self.genome_ispcr_spec, self.transcriptome_ispcr_spec)
+                                                      self.genome_ispcr_spec, self.transcriptome_ispcr_spec)
         return self.__uniqueness_query
 
 class PrimersJuJuConfig:
