@@ -55,7 +55,7 @@ vulture:
 test:
 	cd tests && ${MAKE} test
 
-real_clean: clean
+real-clean: clean
 	rm -rf dev-venv/
 
 clean: test_clean
