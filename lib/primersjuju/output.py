@@ -146,7 +146,7 @@ _design_tsv_header = ("target_id", "design_status", "transcript_id",
                       "primer_id", "left_primer", "right_primer",
                       "transcriptome_on_targets", "transcriptome_off_targets",
                       "genome_on_targets", "genome_off_targets", "position",
-                      "browser")
+                      "browser", "annotated_rna")
 
 def _get_position(primer_designs):
     return str(primer_designs.target_transcript.trans_coords)
@@ -167,7 +167,7 @@ def _make_browser_excel_link(primer_designs, hub_urls):
     url = _make_browser_link(primer_designs, hub_urls)
     return f'=HYPERLINK("{url}", "{_get_position(primer_designs)}")'
 
-def _write_primer_pair_design(fh, primer_designs, primer_design, hub_urls):
+def _write_primer_pair_design(fh, primer_designs, primer_design, first, hub_urls):
     "write one design, if primer_design is None, it means there were no primers found"
     row = [primer_designs.target_transcripts.target_id,
            primer_designs.status, primer_designs.target_transcripts.transcripts[0].trans_id]
@@ -181,18 +181,24 @@ def _write_primer_pair_design(fh, primer_designs, primer_design, hub_urls):
                 primer_design.transcriptome_off_target_cnt(),
                 primer_design.genome_on_target_cnt(),
                 primer_design.genome_off_target_cnt()]
-    row.append(_get_position(primer_designs))
-    row.append(_make_browser_excel_link(primer_designs, hub_urls) if hub_urls is not None else "")
+    if first:
+        row.append(_get_position(primer_designs))
+        row.append(_make_browser_excel_link(primer_designs, hub_urls) if hub_urls is not None else "")
+        row.append(primer3_annotate_rna(primer_designs.target_transcripts.transcripts[0]))
+    else:
+        row += 3 * ['']
     fileOps.prRow(fh, row)
 
 def _write_primer_designs(primer_designs, tsv_file, hub_urls):
     with open(tsv_file, "w") as fh:
         fileOps.prRow(fh, _design_tsv_header)
+        first = True
         if len(primer_designs.designs) == 0:
-            _write_primer_pair_design(fh, primer_designs, None, hub_urls)
+            _write_primer_pair_design(fh, primer_designs, None, first, hub_urls)
         else:
             for primer_design in primer_designs.designs:
-                _write_primer_pair_design(fh, primer_designs, primer_design, hub_urls)
+                _write_primer_pair_design(fh, primer_designs, primer_design, first, hub_urls)
+                first = False
 
 def output_target_designs(outdir, target_transcripts, primer_designs, hub_urls=None):
     """output primer TSV, BEDs, and debug information for one target.  The
