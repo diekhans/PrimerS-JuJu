@@ -146,50 +146,90 @@ Primer3Pair 4:
     ppair_id SNAI1+1+pp1
     features_5p SNAI1+1+pp1
     features_3p SNAI1+1+pp1
-    genome_on_targets [GenomeHit(left_coords=Coords(name='chr20', start=49983006, end=49983026, strand='+', size=64444167), right_coords=Coords(name='chr20', start=49988321, end=49988341, strand='+', size=64444167))]
-    genome_off_targets []
-    genome_non_targets []
-    transcriptome_on_targets [TranscriptomeHit(trans_id='ENST00000244050.3', gene_name='SNAI1', left_features=[ExonFeature(genome=Coords(name='chr20', start=49983006, end=49983026, strand='+', size=64444167), trans=Coords(name='ENST00000244050.3', start=27, end=47, strand='+', size=1705))], right_features=[ExonFeature(genome=Coords(name='chr20', start=49988321, end=49988341, strand='+', size=64444167), trans=Coords(name='ENST00000244050.3', start=1140, end=1160, strand='+', size=1705))])]
-    transcriptome_off_targets []
-    transcriptome_non_targets []
+    genome_on_targets [GenomeHit(left=chr20:49983006-49983026,right=chr20:49988321-49988341)
+    ]
+    genome_off_targets [
+    ]
+    genome_non_targets [
+    ]
+    transcriptome_on_targets [TranscriptomeHit(left=[ExonFeature(genome=chr20:49983006-49983026, trans=ENST00000244050.3:27-47)
+    ],right=[ExonFeature(genome=chr20:49988321-49988341, trans=ENST00000244050.3:1140-1160)
+    ])
+    ]
+    transcriptome_off_targets [
+    ]
+    transcriptome_non_targets [
+    ]
 >>> PrimerDesign <<<
     ppair_id SNAI1+1+pp2
     features_5p SNAI1+1+pp2
     features_3p SNAI1+1+pp2
-    genome_on_targets [GenomeHit(left_coords=Coords(name='chr20', start=49983006, end=49983026, strand='+', size=64444167), right_coords=Coords(name='chr20', start=49988261, end=49988281, strand='+', size=64444167))]
-    genome_off_targets []
-    genome_non_targets []
-    transcriptome_on_targets [TranscriptomeHit(trans_id='ENST00000244050.3', gene_name='SNAI1', left_features=[ExonFeature(genome=Coords(name='chr20', start=49983006, end=49983026, strand='+', size=64444167), trans=Coords(name='ENST00000244050.3', start=27, end=47, strand='+', size=1705))], right_features=[ExonFeature(genome=Coords(name='chr20', start=49988261, end=49988281, strand='+', size=64444167), trans=Coords(name='ENST00000244050.3', start=1080, end=1100, strand='+', size=1705))])]
-    transcriptome_off_targets []
-    transcriptome_non_targets []
+    genome_on_targets [GenomeHit(left=chr20:49983006-49983026,right=chr20:49988261-49988281)
+    ]
+    genome_off_targets [
+    ]
+    genome_non_targets [
+    ]
+    transcriptome_on_targets [TranscriptomeHit(left=[ExonFeature(genome=chr20:49983006-49983026, trans=ENST00000244050.3:27-47)
+    ],right=[ExonFeature(genome=chr20:49988261-49988281, trans=ENST00000244050.3:1080-1100)
+    ])
+    ]
+    transcriptome_off_targets [
+    ]
+    transcriptome_non_targets [
+    ]
 >>> PrimerDesign <<<
     ppair_id SNAI1+1+pp3
     features_5p SNAI1+1+pp3
     features_3p SNAI1+1+pp3
-    genome_on_targets [GenomeHit(left_coords=Coords(name='chr20', start=49983006, end=49983026, strand='+', size=64444167), right_coords=Coords(name='chr20', start=49988188, end=49988208, strand='+', size=64444167))]
-    genome_off_targets []
-    genome_non_targets []
-    transcriptome_on_targets [TranscriptomeHit(trans_id='ENST00000244050.3', gene_name='SNAI1', left_features=[ExonFeature(genome=Coords(name='chr20', start=49983006, end=49983026, strand='+', size=64444167), trans=Coords(name='ENST00000244050.3', start=27, end=47, strand='+', size=1705))], right_features=[ExonFeature(genome=Coords(name='chr20', start=49988188, end=49988208, strand='+', size=64444167), trans=Coords(name='ENST00000244050.3', start=1007, end=1027, strand='+', size=1705))])]
-    transcriptome_off_targets []
-    transcriptome_non_targets []
+    genome_on_targets [GenomeHit(left=chr20:49983006-49983026,right=chr20:49988188-49988208)
+    ]
+    genome_off_targets [
+    ]
+    genome_non_targets [
+    ]
+    transcriptome_on_targets [TranscriptomeHit(left=[ExonFeature(genome=chr20:49983006-49983026, trans=ENST00000244050.3:27-47)
+    ],right=[ExonFeature(genome=chr20:49988188-49988208, trans=ENST00000244050.3:1007-1027)
+    ])
+    ]
+    transcriptome_off_targets [
+    ]
+    transcriptome_non_targets [
+    ]
 >>> PrimerDesign <<<
     ppair_id SNAI1+1+pp4
     features_5p SNAI1+1+pp4
     features_3p SNAI1+1+pp4
-    genome_on_targets [GenomeHit(left_coords=Coords(name='chr20', start=49983006, end=49983026, strand='+', size=64444167), right_coords=Coords(name='chr20', start=49988571, end=49988591, strand='+', size=64444167))]
-    genome_off_targets []
-    genome_non_targets []
-    transcriptome_on_targets [TranscriptomeHit(trans_id='ENST00000244050.3', gene_name='SNAI1', left_features=[ExonFeature(genome=Coords(name='chr20', start=49983006, end=49983026, strand='+', size=64444167), trans=Coords(name='ENST00000244050.3', start=27, end=47, strand='+', size=1705))], right_features=[ExonFeature(genome=Coords(name='chr20', start=49988571, end=49988591, strand='+', size=64444167), trans=Coords(name='ENST00000244050.3', start=1390, end=1410, strand='+', size=1705))])]
-    transcriptome_off_targets []
-    transcriptome_non_targets []
+    genome_on_targets [GenomeHit(left=chr20:49983006-49983026,right=chr20:49988571-49988591)
+    ]
+    genome_off_targets [
+    ]
+    genome_non_targets [
+    ]
+    transcriptome_on_targets [TranscriptomeHit(left=[ExonFeature(genome=chr20:49983006-49983026, trans=ENST00000244050.3:27-47)
+    ],right=[ExonFeature(genome=chr20:49988571-49988591, trans=ENST00000244050.3:1390-1410)
+    ])
+    ]
+    transcriptome_off_targets [
+    ]
+    transcriptome_non_targets [
+    ]
 >>> PrimerDesign <<<
     ppair_id SNAI1+1+pp5
     features_5p SNAI1+1+pp5
     features_3p SNAI1+1+pp5
-    genome_on_targets [GenomeHit(left_coords=Coords(name='chr20', start=49983006, end=49983026, strand='+', size=64444167), right_coords=Coords(name='chr20', start=49988150, end=49988170, strand='+', size=64444167))]
-    genome_off_targets []
-    genome_non_targets []
-    transcriptome_on_targets [TranscriptomeHit(trans_id='ENST00000244050.3', gene_name='SNAI1', left_features=[ExonFeature(genome=Coords(name='chr20', start=49983006, end=49983026, strand='+', size=64444167), trans=Coords(name='ENST00000244050.3', start=27, end=47, strand='+', size=1705))], right_features=[ExonFeature(genome=Coords(name='chr20', start=49988150, end=49988170, strand='+', size=64444167), trans=Coords(name='ENST00000244050.3', start=969, end=989, strand='+', size=1705))])]
-    transcriptome_off_targets []
-    transcriptome_non_targets []
+    genome_on_targets [GenomeHit(left=chr20:49983006-49983026,right=chr20:49988150-49988170)
+    ]
+    genome_off_targets [
+    ]
+    genome_non_targets [
+    ]
+    transcriptome_on_targets [TranscriptomeHit(left=[ExonFeature(genome=chr20:49983006-49983026, trans=ENST00000244050.3:27-47)
+    ],right=[ExonFeature(genome=chr20:49988150-49988170, trans=ENST00000244050.3:969-989)
+    ])
+    ]
+    transcriptome_off_targets [
+    ]
+    transcriptome_non_targets [
+    ]
 

@@ -9,6 +9,9 @@ from . import PrimersJuJuError
 class Feature(namedtuple("Feature", ("genome", "trans"))):
     """annotation feature, both genome and transcript coordinates (for Exons)"""
 
+    def __str__(self):
+        return f"{self.__class__.__name__}(genome={str(self.genome)}, trans={str(self.trans)})"
+
     def intersect_genome(self, other):
         "intersect with genomic coordinates, None if no intersection"
         if not isinstance(other, Coords):
@@ -95,6 +98,9 @@ class Features(list):
         for f in self:
             if isinstance(f, ftype):
                 yield f
+
+    def genome_coords_type(self, ftype):
+        return [f.genome for f in self.iter_type(ftype)]
 
     @property
     def bounds(self):

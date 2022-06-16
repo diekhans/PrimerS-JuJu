@@ -13,7 +13,7 @@ from primersjuju import PrimersJuJuDataError
 from primersjuju.config import GenomeConfig
 from primersjuju.primer_targets import primer_targets_build
 from primersjuju.design_primers import design_primers
-from primersjuju.output import output_target_designs
+from primersjuju.output import output_target_designs, output_target_design_file
 from primersjuju.primer_target_spec import primer_target_specs_read
 
 
@@ -44,12 +44,14 @@ def parse_args():
 
     # design
     sp_design = subparsers.add_parser("design",
-                                      help="run primer design")
+                                      help="run primer design, target_ids with existing output will be skipped unless --force is specified")
     _add_primer_targets(sp_design)
     sp_design.add_argument("-t", "--target", action="append", dest="target_ids",
                            help="only design the specified target ids; maybe repeated")
     sp_design.add_argument("--huburl", action="append", dest="hub_urls",
                            help="hub URL to include when linking to UCSC browser; maybe repeated")
+    sp_design.add_argument("--force", action="store_true",
+                           help="force creation of design")
     sp_design.add_argument("outdir",
                            help="output directory, which is created if it doesn't exist")
 
@@ -97,15 +99,24 @@ def check_subcommand(args):
     _load_config(args.config_py, args.genome)
     primer_target_specs_read(args.primer_targets_tsv)
 
-def _design_target(config, primer_target_spec, hub_urls, outdir):
+def _do_design_target(config, primer_targets, hub_urls, outdir):
     "design and output one target"
-    primer_targets = primer_targets_build(config.genome_data, primer_target_spec)
     primer_designs = design_primers(config.genome_data, primer_targets, uniqueness_query=config.uniqueness_query)
     output_target_designs(outdir, primer_targets, primer_designs, hub_urls)
 
-def _design_targets(config, primer_target_specs, target_ids, hub_urls, outdir):
+def _design_target(config, primer_target_spec, force, hub_urls, outdir):
+    "design and output one target"
+    primer_targets = primer_targets_build(config.genome_data, primer_target_spec)
+    # target_design_file is created atomically
+    if force or (not osp.exists(output_target_design_file(outdir, primer_targets))):
+        print(f">>> Designing {primer_targets.target_id}")
+        _do_design_target(config, primer_targets, hub_urls, outdir)
+    else:
+        print(f">>> Skipping {primer_targets.target_id}, design exists")
+
+def _design_targets(config, primer_target_specs, target_ids, force, hub_urls, outdir):
     for target_id in target_ids:
-        _design_target(config, primer_target_specs.targets[target_id], hub_urls, osp.join(outdir, target_id))
+        _design_target(config, primer_target_specs.targets[target_id], force, hub_urls, osp.join(outdir, target_id))
 
 def _get_target_ids(primer_target_specs, target_id_subset):
     "generate list of target ids, possible filtered by a specified subset"
@@ -123,7 +134,8 @@ def design_subcommand(args):
     config = _load_config(args.config_py, args.genome)
     primer_target_specs = primer_target_specs_read(args.primer_targets_tsv)
     _design_targets(config, primer_target_specs,
-                    _get_target_ids(primer_target_specs, args.target_ids), args.hub_urls, args.outdir)
+                    _get_target_ids(primer_target_specs, args.target_ids),
+                    args.force, args.hub_urls, args.outdir)
 
 def primersJuJu(args):
     try:

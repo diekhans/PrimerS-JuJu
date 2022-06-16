@@ -12,11 +12,14 @@ define diff_results =
 for f in $$(cd output && find $@ -type f) ; do diff -u expected/$$f output/$$f ; done
 endef
 
+test: prog-tests
+test-fast: prog-tests-fast
+
 prog-tests: prog-tests-fast prog-tests-slow
 
-prog-tests-fast: test-check-good
+prog-tests-fast: test-check-good test-design-subset
 
-prog-tests-slow: test-design-good3 test-design-subset
+prog-tests-slow: test-design-good3
 
 test-check-good:
 	${primers_juju} ${DEBUG} --conf=input/config1.py check ../input/LRGASP_WTC11_Target_set1.tsv
@@ -33,6 +36,12 @@ test-design-subset: mkdirs
 	${primers_juju} ${DEBUG} --conf=input/config1.py design --target=BBC3+1 ${hg38_hub_url_args} input/LRGASP_WTC11_Target_subset3.tsv output/$@
 	${diff_results}
 
+test-design-skip-existing: mkdirs
+	rm -rf output/$@
+	${primers_juju} ${DEBUG} --conf=input/config1.py design --target=BBC3+1 ${hg38_hub_url_args} input/LRGASP_WTC11_Target_subset3.tsv output/$@ >& output/$@.design.out
+	${primers_juju} ${DEBUG} --conf=input/config1.py design --target=BBC3+1 ${hg38_hub_url_args} input/LRGASP_WTC11_Target_subset3.tsv output/$@ >& output/$@.skip.out
+	diff expected/$@.design.out output/$@.design.out
+	diff expected/$@.skip.out output/$@.skip.out
 
 mkdirs:
 	@mkdir -p output

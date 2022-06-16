@@ -103,7 +103,7 @@ def test_target_build_exonic(genome_data, example_wtc11_targets_specs_set1):
     region_5p = Coords("chr20", 49983001, 49983051, strand='+', size=64444167)
     region_3p = Coords("chr20", 49987886, 49988699, strand='+', size=64444167)
     primer_targets = _target_build(genome_data, example_wtc11_targets_specs_set1, "SNAI1+1", 1,
-                                       region_5p, region_3p)
+                                   region_5p, region_3p)
     # coords were not swapped
     _check_primer_targets(primer_targets, region_5p, region_3p)
 
@@ -117,7 +117,7 @@ def test_target_build_junc(genome_data, example_wtc11_targets_specs_set1):
     region_5p = Coords("chr4", 2043862, 2043922, strand='+', size=190214555)
     region_3p = Coords("chr4", 2042041, 2042366, strand='+', size=190214555)
     primer_targets = _target_build(genome_data, example_wtc11_targets_specs_set1, "C4orf48+1", 1,
-                                       region_5p, region_3p)
+                                   region_5p, region_3p)
 
     # coords were swapped
     _check_primer_targets(primer_targets, region_3p, region_5p)
@@ -136,7 +136,7 @@ def test_target_build_junc2(genome_data, example_wtc11_targets_specs_set1):
     region_3p = Coords('chr19', 47228327, 47231039, strand='+', size=58617616)
 
     primer_targets = _target_build(genome_data, example_wtc11_targets_specs_set1, "BBC3+1", 1,
-                                       region_5p, region_3p)
+                                   region_5p, region_3p)
     # coords were swapped
     _check_primer_targets(primer_targets, region_3p, region_5p)
     _check_target_transcript(primer_targets, "WTC11_consolidated", "FSM_45580", 1841,

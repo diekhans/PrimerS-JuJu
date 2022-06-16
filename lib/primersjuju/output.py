@@ -1,7 +1,7 @@
 # common output functions
 
 import os.path as osp
-# import urllib.parse
+import urllib.parse
 from pycbio.sys import fileOps
 from pycbio.sys.svgcolors import SvgColors
 from pycbio.hgdata.bed import Bed
@@ -9,13 +9,25 @@ from primersjuju.transcript_features import features_to_genomic_coords
 from primersjuju.primer_targets import ExonFeature
 from primersjuju.primer3_interface import primer3_dump_args, primer3_annotate_rna
 
-TARGETS_COLOR = SvgColors.blue
-PRIMERS_ON_COLOR = SvgColors.darkmagenta
+# Document these in README
+
+# target track
+TARGET_SPEC_COLOR = SvgColors.blue
+TARGET_FEAT_COLOR = SvgColors.green
+
+# primer tracks
+PRIMERS_ON_COLOR = SvgColors.green
+PRIMERS_ON_OFF_COLOR = SvgColors.orange
+PRIMERS_OFF_COLOR = SvgColors.red
+
+#TMP
 PRIMERS_OFF_GENOME_COLOR = SvgColors.orange
 PRIMERS_OFF_TRANSCRIPTOME_COLOR = SvgColors.red
-UNIQ_ON_COLOR = SvgColors.blue
+
+# uniquness track
+UNIQ_ON_COLOR = SvgColors.green
 UNIQ_OFF_COLOR = SvgColors.red
-UNIQ_NON_COLOR = SvgColors.yellow
+UNIQ_NON_COLOR = SvgColors.orange
 
 
 def _coords_to_bed(name, color, coords_list, extra_cols=None):
@@ -31,9 +43,16 @@ def _coords_to_bed(name, color, coords_list, extra_cols=None):
         bed.addBlock(coords.start, coords.end)
     return bed
 
-def build_target_bed(primer_targets):
-    coords_list = [primer_targets.region_5p, primer_targets.region_3p]
-    return _coords_to_bed(primer_targets.target_id, TARGETS_COLOR, coords_list)
+def build_target_beds(primer_targets):
+    # specified target regions
+    target_beds = [_coords_to_bed(primer_targets.target_id, TARGET_SPEC_COLOR,
+                                  [primer_targets.region_5p, primer_targets.region_3p])]
+
+    # features in transcripts
+    trans0 = primer_targets.transcripts[0]
+    feat_beds = [_coords_to_bed(trans0.trans_id, TARGET_FEAT_COLOR,
+                                trans0.features_5p.genome_coords_type(ExonFeature) + trans0.features_3p.genome_coords_type(ExonFeature))]
+    return target_beds + feat_beds
 
 _primer_bed_columns = (
     'PRIMER_PAIR_PRODUCT_SIZE',    # 1133
@@ -140,7 +159,7 @@ def output_target_design_file(outdir, primer_targets):
     """get path to target design TSV file for an experiment.  The existence of this file indicates design
     for this target was complete.
     """
-    return _get_out_path(outdir, primer_targets, ".design.tsv")
+    return _get_out_path(outdir, primer_targets, "designs.tsv")
 
 _design_tsv_header = ("target_id", "design_status", "transcript_id",
                       "primer_id", "left_primer", "right_primer",
@@ -154,13 +173,12 @@ def _get_position(primer_designs):
 def _make_browser_link(primer_designs, hub_urls):
     browser_url = "https://genome.ucsc.edu/cgi-bin/hgTracks"
 
-    cgi_args = ["position=" + _get_position(primer_designs),
-                "db=" + primer_designs.primer_targets.genome_name,
-                "genome=" + primer_designs.primer_targets.genome_name]
+    # browser doesn't allow entire string to be quotes, only arguments
+    cgi_args = ["position=" + urllib.parse.quote(_get_position(primer_designs)),
+                "db=" + urllib.parse.quote(primer_designs.primer_targets.genome_name),
+                "genome=" + urllib.parse.quote(primer_designs.primer_targets.genome_name)]
     for hub_url in hub_urls:
-        cgi_args.append("hubUrl=" + hub_url)
-    # FIXME: browser can't handle decoding
-    # return browser_url + "?" + "&".join([urllib.parse.quote(a) for a in cgi_args])
+        cgi_args.append("hubUrl=" + urllib.parse.quote(hub_url))
     return browser_url + "?" + "&".join(cgi_args)
 
 def _make_browser_excel_link(primer_designs, hub_urls):
@@ -223,7 +241,7 @@ def output_target_designs(outdir, primer_targets, primer_designs, hub_urls=None)
         print(file=fh)
 
     # BEDs
-    _write_beds([build_target_bed(primer_targets)],
+    _write_beds(build_target_beds(primer_targets),
                 _get_out_path(outdir, primer_targets, "target.bed"))
     _write_beds(build_primer_beds(primer_designs),
                 _get_out_path(outdir, primer_targets, "primers.bed"))

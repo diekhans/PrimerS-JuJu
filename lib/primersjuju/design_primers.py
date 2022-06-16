@@ -53,16 +53,18 @@ class PrimerDesign:
         return len(self.transcriptome_non_targets)
 
     def dump(self, fh):
+        def _lfmt(l):
+            return '[' + ",\n\t".join([str(v) for v in l]) + '\n    ]'
         print(">>> PrimerDesign <<<", file=fh)
         print("    ppair_id", self.ppair_id, file=fh)
         print("    features_5p", self.ppair_id, file=fh)
         print("    features_3p", self.ppair_id, file=fh)
-        print("    genome_on_targets", self.genome_on_targets, file=fh)
-        print("    genome_off_targets", self.genome_off_targets, file=fh)
-        print("    genome_non_targets", self.genome_non_targets, file=fh)
-        print("    transcriptome_on_targets", self.transcriptome_on_targets, file=fh)
-        print("    transcriptome_off_targets", self.transcriptome_off_targets, file=fh)
-        print("    transcriptome_non_targets", self.transcriptome_non_targets, file=fh)
+        print("    genome_on_targets", _lfmt(self.genome_on_targets), file=fh)
+        print("    genome_off_targets", _lfmt(self.genome_off_targets), file=fh)
+        print("    genome_non_targets", _lfmt(self.genome_non_targets), file=fh)
+        print("    transcriptome_on_targets", _lfmt(self.transcriptome_on_targets), file=fh)
+        print("    transcriptome_off_targets", _lfmt(self.transcriptome_off_targets), file=fh)
+        print("    transcriptome_non_targets", _lfmt(self.transcriptome_non_targets), file=fh)
 
 
 @dataclass

@@ -6,7 +6,7 @@ include ${ROOT}/defs.mk
 
 test: lib-tests prog-tests
 
-fast-test: lib-tests-fast prog-tests-fast
+test-fast: lib-tests-fast prog-tests-fast
 
 lib-tests:
 	${PYTEST} ${tests}

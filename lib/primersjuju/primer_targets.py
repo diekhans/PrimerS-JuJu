@@ -46,6 +46,7 @@ class TargetTranscript:
     def dump(self, dump_fh):
         pp = pprint.PrettyPrinter(stream=dump_fh, sort_dicts=False, indent=4)
         print("transcript:", self.track_name, self.trans_id, file=dump_fh)
+        print("coords:", self.trans_coords())
         print("region_5p:", self.region_5p, file=dump_fh)
         print("region_3p:", self.region_3p, file=dump_fh)
         print("features_5p:", file=dump_fh)
@@ -64,7 +65,7 @@ class PrimerTargets:
     """
     target_id: str
     genome_name: str
-    region_5p: Coords
+    region_5p: Coords  # originally specified
     region_3p: Coords
     transcripts: [TargetTranscript]
 

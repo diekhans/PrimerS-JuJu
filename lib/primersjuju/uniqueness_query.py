@@ -30,6 +30,9 @@ class GenomeHit:
     left_coords: Coords
     right_coords: Coords
 
+    def __str__(self):
+        return f"{self.__class__.__name__}(left={str(self.left_coords)},right={str(self.right_coords)})"
+
 @dataclass
 class TranscriptomeHit:
     "one isPcr hit to a transcript, with mappings back to genome, in positive genomic coords"
@@ -37,6 +40,11 @@ class TranscriptomeHit:
     gene_name: str
     left_features: Features
     right_features: Features
+
+    def __str__(self):
+        def _lfmt(l):
+            return '[' + ",\n\t".join([str(v) for v in l]) + '\n    ]'
+        return f"{self.__class__.__name__}(left={_lfmt(self.left_features)},right={_lfmt(self.right_features)})"
 
 class UniquenessQuery:
     """Interface to UCSC isPCR server to query for uniqueness."""
