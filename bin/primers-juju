@@ -11,7 +11,7 @@ sys.path.insert(0, osp.normpath(osp.join(osp.normpath(osp.join(osp.dirname(__fil
 
 from primersjuju import PrimersJuJuDataError
 from primersjuju.config import GenomeConfig
-from primersjuju.target_transcripts import target_transcripts_build
+from primersjuju.primer_targets import primer_targets_build
 from primersjuju.design_primers import design_primers
 from primersjuju.output import output_target_designs
 from primersjuju.primer_target_spec import primer_target_specs_read
@@ -99,9 +99,9 @@ def check_subcommand(args):
 
 def _design_target(config, primer_target_spec, hub_urls, outdir):
     "design and output one target"
-    target_transcripts = target_transcripts_build(config.genome_data, primer_target_spec)
-    primer_designs = design_primers(config.genome_data, target_transcripts, uniqueness_query=config.uniqueness_query)
-    output_target_designs(outdir, target_transcripts, primer_designs, hub_urls)
+    primer_targets = primer_targets_build(config.genome_data, primer_target_spec)
+    primer_designs = design_primers(config.genome_data, primer_targets, uniqueness_query=config.uniqueness_query)
+    output_target_designs(outdir, primer_targets, primer_designs, hub_urls)
 
 def _design_targets(config, primer_target_specs, target_ids, hub_urls, outdir):
     for target_id in target_ids:

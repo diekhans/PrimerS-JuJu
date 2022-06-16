@@ -7,7 +7,7 @@ from pycbio.sys.symEnum import SymEnum
 from pycbio.hgdata.coords import Coords
 from . import PrimersJuJuError
 from .primer3_interface import Primer3Results, Primer3Pair, primer3_design
-from .target_transcripts import TargetTranscripts, TargetTranscript
+from .primer_targets import PrimerTargets, TargetTranscript
 from .transcript_features import Features, transcript_range_to_features
 from .uniqueness_query import GenomeHit, TranscriptomeHit
 
@@ -69,7 +69,7 @@ class PrimerDesign:
 class PrimerDesigns:
     """information collected on all primers for a target"""
     target_id: str
-    target_transcripts: TargetTranscripts
+    primer_targets: PrimerTargets
     target_transcript: TargetTranscript
     primer3_results: Primer3Results
     designs: Sequence[PrimerDesign]
@@ -202,16 +202,16 @@ def get_design_status(primer_design_list) -> DesignStatus:
         design_status = min(design_status, _calc_design_status(primer_design))
     return design_status
 
-def _build_primer_designs(target_transcripts, target_transcript, primer3_results, uniqueness_query):
-    primer_design_list = [_build_primer_design(target_transcript, target_transcripts.target_id, i + 1, pair, uniqueness_query)
+def _build_primer_designs(primer_targets, target_transcript, primer3_results, uniqueness_query):
+    primer_design_list = [_build_primer_design(target_transcript, primer_targets.target_id, i + 1, pair, uniqueness_query)
                           for i, pair in enumerate(primer3_results.pairs)]
-    return PrimerDesigns(target_transcripts.target_id,
-                         target_transcripts, target_transcript, primer3_results,
+    return PrimerDesigns(primer_targets.target_id,
+                         primer_targets, target_transcript, primer3_results,
                          primer_design_list, get_design_status(primer_design_list))
 
-def design_primers(genome_data, target_transcripts, *, uniqueness_query=None):
+def design_primers(genome_data, primer_targets, *, uniqueness_query=None):
     """design transcripts """
-    target_transcript = target_transcripts.transcripts[0]
+    target_transcript = primer_targets.transcripts[0]
     primer3_results = primer3_design(target_transcript)
 
-    return _build_primer_designs(target_transcripts, target_transcript, primer3_results, uniqueness_query)
+    return _build_primer_designs(primer_targets, target_transcript, primer3_results, uniqueness_query)

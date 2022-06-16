@@ -58,10 +58,9 @@ class TargetTranscript:
 
 
 @dataclass
-class TargetTranscripts:
-    """Target tracksuit for primer regions with, with features in regions for
-    each transcript.  Used when validating consistency of transcripts.  Target
-    transcript for primer experiment.
+class PrimerTargets:
+    """Primer target region, with transcript, features in regions for each
+    transcript.
     """
     target_id: str
     genome_name: str
@@ -146,23 +145,23 @@ def _build_target_transcript(genome_data, primer_target_spec, trans_spec):
                             _build_region_transcript_features(trans_spec.trans_track, trans_spec.trans_id, features, region_3p),
                             features, rna)
 
-def _target_transcripts_build(genome_data, primer_target_spec):
-    target_transcripts = []
+def _primer_targets_build(genome_data, primer_target_spec):
+    primer_targets = []
     for track in primer_target_spec.tracks.values():
         for trans_spec in track.values():
-            target_transcripts.append(_build_target_transcript(genome_data, primer_target_spec, trans_spec))
-    return target_transcripts
+            primer_targets.append(_build_target_transcript(genome_data, primer_target_spec, trans_spec))
+    return primer_targets
 
-def _validate_strand(target_transcripts):
+def _validate_strand(primer_targets):
     # must do before other checks, as primer region swap could confuse error messages
-    ttrans0 = target_transcripts[0]
-    for ttrans in target_transcripts[1:]:
+    ttrans0 = primer_targets[0]
+    for ttrans in primer_targets[1:]:
         if ttrans.region_5p.strand != ttrans0.strand:
             raise PrimersJuJuDataError(f"transcript on different strands: {ttrans} vs {ttrans0}")
 
-def _find_transcripts_common_region(target_transcripts, feats_func):
-    region = feats_func(target_transcripts[0]).bounds.genome
-    for ttrans in target_transcripts[1:]:
+def _find_transcripts_common_region(primer_targets, feats_func):
+    region = feats_func(primer_targets[0]).bounds.genome
+    for ttrans in primer_targets[1:]:
         region = region.intersect(feats_func(ttrans).bounds.genome)
     return region
 
@@ -178,13 +177,13 @@ def _adjust_transcript_region_features(target_transcript, common_region, feats_f
     # this updates transcript features
     feats_func(target_transcript, adj_features)
 
-def _adjust_transcripts_region_features(target_transcripts, feats_func):
-    common_region = _find_transcripts_common_region(target_transcripts, feats_func)
-    for target_transcript in target_transcripts:
+def _adjust_transcripts_region_features(primer_targets, feats_func):
+    common_region = _find_transcripts_common_region(primer_targets, feats_func)
+    for target_transcript in primer_targets:
         _adjust_transcript_region_features(target_transcript, common_region, feats_func)
     return common_region
 
-def _adjust_transcripts_features(target_transcripts):
+def _adjust_transcripts_features(primer_targets):
     """Adjust region to be the same for all transcript, which maybe have been
     adjusted to exon bounds.  Validate that they are still ending in exons"""
 
@@ -199,24 +198,24 @@ def _adjust_transcripts_features(target_transcripts):
             t.features_3p = new_value
         return t.features_3p
 
-    region_5p = _adjust_transcripts_region_features(target_transcripts, features_5p_access)
-    region_3p = _adjust_transcripts_region_features(target_transcripts, features_3p_access)
+    region_5p = _adjust_transcripts_region_features(primer_targets, features_5p_access)
+    region_3p = _adjust_transcripts_region_features(primer_targets, features_3p_access)
     return region_5p, region_3p
 
-def _do_target_transcripts_build(genome_data, primer_target_spec):
-    target_transcripts = _target_transcripts_build(genome_data, primer_target_spec)
+def _do_primer_targets_build(genome_data, primer_target_spec):
+    primer_targets = _primer_targets_build(genome_data, primer_target_spec)
 
-    _validate_strand(target_transcripts)
-    region_5p, region_3p = _adjust_transcripts_features(target_transcripts)
+    _validate_strand(primer_targets)
+    region_5p, region_3p = _adjust_transcripts_features(primer_targets)
 
-    return TargetTranscripts(primer_target_spec.target_id, genome_data.genome_name, region_5p, region_3p,
-                             target_transcripts)
+    return PrimerTargets(primer_target_spec.target_id, genome_data.genome_name, region_5p, region_3p,
+                         primer_targets)
 
-def target_transcripts_build(genome_data, primer_target_spec):
-    """build TargetTranscripts object to a give primer and validity and consistency of
+def primer_targets_build(genome_data, primer_target_spec):
+    """build PrimerTargets object to a give primer and validity and consistency of
     the transcripts.
     """
     try:
-        return _do_target_transcripts_build(genome_data, primer_target_spec)
+        return _do_primer_targets_build(genome_data, primer_target_spec)
     except PrimersJuJuError as ex:
         raise PrimersJuJuError(f"target {primer_target_spec.target_id} failed") from ex
