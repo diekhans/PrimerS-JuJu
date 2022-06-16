@@ -46,10 +46,10 @@ def parse_args():
     sp_design = subparsers.add_parser("design",
                                       help="run primer design")
     _add_primer_targets(sp_design)
-    parser.add_argument("-t", "--target", action="append", dest="target_ids",
-                        help="only design the specified target ids; maybe repeated")
-    parser.add_argument("--huburl", action="append", dest="hub_urls",
-                        help="hub URL to include when linking to UCSC browser; maybe repeated")
+    sp_design.add_argument("-t", "--target", action="append", dest="target_ids",
+                           help="only design the specified target ids; maybe repeated")
+    sp_design.add_argument("--huburl", action="append", dest="hub_urls",
+                           help="hub URL to include when linking to UCSC browser; maybe repeated")
     sp_design.add_argument("outdir",
                            help="output directory, which is created if it doesn't exist")
 

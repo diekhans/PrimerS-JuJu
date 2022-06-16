@@ -34,11 +34,23 @@ class PrimerDesign:
     transcriptome_off_targets: Sequence[TranscriptomeHit]
     transcriptome_non_targets: Sequence[TranscriptomeHit]
 
+    def genome_on_target_cnt(self):
+        return len(self.genome_on_targets)
+
     def genome_off_target_cnt(self):
         return len(self.genome_off_targets)
 
+    def genome_non_target_cnt(self):
+        return len(self.genome_non_targets)
+
+    def transcriptome_on_target_cnt(self):
+        return len(self.transcriptome_on_targets)
+
     def transcriptome_off_target_cnt(self):
         return len(self.transcriptome_off_targets)
+
+    def transcriptome_non_target_cnt(self):
+        return len(self.transcriptome_non_targets)
 
     def dump(self, fh):
         print(">>> PrimerDesign <<<", file=fh)

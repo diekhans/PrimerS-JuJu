@@ -62,8 +62,12 @@ _primer_bed_columns = (
 
 def _get_extra_cols(primer_design):
     """get extra BED columns from primer design"""
-    extra_cols = [primer_design.transcriptome_off_target_cnt(),
-                  primer_design.genome_off_target_cnt()]
+    extra_cols = [primer_design.transcriptome_on_target_cnt(),
+                  primer_design.transcriptome_off_target_cnt(),
+                  primer_design.transcriptome_non_target_cnt(),
+                  primer_design.genome_on_target_cnt(),
+                  primer_design.genome_off_target_cnt(),
+                  primer_design.genome_non_target_cnt()]
     # directly from primer3
     for col_name in _primer_bed_columns:
         col = getattr(primer_design.primer3_pair, col_name)
@@ -140,12 +144,17 @@ def output_target_design_file(outdir, target_transcripts):
 
 _design_tsv_header = ("target_id", "design_status", "transcript_id",
                       "primer_id", "left_primer", "right_primer",
-                      "transcriptome_off_targets", "genome_off_targets", "browser")
+                      "transcriptome_on_targets", "transcriptome_off_targets",
+                      "genome_on_targets", "genome_off_targets", "position",
+                      "browser")
+
+def _get_position(primer_designs):
+    return str(primer_designs.target_transcript.trans_coords)
 
 def _make_browser_link(primer_designs, hub_urls):
     browser_url = "https://genome.ucsc.edu/cgi-bin/hgTracks"
 
-    cgi_args = ["position=" + str(primer_designs.target_transcript.trans_coords),
+    cgi_args = ["position=" + _get_position(primer_designs),
                 "db=" + primer_designs.target_transcripts.genome_name,
                 "genome=" + primer_designs.target_transcripts.genome_name]
     for hub_url in hub_urls:
@@ -154,19 +163,26 @@ def _make_browser_link(primer_designs, hub_urls):
     # return browser_url + "?" + "&".join([urllib.parse.quote(a) for a in cgi_args])
     return browser_url + "?" + "&".join(cgi_args)
 
+def _make_browser_excel_link(primer_designs, hub_urls):
+    url = _make_browser_link(primer_designs, hub_urls)
+    return f'=HYPERLINK("{url}", "{_get_position(primer_designs)}")'
+
 def _write_primer_pair_design(fh, primer_designs, primer_design, hub_urls):
     "write one design, if primer_design is None, it means there were no primers found"
     row = [primer_designs.target_transcripts.target_id,
            primer_designs.status, primer_designs.target_transcripts.transcripts[0].trans_id]
     if primer_design is None:
-        row += 5 * ['']
+        row += 7 * ['']
     else:
         row += [primer_design.ppair_id,
                 primer_design.primer3_pair.PRIMER_LEFT_SEQUENCE,
                 primer_design.primer3_pair.PRIMER_RIGHT_SEQUENCE,
+                primer_design.transcriptome_on_target_cnt(),
                 primer_design.transcriptome_off_target_cnt(),
+                primer_design.genome_on_target_cnt(),
                 primer_design.genome_off_target_cnt()]
-    row.append(_make_browser_link(primer_designs, hub_urls) if hub_urls is not None else "")
+    row.append(_get_position(primer_designs))
+    row.append(_make_browser_excel_link(primer_designs, hub_urls) if hub_urls is not None else "")
     fileOps.prRow(fh, row)
 
 def _write_primer_designs(primer_designs, tsv_file, hub_urls):
