@@ -19,15 +19,13 @@ TARGET_FEAT_COLOR = SvgColors.green
 PRIMERS_ON_COLOR = SvgColors.green
 PRIMERS_ON_OFF_COLOR = SvgColors.orange
 PRIMERS_OFF_COLOR = SvgColors.red
-
-#TMP
-PRIMERS_OFF_GENOME_COLOR = SvgColors.orange
-PRIMERS_OFF_TRANSCRIPTOME_COLOR = SvgColors.red
+PRIMERS_NONE_COLOR = SvgColors.orangered
+PRIMERS_NON_COLOR = SvgColors.purple
 
 # uniquness track
 UNIQ_ON_COLOR = SvgColors.green
 UNIQ_OFF_COLOR = SvgColors.red
-UNIQ_NON_COLOR = SvgColors.orange
+UNIQ_NON_COLOR = SvgColors.purple
 
 
 def _coords_to_bed(name, color, coords_list, extra_cols=None):
@@ -96,12 +94,17 @@ def _get_extra_cols(primer_design):
     return extra_cols
 
 def _primer_color(primer_design):
-    if primer_design.transcriptome_off_target_cnt() > 0:
-        return PRIMERS_OFF_TRANSCRIPTOME_COLOR
-    elif primer_design.genome_off_target_cnt() > 0:
-        return PRIMERS_OFF_GENOME_COLOR
-    else:
+    if (((primer_design.transcriptome_on_target_cnt() + primer_design.genome_on_target_cnt()) > 0) and
+        ((primer_design.transcriptome_off_target_cnt() + primer_design.genome_off_target_cnt()) > 0)):
+        return PRIMERS_ON_OFF_COLOR
+    elif ((primer_design.transcriptome_on_target_cnt() + primer_design.genome_on_target_cnt()) > 0):
         return PRIMERS_ON_COLOR
+    elif ((primer_design.transcriptome_off_target_cnt() + primer_design.genome_off_target_cnt()) > 0):
+        return PRIMERS_OFF_COLOR
+    elif ((primer_design.transcriptome_non_target_cnt() + primer_design.genome_non_target_cnt()) > 0):
+        return PRIMERS_NON_COLOR
+    else:
+        return PRIMERS_NONE_COLOR
 
 def _primer_to_bed(primer_design):
     coords_list = (features_to_genomic_coords(primer_design.features_5p, ExonFeature) +
@@ -110,8 +113,7 @@ def _primer_to_bed(primer_design):
                           _get_extra_cols(primer_design))
 
 def build_primer_beds(primer_designs):
-    return sorted([_primer_to_bed(pd) for pd in primer_designs.designs],
-                  key=Bed.genome_sort_key)
+    return [_primer_to_bed(pd) for pd in primer_designs.designs]
 
 def _genome_hit_to_bed(hit, name, color):
     return _coords_to_bed(name, color, (hit.left_coords, hit.right_coords))
@@ -120,6 +122,19 @@ def _genome_hits_to_bed(hits, name, color):
     if hits is None:
         return []  # no data
     return [_genome_hit_to_bed(hit, name, color) for hit in hits]
+
+def _build_genome_uniqueness_hits_beds(primer_design):
+    beds = []
+    beds += _genome_hits_to_bed(primer_design.genome_on_targets, "on:" + primer_design.ppair_id, UNIQ_ON_COLOR)
+    beds += _genome_hits_to_bed(primer_design.genome_off_targets, "off:" + primer_design.ppair_id, UNIQ_OFF_COLOR)
+    beds += _genome_hits_to_bed(primer_design.genome_off_targets, "non:" + primer_design.ppair_id, UNIQ_NON_COLOR)
+    return beds
+
+def build_genome_uniqueness_hits_beds(primer_designs):
+    beds = []
+    for primer_design in primer_designs.designs:
+        beds.extend(_build_genome_uniqueness_hits_beds(primer_design))
+    return beds
 
 def _transcriptome_hit_to_bed(hit, name_pre, color):
     return _coords_to_bed(name_pre + '|' + hit.trans_id + '|' + hit.gene_name, color,
@@ -131,23 +146,21 @@ def _transcriptome_hits_to_bed(hits, name_pre, color):
         return []  # no data
     return [_transcriptome_hit_to_bed(hit, name_pre, color) for hit in hits]
 
-def _build_design_uniqueness_hits_beds(primer_design):
+def _build_transcriptome_uniqueness_hits_beds(primer_design):
     beds = []
-    beds += _genome_hits_to_bed(primer_design.genome_on_targets, "on=" + primer_design.ppair_id, UNIQ_ON_COLOR)
-    beds += _genome_hits_to_bed(primer_design.genome_off_targets, "off=" + primer_design.ppair_id, UNIQ_OFF_COLOR)
-    beds += _genome_hits_to_bed(primer_design.genome_off_targets, "non=" + primer_design.ppair_id, UNIQ_NON_COLOR)
-    beds += _transcriptome_hits_to_bed(primer_design.transcriptome_on_targets, "on=" + primer_design.ppair_id, UNIQ_ON_COLOR)
-    beds += _transcriptome_hits_to_bed(primer_design.transcriptome_off_targets, "off=" + primer_design.ppair_id, UNIQ_OFF_COLOR)
-    beds += _transcriptome_hits_to_bed(primer_design.transcriptome_non_targets, "non=" + primer_design.ppair_id, UNIQ_NON_COLOR)
+    beds += _transcriptome_hits_to_bed(primer_design.transcriptome_on_targets, "on:" + primer_design.ppair_id, UNIQ_ON_COLOR)
+    beds += _transcriptome_hits_to_bed(primer_design.transcriptome_off_targets, "off:" + primer_design.ppair_id, UNIQ_OFF_COLOR)
+    beds += _transcriptome_hits_to_bed(primer_design.transcriptome_non_targets, "non:" + primer_design.ppair_id, UNIQ_NON_COLOR)
     return beds
 
-def build_uniqueness_hits_beds(primer_designs):
+def build_transcriptome_uniqueness_hits_beds(primer_designs):
     beds = []
     for primer_design in primer_designs.designs:
-        beds += _build_design_uniqueness_hits_beds(primer_design)
-    return sorted(beds, key=Bed.genome_sort_key)
+        beds.extend(_build_transcriptome_uniqueness_hits_beds(primer_design))
+    return beds
 
 def _write_beds(beds, bed_file):
+    beds = sorted(beds, key=Bed.genome_sort_key)
     with open(bed_file, "w") as fh:
         for bed in beds:
             bed.write(fh)
@@ -245,8 +258,10 @@ def output_target_designs(outdir, primer_targets, primer_designs, hub_urls=None)
                 _get_out_path(outdir, primer_targets, "target.bed"))
     _write_beds(build_primer_beds(primer_designs),
                 _get_out_path(outdir, primer_targets, "primers.bed"))
-    _write_beds(build_uniqueness_hits_beds(primer_designs),
-                _get_out_path(outdir, primer_targets, "uniqueness.bed"))
+    _write_beds(build_genome_uniqueness_hits_beds(primer_designs),
+                _get_out_path(outdir, primer_targets, "genome-uniqueness.bed"))
+    _write_beds(build_transcriptome_uniqueness_hits_beds(primer_designs),
+                _get_out_path(outdir, primer_targets, "transcriptome-uniqueness.bed"))
 
     with fileOps.AtomicFileCreate(_get_out_path(outdir, primer_targets, "designs.tsv")) as tmp_tsv:
         _write_primer_designs(primer_designs, tmp_tsv, hub_urls)

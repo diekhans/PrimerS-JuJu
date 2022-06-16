@@ -30,7 +30,8 @@ def _run_primer_design_test(request, genome_data, primer_targets, uniqueness_que
 
     output_target_designs(outdir, primer_targets, primer_designs, hub_urls=hub_urls)
 
-    for suffix in (".debug.txt", ".designs.tsv", ".primers.bed", ".target.bed", ".uniqueness.bed"):
+    for suffix in (".debug.txt", ".designs.tsv", ".primers.bed", ".target.bed",
+                   ".genome-uniqueness.bed", ".transcriptome-uniqueness.bed"):
         diff_expected(osp.join(request.node.name, primer_targets.target_id + suffix))
     return primer_designs
 
