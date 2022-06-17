@@ -176,27 +176,37 @@ def output_target_design_file(outdir, primer_targets):
 
 _design_tsv_header = ("target_id", "design_status", "transcript_id",
                       "primer_id", "left_primer", "right_primer",
-                      "transcriptome_on_targets", "transcriptome_off_targets",
-                      "genome_on_targets", "genome_off_targets", "position",
+                      "on_target_trans", "off_target_trans",
+                      "on_target_genome", "off_target_genome", "position",
                       "browser", "annotated_rna")
 
-def _get_position(primer_designs):
-    return str(primer_designs.target_transcript.trans_coords)
 
-def _make_browser_link(primer_designs, hub_urls):
+def _make_excel_link(url, position):
+    return f'=HYPERLINK("{url}", "{str(position)}")'
+
+def _make_browser_link(genome_name, position, hub_urls=[]):
     browser_url = "https://genome.ucsc.edu/cgi-bin/hgTracks"
 
     # browser doesn't allow entire string to be quotes, only arguments
-    cgi_args = ["position=" + urllib.parse.quote(_get_position(primer_designs)),
-                "db=" + urllib.parse.quote(primer_designs.primer_targets.genome_name),
-                "genome=" + urllib.parse.quote(primer_designs.primer_targets.genome_name)]
+    cgi_args = ["position=" + urllib.parse.quote(str(position)),
+                "db=" + urllib.parse.quote(genome_name),
+                "genome=" + urllib.parse.quote(genome_name)]
     for hub_url in hub_urls:
         cgi_args.append("hubUrl=" + urllib.parse.quote(hub_url))
-    return browser_url + "?" + "&".join(cgi_args)
+    url = browser_url + "?" + "&".join(cgi_args)
+    return _make_excel_link(url, position)
 
-def _make_browser_excel_link(primer_designs, hub_urls):
-    url = _make_browser_link(primer_designs, hub_urls)
-    return f'=HYPERLINK("{url}", "{_get_position(primer_designs)}")'
+def _make_design_browser_link(primer_designs, hub_urls):
+    _make_browser_link(primer_designs.primer_targets.genome_name,
+                       primer_designs.target_transcript.trans_coords, hub_urls)
+
+def _make_uniqeness_hits_browser_coords(hits):
+    """this makes a list of coordinates, there isn't a way to add multiple
+    hyperlinks to a cell via a TSV"""
+    # drop duplicates
+    coords_list = sorted(set([h.get_genome_range() for h in hits]))
+
+    return ", ".join([str(c) for c in coords_list])
 
 def _write_primer_pair_design(fh, primer_designs, primer_design, first, hub_urls):
     "write one design, if primer_design is None, it means there were no primers found"
@@ -208,13 +218,13 @@ def _write_primer_pair_design(fh, primer_designs, primer_design, first, hub_urls
         row += [primer_design.ppair_id,
                 primer_design.primer3_pair.PRIMER_LEFT_SEQUENCE,
                 primer_design.primer3_pair.PRIMER_RIGHT_SEQUENCE,
-                primer_design.transcriptome_on_target_cnt(),
-                primer_design.transcriptome_off_target_cnt(),
-                primer_design.genome_on_target_cnt(),
-                primer_design.genome_off_target_cnt()]
+                _make_uniqeness_hits_browser_coords(primer_design.transcriptome_on_targets),
+                _make_uniqeness_hits_browser_coords(primer_design.transcriptome_off_targets),
+                _make_uniqeness_hits_browser_coords(primer_design.genome_on_targets),
+                _make_uniqeness_hits_browser_coords(primer_design.genome_off_targets)]
     if first:
-        row.append(_get_position(primer_designs))
-        row.append(_make_browser_excel_link(primer_designs, hub_urls) if hub_urls is not None else "")
+        row.append(str(primer_designs.target_transcript.trans_coords))
+        row.append(_make_design_browser_link(primer_designs, hub_urls) if hub_urls is not None else "")
         row.append(primer3_annotate_rna(primer_designs.primer_targets.transcripts[0]))
     else:
         row += 3 * ['']

@@ -12,6 +12,12 @@ from .genome_data import bigbed_read_by_names
 from .transcript_features import Features, bed_to_features, transcript_range_to_features
 from . import PrimersJuJuError
 
+def _coords_range(coords_list):
+    "convert a list of coordinates to the range that it spans"
+    coords_list = sorted(coords_list)
+    c0 = coords_list[0]
+    return Coords(c0.name, coords_list[0].start, coords_list[-1].end, c0.strand, c0.size)
+
 @dataclass
 class IsPcrServerSpec:
     """Specification of an isPCR server, static or dynamic;
@@ -33,6 +39,10 @@ class GenomeHit:
     def __str__(self):
         return f"{self.__class__.__name__}(left={str(self.left_coords)},right={str(self.right_coords)})"
 
+    def get_genome_range(self):
+        """get the range covering both  """
+        return _coords_range([self.left_coords, self.right_coords])
+
 @dataclass
 class TranscriptomeHit:
     "one isPcr hit to a transcript, with mappings back to genome, in positive genomic coords"
@@ -45,6 +55,10 @@ class TranscriptomeHit:
         def _lfmt(l):
             return '[' + ",\n\t".join([str(v) for v in l]) + '\n    ]'
         return f"{self.__class__.__name__}(left={_lfmt(self.left_features)},right={_lfmt(self.right_features)})"
+
+    def get_genome_range(self):
+        """get the range covering both  """
+        return _coords_range([self.left_features.bounds.genome, self.right_features.bounds.genome])
 
 class UniquenessQuery:
     """Interface to UCSC isPCR server to query for uniqueness."""
