@@ -174,25 +174,26 @@ def output_target_design_file(outdir, primer_targets):
     """
     return _get_out_path(outdir, primer_targets, "designs.tsv")
 
-_design_tsv_header = ("target_id", "design_status", "transcript_id",
+_design_tsv_header = ("target_id", "design_status", "transcript_id", "browser",
                       "primer_id", "left_primer", "right_primer",
                       "on_target_trans", "off_target_trans",
                       "on_target_genome", "off_target_genome",
-                      "browser", "annotated_rna")
+                      "annotated_rna")
 
 
 def _make_excel_link(url, position):
     return f'=HYPERLINK("{url}", "{str(position)}")'
 
-def _make_browser_link(genome_name, position, hub_urls=[]):
+def _make_browser_link(genome_name, position, hub_urls=None):
     browser_url = "https://genome.ucsc.edu/cgi-bin/hgTracks"
 
     # browser doesn't allow entire string to be quotes, only arguments
     cgi_args = ["position=" + urllib.parse.quote(str(position)),
                 "db=" + urllib.parse.quote(genome_name),
                 "genome=" + urllib.parse.quote(genome_name)]
-    for hub_url in hub_urls:
-        cgi_args.append("hubUrl=" + urllib.parse.quote(hub_url))
+    if hub_urls is not None:
+        for hub_url in hub_urls:
+            cgi_args.append("hubUrl=" + urllib.parse.quote(hub_url))
     url = browser_url + "?" + "&".join(cgi_args)
     return _make_excel_link(url, position)
 
@@ -212,6 +213,10 @@ def _write_primer_pair_design(fh, primer_designs, primer_design, first, hub_urls
     "write one design, if primer_design is None, it means there were no primers found"
     row = [primer_designs.primer_targets.target_id,
            primer_designs.status, primer_designs.primer_targets.transcripts[0].trans_id]
+    if first:
+        row.append(_make_design_browser_link(primer_designs, hub_urls))
+    else:
+        row.append('')
     if primer_design is None:
         row += 7 * ['']
     else:
@@ -223,10 +228,9 @@ def _write_primer_pair_design(fh, primer_designs, primer_design, first, hub_urls
                 _make_uniqeness_hits_browser_coords(primer_design.genome_on_targets),
                 _make_uniqeness_hits_browser_coords(primer_design.genome_off_targets)]
     if first:
-        row.append(_make_design_browser_link(primer_designs, hub_urls) if hub_urls is not None else "")
         row.append(primer3_annotate_rna(primer_designs.primer_targets.transcripts[0]))
     else:
-        row += 2 * ['']
+        row.append('')
     fileOps.prRow(fh, row)
 
 def output_target_debug(outdir, primer_targets, primer_designs):
