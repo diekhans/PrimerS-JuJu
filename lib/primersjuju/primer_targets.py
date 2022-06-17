@@ -40,6 +40,13 @@ class TargetTranscript:
     def region_3p(self):
         return self.features_3p.bounds
 
+    def get_genome_ordered_features(self):
+        "pair of features with 5' genome first"
+        if self.strand == '+':
+            return self.features_5p, self.features_3p
+        else:
+            return self.features_3p, self.features_5p
+
     def __str__(self):
         return f"({self.track_name}, {self.trans_id})"
 

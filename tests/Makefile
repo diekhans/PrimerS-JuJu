@@ -1,4 +1,5 @@
-# limit test, specify: tests="libtests/test_input.py::test_get_track_annot" 
+# limit test, specify:
+# make lib-tests tests="libtests/test_input.py::test_get_track_annot" 
 
 ROOT = ..
 include ${ROOT}/defs.mk

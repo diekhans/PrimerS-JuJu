@@ -8,7 +8,7 @@ from pycbio.hgdata.coords import Coords
 from . import PrimersJuJuError
 from .primer3_interface import Primer3Results, Primer3Pair, primer3_design
 from .primer_targets import PrimerTargets, TargetTranscript
-from .transcript_features import Features, transcript_range_to_features
+from .transcript_features import Features, ExonFeature, transcript_range_to_features
 from .uniqueness_query import GenomeHit, TranscriptomeHit
 
 class DesignStatus(SymEnum):
@@ -100,40 +100,43 @@ def _validate_primer_features(features_5p, features_3p):
             if feature_5p.genome.overlaps(feature_3p.genome):
                 raise PrimersJuJuError(f"primer3 pairs overlap in genome space {features_5p} and {features_3p}")
 
-def _is_target_chrom(uniqueness_query, chrom_name):
+def _is_target_chrom(genome_data, chrom_name):
     """Should a chromosome be consider at target for off-target/on target
     check.  This excludes patches and alts.  For genomes without this information,
     all sequences are conserved a target.
     """
-    if uniqueness_query.genome_data.assembly_info is None:
+    if genome_data.assembly_info is None:
         # no information so consider in a possible target
         return True
-    chrom_info = uniqueness_query.genome_data.assembly_info.getByName(chrom_name)
+    chrom_info = genome_data.assembly_info.getByName(chrom_name)
     return ((chrom_info.sequenceRole == "assembled-molecule") and
             (chrom_info.assemblyUnit == "Primary Assembly"))
 
+def _check_coords_overlap(features, coordses):
+    for f in features.iter_type(ExonFeature):
+        for coords in coordses:
+            if f.genome.overlaps(coords):
+                return True
+    return False
+
+def _check_hit_overlap(target_transcript, left_coordses, right_coordses):
+    """check overlap based on list of genomic coordinates"""
+    features_5p, features_3p = target_transcript.get_genome_ordered_features()
+    return (_check_coords_overlap(features_5p, left_coordses) and
+            _check_coords_overlap(features_3p, right_coordses))
+
 def _check_genome_hit_overlap(target_transcript, hit):
     """does a genome uniqueness hit correspond to the target regions"""
-    # genome hits can't span splice sites
-    if ((len(target_transcript.features_5p) > 1) or
-        (len(target_transcript.features_3p) > 1)):
-        return False
-    return (target_transcript.features_5p[0].genome.contains(hit.left_coords) and
-            target_transcript.features_3p[0].genome.contains(hit.right_coords))
+    # GENOME hits will not span introns, but may partially align one
+    # of the exons
+    return _check_hit_overlap(target_transcript, [hit.left_coords], [hit.right_coords])
 
-def _is_genome_off_target(uniqueness_query, target_transcript, hit):
-    return (_is_target_chrom(uniqueness_query, hit.left_coords.name) and
-            (not _check_genome_hit_overlap(target_transcript, hit)))
-
-def _genome_uniqueness_classify(uniqueness_query, target_transcript, ppair_id, primer3_pair):
-    """guery to find genomic on and off target hits via an alignment method"""
-    max_size = 1_000_000  # arbitrary
-    hits = uniqueness_query.query_genome(ppair_id, primer3_pair.PRIMER_LEFT_SEQUENCE, primer3_pair.PRIMER_RIGHT_SEQUENCE, max_size)
+def _genome_uniqueness_classify(genome_data, target_transcript, hits):
     on_targets = []
     off_targets = []
     non_targets = []
     for hit in hits:
-        if not _is_target_chrom(uniqueness_query, hit.left_coords.name):
+        if not _is_target_chrom(genome_data, hit.left_coords.name):
             non_targets.append(hit)
         elif _check_genome_hit_overlap(target_transcript, hit):
             on_targets.append(hit)
@@ -141,36 +144,36 @@ def _genome_uniqueness_classify(uniqueness_query, target_transcript, ppair_id, p
             off_targets.append(hit)
     return on_targets, off_targets, non_targets
 
+def _genome_uniqueness_query(uniqueness_query, target_transcript, ppair_id, primer3_pair):
+    """guery to find genomic on and off target hits via an alignment method"""
+    max_size = 1_000_000  # arbitrary
+    hits = uniqueness_query.query_genome(ppair_id, primer3_pair.PRIMER_LEFT_SEQUENCE, primer3_pair.PRIMER_RIGHT_SEQUENCE, max_size)
+    return _genome_uniqueness_classify(uniqueness_query.genome_data, target_transcript, hits)
+
 def _check_transcriptome_hit_overlap(target_transcript, hit):
     """does a transcriptome uniqueness hit correspond to the target regions"""
-    def _check_one(trans_features, hit_features):
-        # check both hit and regions must be junction spanning or not junction spanning
-        if len(trans_features) != len(hit_features):
-            return False
-        check_idxs = (0,) if len(trans_features) == 1 else (0, 2)  # exon or exon-intron-exon
-        for i in check_idxs:
-            if not trans_features[i].genome.contains(hit_features[i].genome):
-                return False
-        return True
+    return _check_hit_overlap(target_transcript,
+                              hit.left_features.genome_coords_type(ExonFeature),
+                              hit.right_features.genome_coords_type(ExonFeature))
 
-    return (_check_one(target_transcript.features_5p, hit.left_features) and
-            _check_one(target_transcript.features_3p, hit.right_features))
-
-def _transcriptome_uniqueness_classify(uniqueness_query, target_transcript, ppair_id, primer3_pair):
-    """guery to find transcriptome on and off target hits via an alignment method"""
-    max_size = 500_000  # arbitrary
-    hits = uniqueness_query.query_transcriptome(ppair_id, primer3_pair.PRIMER_LEFT_SEQUENCE, primer3_pair.PRIMER_RIGHT_SEQUENCE, max_size)
+def _transcriptome_uniqueness_check(genome_data, target_transcript, hits):
     on_targets = []
     off_targets = []
     non_targets = []
     for hit in hits:
-        if not _is_target_chrom(uniqueness_query, hit.left_features[0].genome.name):
+        if not _is_target_chrom(genome_data, hit.left_features[0].genome.name):
             non_targets.append(hit)
         elif _check_transcriptome_hit_overlap(target_transcript, hit):
             on_targets.append(hit)
         else:
             off_targets.append(hit)
     return on_targets, off_targets, non_targets
+
+def _transcriptome_uniqueness_query(uniqueness_query, target_transcript, ppair_id, primer3_pair):
+    """guery to find transcriptome on and off target hits via an alignment method"""
+    max_size = 500_000  # arbitrary
+    hits = uniqueness_query.query_transcriptome(ppair_id, primer3_pair.PRIMER_LEFT_SEQUENCE, primer3_pair.PRIMER_RIGHT_SEQUENCE, max_size)
+    return _transcriptome_uniqueness_check(uniqueness_query.genome_data, target_transcript, hits)
 
 def _build_primer_design(target_transcript, target_id, result_num, primer3_pair, uniqueness_query):
     ppair_id = "{}+pp{}".format(target_id, result_num)
@@ -182,8 +185,8 @@ def _build_primer_design(target_transcript, target_id, result_num, primer3_pair,
         genome_on_targets = genome_off_targets = genome_non_targets = None
         transcriptome_on_targets = transcriptome_off_targets = transcriptome_non_targets = None
     else:
-        genome_on_targets, genome_off_targets, genome_non_targets = _genome_uniqueness_classify(uniqueness_query, target_transcript, ppair_id, primer3_pair)
-        transcriptome_on_targets, transcriptome_off_targets, transcriptome_non_targets = _transcriptome_uniqueness_classify(uniqueness_query, target_transcript, ppair_id, primer3_pair)
+        genome_on_targets, genome_off_targets, genome_non_targets = _genome_uniqueness_query(uniqueness_query, target_transcript, ppair_id, primer3_pair)
+        transcriptome_on_targets, transcriptome_off_targets, transcriptome_non_targets = _transcriptome_uniqueness_query(uniqueness_query, target_transcript, ppair_id, primer3_pair)
 
     return PrimerDesign(ppair_id, primer3_pair, features_5p, features_3p,
                         genome_on_targets, genome_off_targets, genome_non_targets,

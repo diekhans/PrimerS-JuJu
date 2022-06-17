@@ -6,3 +6,4 @@ vulture
 pytest
 twobitreader
 pipettor
+jsonpickle

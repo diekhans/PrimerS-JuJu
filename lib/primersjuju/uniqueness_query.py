@@ -40,7 +40,7 @@ class GenomeHit:
         return f"{self.__class__.__name__}(left={str(self.left_coords)},right={str(self.right_coords)})"
 
     def get_genome_range(self):
-        """get the range covering both  """
+        """get the range covering both alignments"""
         return _coords_range([self.left_coords, self.right_coords])
 
 @dataclass

@@ -9,3 +9,15 @@ The directory data should contain:
 * gencodeV39.bb https://hgdownload.soe.ucsc.edu/gbdb/hg38/gencode/gencodeV39.bb
 * hg38KgSeqV39.2bit https://hgdownload.soe.ucsc.edu/gbdb/hg38/targetDb/hg38KgSeqV39.2bit
 * WTC11_consolidated.bigBed http://conesalab.org/LRGASP/LRGASP_hub/hg38/Human_samples/WTC11_consolidated.bigBed
+
+
+## Notes
+
+### JSON input for fast test.
+
+Some tests have serialized the slow to produce isPcr results for later tests.  These
+are in input/xxx.serial.json.  If these are removed, the will be regenerated when 
+the tests run.  
+
+See:
+* libtests/test_design_primers_guts.py

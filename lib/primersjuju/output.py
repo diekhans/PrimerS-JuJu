@@ -127,7 +127,7 @@ def _build_genome_uniqueness_hits_beds(primer_design):
     beds = []
     beds += _genome_hits_to_bed(primer_design.genome_on_targets, "on:" + primer_design.ppair_id, UNIQ_ON_COLOR)
     beds += _genome_hits_to_bed(primer_design.genome_off_targets, "off:" + primer_design.ppair_id, UNIQ_OFF_COLOR)
-    beds += _genome_hits_to_bed(primer_design.genome_off_targets, "non:" + primer_design.ppair_id, UNIQ_NON_COLOR)
+    beds += _genome_hits_to_bed(primer_design.genome_non_targets, "non:" + primer_design.ppair_id, UNIQ_NON_COLOR)
     return beds
 
 def build_genome_uniqueness_hits_beds(primer_designs):
@@ -177,7 +177,7 @@ def output_target_design_file(outdir, primer_targets):
 _design_tsv_header = ("target_id", "design_status", "transcript_id",
                       "primer_id", "left_primer", "right_primer",
                       "on_target_trans", "off_target_trans",
-                      "on_target_genome", "off_target_genome", "position",
+                      "on_target_genome", "off_target_genome",
                       "browser", "annotated_rna")
 
 
@@ -197,8 +197,8 @@ def _make_browser_link(genome_name, position, hub_urls=[]):
     return _make_excel_link(url, position)
 
 def _make_design_browser_link(primer_designs, hub_urls):
-    _make_browser_link(primer_designs.primer_targets.genome_name,
-                       primer_designs.target_transcript.trans_coords, hub_urls)
+    return _make_browser_link(primer_designs.primer_targets.genome_name,
+                              primer_designs.target_transcript.trans_coords, hub_urls)
 
 def _make_uniqeness_hits_browser_coords(hits):
     """this makes a list of coordinates, there isn't a way to add multiple
@@ -223,36 +223,15 @@ def _write_primer_pair_design(fh, primer_designs, primer_design, first, hub_urls
                 _make_uniqeness_hits_browser_coords(primer_design.genome_on_targets),
                 _make_uniqeness_hits_browser_coords(primer_design.genome_off_targets)]
     if first:
-        row.append(str(primer_designs.target_transcript.trans_coords))
         row.append(_make_design_browser_link(primer_designs, hub_urls) if hub_urls is not None else "")
         row.append(primer3_annotate_rna(primer_designs.primer_targets.transcripts[0]))
     else:
-        row += 3 * ['']
+        row += 2 * ['']
     fileOps.prRow(fh, row)
 
-def _write_primer_designs(primer_designs, tsv_file, hub_urls):
-    with open(tsv_file, "w") as fh:
-        fileOps.prRow(fh, _design_tsv_header)
-        first = True
-        if len(primer_designs.designs) == 0:
-            _write_primer_pair_design(fh, primer_designs, None, first, hub_urls)
-        else:
-            for primer_design in primer_designs.designs:
-                _write_primer_pair_design(fh, primer_designs, primer_design, first, hub_urls)
-                first = False
-
-def output_target_designs(outdir, primer_targets, primer_designs, hub_urls=None):
-    """output primer TSV, BEDs, and debug information for one target.  The
-    $target_id.design.tsv file is created atomically, so it can be used as a
-    marker that this design is complete.  If hub_urls is specified, the
-    design.tsv file will contain links to the target region in the UCSC
-    browser.
-    """
-
+def output_target_debug(outdir, primer_targets, primer_designs):
     target_transcript = primer_targets.transcripts[0]
     fileOps.ensureDir(outdir)
-
-    # debugging
     with open(_get_out_path(outdir, primer_targets, "debug.txt"), 'w') as fh:
         print("target_id", primer_targets.target_id, file=fh)
         print("annotated_rna:", primer3_annotate_rna(primer_targets.transcripts[0]), file=fh)
@@ -263,7 +242,8 @@ def output_target_designs(outdir, primer_targets, primer_designs, hub_urls=None)
         primer_designs.dump(fh)
         print(file=fh)
 
-    # BEDs
+def output_target_beds(outdir, primer_targets, primer_designs):
+    fileOps.ensureDir(outdir)
     _write_beds(build_target_beds(primer_targets),
                 _get_out_path(outdir, primer_targets, "target.bed"))
     _write_beds(build_primer_beds(primer_designs),
@@ -273,5 +253,30 @@ def output_target_designs(outdir, primer_targets, primer_designs, hub_urls=None)
     _write_beds(build_transcriptome_uniqueness_hits_beds(primer_designs),
                 _get_out_path(outdir, primer_targets, "transcriptome-uniqueness.bed"))
 
+def _write_primer_designs(fh, primer_designs, hub_urls):
+    fileOps.prRow(fh, _design_tsv_header)
+    first = True
+    if len(primer_designs.designs) == 0:
+        _write_primer_pair_design(fh, primer_designs, None, first, hub_urls)
+    else:
+        for primer_design in primer_designs.designs:
+            _write_primer_pair_design(fh, primer_designs, primer_design, first, hub_urls)
+            first = False
+
+def output_primer_designs(outdir, primer_targets, primer_designs, hub_urls):
+    fileOps.ensureDir(outdir)
     with fileOps.AtomicFileCreate(_get_out_path(outdir, primer_targets, "designs.tsv")) as tmp_tsv:
-        _write_primer_designs(primer_designs, tmp_tsv, hub_urls)
+        with open(tmp_tsv, "w") as fh:
+            _write_primer_designs(fh, primer_designs, hub_urls)
+
+def output_target_designs(outdir, primer_targets, primer_designs, hub_urls=None):
+    """output primer TSV, BEDs, and debug information for one target.  The
+    $target_id.design.tsv file is created atomically, so it can be used as a
+    marker that this design is complete.  If hub_urls is specified, the
+    design.tsv file will contain links to the target region in the UCSC
+    browser.
+    """
+
+    output_target_debug(outdir, primer_targets, primer_designs)
+    output_target_beds(outdir, primer_targets, primer_designs)
+    output_primer_designs(outdir, primer_targets, primer_designs, hub_urls)

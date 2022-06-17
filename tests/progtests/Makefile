@@ -24,12 +24,13 @@ prog-tests-slow: test-design-good3
 test-check-good:
 	${primers_juju} ${DEBUG} --conf=input/config1.py check ../input/LRGASP_WTC11_Target_set1.tsv
 
+# also check if bigBed can be built
 test-design-good3: mkdirs
 	rm -rf output/$@
 	${primers_juju} ${DEBUG} --conf=input/config1.py design ${hg38_hub_url_args} input/LRGASP_WTC11_Target_subset3.tsv output/$@
 	${diff_results}
 	bedToBigBed -tab -type=bed12+ -as=${ROOT}/etc/bigPrimerBed.as -sizesIsBb -extraIndex=name \
-	   output/test-design-good3/ZBTB45+1/ZBTB45+1.primers.bed ${chromAlias_hg38} output/test-design-good3/ZBTB45+1.bb
+	   output/test-design-good3/ZBTB45+1/ZBTB45+1.primers.bed ${chromAlias_hg38} output/$@/ZBTB45+1.bb
 
 test-design-subset: mkdirs
 	rm -rf output/$@
