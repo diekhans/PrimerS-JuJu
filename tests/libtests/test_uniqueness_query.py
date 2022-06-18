@@ -27,10 +27,12 @@ def test_uniqueness_query_transcriptome(hg38_uniqueness_query):
                                                                  trans=Coords(name='ENST00000244050.3', start=1140, end=1160, strand='+', size=1705))])]
 
 def test_uniqueness_query_transcriptome_junc(hg38_uniqueness_query):
+    # this failed to find one spanning the intron
     hits = hg38_uniqueness_query.query_transcriptome("ZBTB45+1", ZBTB45_PRIMER_LEFT_SEQUENCE, ZBTB45_PRIMER_RIGHT_SEQUENCE, 200000)
     assert hits == [TranscriptomeHit(trans_id='ENST00000594051.6', gene_name='ZBTB45',
-                                     left_features=[ExonFeature(genome=Coords(name='chr19', start=58514235, end=58514255, strand='+', size=58617616),
-                                                                trans=Coords(name='ENST00000594051.6', start=55, end=75, strand='-', size=2129))],
-                                     right_features=[ExonFeature(genome=Coords(name='chr19', start=58517056, end=58517076, strand='+', size=58617616),
-                                                                 trans=Coords(name='ENST00000594051.6', start=1378, end=1398, strand='-', size=2129))])]
-    # this failed to find one spanning the intron
+                                     left_features=[ExonFeature(genome=Coords(name='chr19', start=58516394, end=58516400, strand='+', size=58617616),
+                                                                trans=Coords(name='ENST00000594051.6', start=2054, end=2060, strand='-', size=2129)),
+                                                    ExonFeature(genome=Coords(name='chr19', start=58519796, end=58519810, strand='+', size=58617616),
+                                                                trans=Coords(name='ENST00000594051.6', start=2060, end=2074, strand='-', size=2129))],
+                                     right_features=[ExonFeature(genome=Coords(name='chr19', start=58513559, end=58513579, strand='+', size=58617616),
+                                                                 trans=Coords(name='ENST00000594051.6', start=731, end=751, strand='-', size=2129))])]

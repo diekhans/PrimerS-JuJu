@@ -15,24 +15,6 @@ from primersjuju.primer_targets import primer_targets_build
 def wtc11(genome_data):
     return genome_data.get_track("WTC11_consolidated")
 
-def _dump_trans_region(target_id, trans_track, trans_id, target_transcript):
-    """use to write test info to files for testing in primer3"""
-    with open(trans_id + ".txt", 'w') as fh:
-        tt = target_transcript
-        ok_region = "{},{},{},{}".format(tt.region_5p.trans.start + 1,
-                                         len(tt.region_5p.trans),
-                                         tt.region_3p.trans.start + 1,
-                                         len(tt.region_3p.trans))
-        fileOps.prRowv(fh, "target_id", target_id)
-        fileOps.prRowv(fh, "trans_id", trans_track, trans_id)
-        fileOps.prRowv(fh, "region_5p", tt.region_5p.genome, len(tt.region_5p.genome), "features:", len(tt.features_5p))
-        fileOps.prRowv(fh, "region_3p", tt.region_3p.genome, len(tt.region_3p.genome), "features:", len(tt.features_3p))
-        fileOps.prRowv(fh, "ampl_region_5p", tt.region_5p.trans.format(oneBased=True))
-        fileOps.prRowv(fh, "ampl_region_3p", tt.region_3p.trans.format(oneBased=True))
-        fileOps.prRowv(fh, "SEQUENCE_PRIMER_PAIR_OK_REGION", ok_region)
-        fileOps.prRowv(fh, "amplicon", len(target_transcript.amplicon_trans_range), target_transcript.amplicon_trans_range)
-        fileOps.prRowv(fh, "rna", len(tt.rna), tt.rna)
-
 def transcript_region_check(genome_data, wtc11, trans_id, region, expected_feats):
     trans_bed = wtc11.read_by_name(trans_id)
     feats = bed_to_features(genome_data, trans_bed)
@@ -42,14 +24,14 @@ def transcript_region_check(genome_data, wtc11, trans_id, region, expected_feats
 
 def test_get_transcript_region_exon(genome_data, wtc11):
     transcript_region_check(genome_data, wtc11, "FSM_45093",
-                            Coords("chr17", 7709209, 7710259),
+                            Coords("chr17", 7709209, 7710259, strand='+', size=83257441),
                             [ExonFeature(genome=Coords(name='chr17', start=7709209, end=7710259, strand='+', size=83257441),
                                          trans=Coords(name='FSM_45093', start=1051, end=2101, strand='+', size=3209))
                              ])
 
 def test_get_transcript_region_intron_exon(genome_data, wtc11):
     transcript_region_check(genome_data, wtc11, "FSM_45093",
-                            Coords("chr17", 7708917, 7709357),
+                            Coords("chr17", 7708917, 7709357, strand='+', size=83257441),
                             [IntronFeature(genome=Coords(name='chr17', start=7708917, end=7709166, strand='+', size=83257441),
                                            trans=Coords(name='FSM_45093', start=1008, end=1008, strand='+', size=3209)),
                              ExonFeature(genome=Coords(name='chr17', start=7709166, end=7709357, strand='+', size=83257441),
@@ -58,7 +40,7 @@ def test_get_transcript_region_intron_exon(genome_data, wtc11):
 
 def test_get_transcript_region_exons(genome_data, wtc11):
     transcript_region_check(genome_data, wtc11, "FSM_45093",
-                            Coords("chr17", 7708471, 7709256),
+                            Coords("chr17", 7708471, 7709256, strand='+', size=83257441),
                             [ExonFeature(genome=Coords(name='chr17', start=7708471, end=7708527, strand='+', size=83257441),
                                          trans=Coords(name='FSM_45093', start=847, end=903, strand='+', size=3209)),
                              IntronFeature(genome=Coords(name='chr17', start=7708527, end=7708634, strand='+', size=83257441),
@@ -73,7 +55,7 @@ def test_get_transcript_region_exons(genome_data, wtc11):
 
 def test_get_transcript_region_FSM_45580(genome_data, wtc11):
     transcript_region_check(genome_data, wtc11, "FSM_45580",
-                            Coords('chr19', 47228327, 47231039),
+                            Coords('chr19', 47228327, 47231039, strand='+', size=83257441),
                             [ExonFeature(genome=Coords(name='chr19', start=47228327, end=47228446, strand='+', size=58617616),
                                          trans=Coords(name='FSM_45580', start=1456, end=1575, strand='-', size=1841)),
                              IntronFeature(genome=Coords(name='chr19', start=47228446, end=47230928, strand='+', size=58617616),
@@ -148,3 +130,33 @@ def test_target_build_junc2(genome_data, example_wtc11_targets_specs_set1):
                                           trans=Coords(name='FSM_45580', start=1575, end=1686, strand='-', size=1841))],
                              [ExonFeature(genome=Coords(name='chr19', start=47221197, end=47221914, strand='+', size=58617616),
                                           trans=Coords(name='FSM_45580', start=374, end=1091, strand='-', size=1841))])
+
+##
+# test data for coordinate intersection and mapping
+##
+
+
+
+def test_genome_inter_pos_pos():
+    feat = ExonFeature(Coords("chr24", 6, 12, strand='+', size=24),
+                       Coords("tr12", 0, 12, strand='+', size=12))
+    grange = Coords("chr24", 3, 8, strand='+', size=24)
+
+    feat_intr1 = feat.intersect_genome(grange)
+    expect = ExonFeature(genome=Coords(name='chr24', start=6, end=8, strand='+', size=24),
+                         trans=Coords(name='tr12', start=0, end=2, strand='+', size=12))
+    assert feat_intr1 == expect
+    feat_intr2 = feat.intersect_genome(grange.reverse())
+    assert feat_intr2 == expect
+
+def test_genome_inter_pos_neg():
+    feat = ExonFeature(Coords("chr24", 6, 12, strand='+', size=24),
+                       Coords("tr12", 0, 12, strand='-', size=12))
+    grange = Coords("chr24", 3, 8, strand='+', size=24)
+
+    feat_intr1 = feat.intersect_genome(grange)
+    expect = ExonFeature(genome=Coords(name='chr24', start=6, end=8, strand='+', size=24),
+                         trans=Coords(name='tr12', start=0, end=2, strand='-', size=12))
+    assert feat_intr1 == expect
+    feat_intr2 = feat.intersect_genome(grange.reverse())
+    assert feat_intr2 == expect

@@ -96,7 +96,7 @@ def _must_be_empty(columns, row):
             raise PrimersJuJuDataError(f"row column {col} must be empty")
 
 def _parse_coords(coord_str):
-    coords = Coords.parse(coord_str, oneBased=True)
+    coords = Coords.parse(coord_str, strand='+', oneBased=True)
     if len(coords) > 10000000:
         raise PrimersJuJuDataError(f"coordinates seems absurdly long: '{coord_str}'")
     return coords

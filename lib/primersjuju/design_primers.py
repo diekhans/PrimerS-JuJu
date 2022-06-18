@@ -18,6 +18,10 @@ class DesignStatus(SymEnum):
     NOT_TRANSCRIPTOME_UNIQUE = 2
     NO_PRIMERS = 3
 
+def _len_none(l):
+    "0 if list is None, else length"
+    return 0 if l is None else len(l)
+
 @dataclass
 class PrimerDesign:
     """information collected on one primer pair"""
@@ -35,30 +39,40 @@ class PrimerDesign:
     transcriptome_non_targets: Sequence[TranscriptomeHit]
 
     def genome_on_target_cnt(self):
-        return len(self.genome_on_targets)
+        return _len_none(self.genome_on_targets)
 
     def genome_off_target_cnt(self):
-        return len(self.genome_off_targets)
+        return _len_none(self.genome_off_targets)
 
     def genome_non_target_cnt(self):
-        return len(self.genome_non_targets)
+        return _len_none(self.genome_non_targets)
 
     def transcriptome_on_target_cnt(self):
-        return len(self.transcriptome_on_targets)
+        return _len_none(self.transcriptome_on_targets)
 
     def transcriptome_off_target_cnt(self):
-        return len(self.transcriptome_off_targets)
+        return _len_none(self.transcriptome_off_targets)
 
     def transcriptome_non_target_cnt(self):
-        return len(self.transcriptome_non_targets)
+        return _len_none(self.transcriptome_non_targets)
 
     def dump(self, fh):
         def _lfmt(l):
-            return '[' + ",\n\t".join([str(v) for v in l]) + '\n    ]'
+            if l is None:
+                return str(l)
+            else:
+                return '[' + ",\n\t".join([str(v) for v in l]) + '\n    ]'
+        def _print_p3_attr(attr):
+            print("   ", attr, self.primer3_pair[attr], file=fh)
         print(">>> PrimerDesign <<<", file=fh)
         print("    ppair_id", self.ppair_id, file=fh)
-        print("    features_5p", self.ppair_id, file=fh)
-        print("    features_3p", self.ppair_id, file=fh)
+        print("    features_5p", self.features_5p, file=fh)
+        print("    features_3p", self.features_3p, file=fh)
+        _print_p3_attr("PRIMER_LEFT")
+        _print_p3_attr("PRIMER_RIGHT")
+        _print_p3_attr("PRIMER_LEFT_SEQUENCE")
+        _print_p3_attr("PRIMER_RIGHT_SEQUENCE")
+        _print_p3_attr("PRIMER_PAIR_PRODUCT_SIZE")
         print("    genome_on_targets", _lfmt(self.genome_on_targets), file=fh)
         print("    genome_off_targets", _lfmt(self.genome_off_targets), file=fh)
         print("    genome_non_targets", _lfmt(self.genome_non_targets), file=fh)
@@ -85,12 +99,17 @@ class PrimerDesigns:
             design.dump(fh)
 
 def _get_exon_features(target_transcript, primer3_coords):
-    some_feat = target_transcript.features_5p[0]
+    feat0 = target_transcript.features_5p[0]
     start = primer3_coords[0] - 1  # one-based
     end = start + primer3_coords[1]  # has length
-    trans_coords = Coords(some_feat.trans.name, start, end,
-                          strand=some_feat.trans.strand, size=some_feat.trans.size)
-    return transcript_range_to_features(target_transcript.features, trans_coords)
+    trans_coords = Coords(feat0.trans.name, start, end,
+                          strand='+', size=feat0.trans.size)
+    feats = transcript_range_to_features(target_transcript.features, trans_coords)
+    print("primer3_coords", primer3_coords)
+    for i, feat in enumerate(feats):
+        print("   F", i, str(feat), str(feat.trans.reverse()))
+    return feats
+    #return transcript_range_to_features(target_transcript.features, trans_coords)
 
 def _validate_primer_features(features_5p, features_3p):
     for feature_5p in features_5p:
@@ -177,6 +196,7 @@ def _transcriptome_uniqueness_query(uniqueness_query, target_transcript, ppair_i
 
 def _build_primer_design(target_transcript, target_id, result_num, primer3_pair, uniqueness_query):
     ppair_id = "{}+pp{}".format(target_id, result_num)
+    print("\n@@", ppair_id)
     features_5p = _get_exon_features(target_transcript, primer3_pair.PRIMER_LEFT)
     features_3p = _get_exon_features(target_transcript, primer3_pair.PRIMER_RIGHT)
     _validate_primer_features(features_5p, features_3p)

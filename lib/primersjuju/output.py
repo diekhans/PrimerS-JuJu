@@ -28,13 +28,16 @@ UNIQ_OFF_COLOR = SvgColors.red
 UNIQ_NON_COLOR = SvgColors.purple
 
 
-def _coords_to_bed(name, color, coords_list, extra_cols=None):
+def _coords_to_bed(name, color, coords_list, *, strand=None, extra_cols=None):
     coords_list = sorted(coords_list, key=lambda c: (c.name, c.start, c.end))
     first = coords_list[0]
     last = coords_list[-1]
+    if strand is None:
+        strand = first.strand
+    assert strand is not None
 
     bed = Bed(first.name, first.start, last.end, name,
-              strand=first.strand, thickStart=first.start, thickEnd=last.end,
+              strand=strand, thickStart=first.start, thickEnd=last.end,
               itemRgb=color.toRgb8Str(), numStdCols=12,
               extraCols=extra_cols)
     for coords in coords_list:
@@ -44,12 +47,14 @@ def _coords_to_bed(name, color, coords_list, extra_cols=None):
 def build_target_beds(primer_targets):
     # specified target regions
     target_beds = [_coords_to_bed(primer_targets.target_id, TARGET_SPEC_COLOR,
-                                  [primer_targets.region_5p, primer_targets.region_3p])]
+                                  [primer_targets.region_5p, primer_targets.region_3p],
+                                  strand=primer_targets.strand)]
 
     # features in transcripts
     trans0 = primer_targets.transcripts[0]
     feat_beds = [_coords_to_bed(trans0.trans_id, TARGET_FEAT_COLOR,
-                                trans0.features_5p.genome_coords_type(ExonFeature) + trans0.features_3p.genome_coords_type(ExonFeature))]
+                                trans0.features_5p.genome_coords_type(ExonFeature) + trans0.features_3p.genome_coords_type(ExonFeature),
+                                strand=primer_targets.strand)]
     return target_beds + feat_beds
 
 _primer_bed_columns = (
@@ -106,14 +111,15 @@ def _primer_color(primer_design):
     else:
         return PRIMERS_NONE_COLOR
 
-def _primer_to_bed(primer_design):
+def _primer_to_bed(primer_designs, primer_design):
     coords_list = (features_to_genomic_coords(primer_design.features_5p, ExonFeature) +
                    features_to_genomic_coords(primer_design.features_3p, ExonFeature))
     return _coords_to_bed(primer_design.ppair_id, _primer_color(primer_design), coords_list,
-                          _get_extra_cols(primer_design))
+                          strand=primer_designs.primer_targets.strand,
+                          extra_cols=_get_extra_cols(primer_design))
 
 def build_primer_beds(primer_designs):
-    return [_primer_to_bed(pd) for pd in primer_designs.designs]
+    return [_primer_to_bed(primer_designs, pd) for pd in primer_designs.designs]
 
 def _genome_hit_to_bed(hit, name, color):
     return _coords_to_bed(name, color, (hit.left_coords, hit.right_coords))
@@ -237,7 +243,7 @@ def output_target_debug(outdir, primer_targets, primer_designs):
     target_transcript = primer_targets.transcripts[0]
     fileOps.ensureDir(outdir)
     with open(_get_out_path(outdir, primer_targets, "debug.txt"), 'w') as fh:
-        print("target_id", primer_targets.target_id, file=fh)
+        primer_targets.dump(fh)
         print("annotated_rna:", primer3_annotate_rna(primer_targets.transcripts[0]), file=fh)
         primer3_dump_args(fh, target_transcript)
         print(file=fh)

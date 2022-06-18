@@ -10,14 +10,17 @@ class Feature(namedtuple("Feature", ("genome", "trans"))):
     """annotation feature, both genome and transcript coordinates (for Exons)"""
 
     def __str__(self):
-        return f"{self.__class__.__name__}(genome={str(self.genome)}, trans={str(self.trans)})"
+        return f"{self.__class__.__name__}(genome={str(self.genome)}/{self.genome.strand}, trans={str(self.trans)}/{self.trans.strand})"
 
     def intersect_genome(self, other):
-        "intersect with genomic coordinates, None if no intersection"
+        """intersect with genomic coordinates, None if no intersection,
+        if other is on the opposite strand, switch other to match."""
         if not isinstance(other, Coords):
             raise ValueError(f"bad object type: {type(other)}, expected {Coords}")
         if other.name != self.genome.name:
             raise ValueError(f"mismatch genome sequence name '{other.name}', expected '{self.genome.name}'")
+        if other.strand != self.genome.strand:
+            other = other.reverse()
         genome_intr = self.genome.intersect(other)
         if len(genome_intr) == 0:
             return None
@@ -39,13 +42,16 @@ class Feature(namedtuple("Feature", ("genome", "trans"))):
             raise PrimersJuJuError("intersect_genome not support on base Feature class")
 
     def intersect_transcript(self, other):
-        "intersect with transcript coordinates, None if no intersection"
+        """intersect with transcript coordinates, None if no intersection,
+        if other is on the opposite strand, switch other to match."""
         if not isinstance(other, Coords):
             raise ValueError(f"bad object type: {type(other)}, expected {Coords}")
         if other.name != self.trans.name:
             raise ValueError(f"mismatch transcript name '{other.name}', expected '{self.trans.name}'")
         if isinstance(self, IntronFeature):
             return None
+        if other.strand != self.trans.strand:
+            other = other.reverse()
         trans_intr = self.trans.intersect(other)
         if len(trans_intr) == 0:
             return None
