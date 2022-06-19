@@ -28,16 +28,18 @@ UNIQ_OFF_COLOR = SvgColors.red
 UNIQ_NON_COLOR = SvgColors.purple
 
 
-def _coords_to_bed(name, color, coords_list, *, strand=None, extra_cols=None):
+def _coords_to_bed(name, color, coords_list, *, strand=None, extra_cols=None, thick_coords=None):
     coords_list = sorted(coords_list, key=lambda c: (c.name, c.start, c.end))
     first = coords_list[0]
     last = coords_list[-1]
     if strand is None:
         strand = first.strand
     assert strand is not None
+    #FIXME enable once other bug is fixed: if thick_coords is None:
+    thick_coords = first.adjrange(first.start, last.end)
 
-    bed = Bed(first.name, first.start, last.end, name,
-              strand=strand, thickStart=first.start, thickEnd=last.end,
+    bed = Bed(first.name, first.start, last.end, name, strand=strand,
+              thickStart=thick_coords.start, thickEnd=thick_coords.end,
               itemRgb=color.toRgb8Str(), numStdCols=12,
               extraCols=extra_cols)
     for coords in coords_list:
@@ -50,11 +52,15 @@ def build_target_beds(primer_targets):
                                   [primer_targets.region_5p, primer_targets.region_3p],
                                   strand=primer_targets.strand)]
 
-    # features in transcripts
+    # transcript, with amplicon as thick
     trans0 = primer_targets.transcripts[0]
+
+    features_first, features_last= trans0.get_genome_ordered_features()
+    thick_coords = trans0.trans_coords.adjrange(features_first[0].genome.start,
+                                                features_last[-1].genome.end)
     feat_beds = [_coords_to_bed(trans0.trans_id, TARGET_FEAT_COLOR,
                                 trans0.features_5p.genome_coords_type(ExonFeature) + trans0.features_3p.genome_coords_type(ExonFeature),
-                                strand=primer_targets.strand)]
+                                strand=primer_targets.strand, thick_coords=thick_coords)]
     return target_beds + feat_beds
 
 _primer_bed_columns = (

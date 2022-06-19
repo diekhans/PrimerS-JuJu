@@ -4,8 +4,8 @@ region_3p: chr20:49987886-49988699
 strand: +
 transcripts:
 transcript: WTC11_consolidated FSM_23673
-region_5p: Feature(genome=chr20:49983001-49983051, trans=FSM_23673:22-72)
-region_3p: Feature(genome=chr20:49987886-49988699, trans=FSM_23673:705-1518)
+region_5p: Feature(genome=chr20:49983001-49983051/+, trans=FSM_23673:22-72/+)
+region_3p: Feature(genome=chr20:49987886-49988699/+, trans=FSM_23673:705-1518/+)
 features_5p:
 [   ExonFeature(genome=Coords(name='chr20', start=49983001, end=49983051, strand='+', size=64444167), trans=Coords(name='FSM_23673', start=22, end=72, strand='+', size=1703))]
 features_3p:
@@ -175,8 +175,8 @@ Primer3Pair 4:
     ]
     genome_non_targets [
     ]
-    transcriptome_on_targets [TranscriptomeHit(left=[ExonFeature(genome=chr20:49983006-49983026, trans=ENST00000244050.3:27-47)
-    ],right=[ExonFeature(genome=chr20:49988321-49988341, trans=ENST00000244050.3:1140-1160)
+    transcriptome_on_targets [TranscriptomeHit(left=[ExonFeature(genome=chr20:49983006-49983026/+, trans=ENST00000244050.3:27-47/+)
+    ],right=[ExonFeature(genome=chr20:49988321-49988341/+, trans=ENST00000244050.3:1140-1160/+)
     ])
     ]
     transcriptome_off_targets [
@@ -198,8 +198,8 @@ Primer3Pair 4:
     ]
     genome_non_targets [
     ]
-    transcriptome_on_targets [TranscriptomeHit(left=[ExonFeature(genome=chr20:49983006-49983026, trans=ENST00000244050.3:27-47)
-    ],right=[ExonFeature(genome=chr20:49988261-49988281, trans=ENST00000244050.3:1080-1100)
+    transcriptome_on_targets [TranscriptomeHit(left=[ExonFeature(genome=chr20:49983006-49983026/+, trans=ENST00000244050.3:27-47/+)
+    ],right=[ExonFeature(genome=chr20:49988261-49988281/+, trans=ENST00000244050.3:1080-1100/+)
     ])
     ]
     transcriptome_off_targets [
@@ -221,8 +221,8 @@ Primer3Pair 4:
     ]
     genome_non_targets [
     ]
-    transcriptome_on_targets [TranscriptomeHit(left=[ExonFeature(genome=chr20:49983006-49983026, trans=ENST00000244050.3:27-47)
-    ],right=[ExonFeature(genome=chr20:49988188-49988208, trans=ENST00000244050.3:1007-1027)
+    transcriptome_on_targets [TranscriptomeHit(left=[ExonFeature(genome=chr20:49983006-49983026/+, trans=ENST00000244050.3:27-47/+)
+    ],right=[ExonFeature(genome=chr20:49988188-49988208/+, trans=ENST00000244050.3:1007-1027/+)
     ])
     ]
     transcriptome_off_targets [
@@ -244,8 +244,8 @@ Primer3Pair 4:
     ]
     genome_non_targets [
     ]
-    transcriptome_on_targets [TranscriptomeHit(left=[ExonFeature(genome=chr20:49983006-49983026, trans=ENST00000244050.3:27-47)
-    ],right=[ExonFeature(genome=chr20:49988571-49988591, trans=ENST00000244050.3:1390-1410)
+    transcriptome_on_targets [TranscriptomeHit(left=[ExonFeature(genome=chr20:49983006-49983026/+, trans=ENST00000244050.3:27-47/+)
+    ],right=[ExonFeature(genome=chr20:49988571-49988591/+, trans=ENST00000244050.3:1390-1410/+)
     ])
     ]
     transcriptome_off_targets [
@@ -267,8 +267,8 @@ Primer3Pair 4:
     ]
     genome_non_targets [
     ]
-    transcriptome_on_targets [TranscriptomeHit(left=[ExonFeature(genome=chr20:49983006-49983026, trans=ENST00000244050.3:27-47)
-    ],right=[ExonFeature(genome=chr20:49988150-49988170, trans=ENST00000244050.3:969-989)
+    transcriptome_on_targets [TranscriptomeHit(left=[ExonFeature(genome=chr20:49983006-49983026/+, trans=ENST00000244050.3:27-47/+)
+    ],right=[ExonFeature(genome=chr20:49988150-49988170/+, trans=ENST00000244050.3:969-989/+)
     ])
     ]
     transcriptome_off_targets [

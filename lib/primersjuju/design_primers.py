@@ -62,6 +62,7 @@ class PrimerDesign:
                 return str(l)
             else:
                 return '[' + ",\n\t".join([str(v) for v in l]) + '\n    ]'
+
         def _print_p3_attr(attr):
             print("   ", attr, self.primer3_pair[attr], file=fh)
         print(">>> PrimerDesign <<<", file=fh)
@@ -99,17 +100,12 @@ class PrimerDesigns:
             design.dump(fh)
 
 def _get_exon_features(target_transcript, primer3_coords):
-    feat0 = target_transcript.features_5p[0]
+    feat0 = target_transcript.features[0]
     start = primer3_coords[0] - 1  # one-based
-    end = start + primer3_coords[1]  # has length
-    trans_coords = Coords(feat0.trans.name, start, end,
-                          strand='+', size=feat0.trans.size)
-    feats = transcript_range_to_features(target_transcript.features, trans_coords)
-    print("primer3_coords", primer3_coords)
-    for i, feat in enumerate(feats):
-        print("   F", i, str(feat), str(feat.trans.reverse()))
-    return feats
-    #return transcript_range_to_features(target_transcript.features, trans_coords)
+    end = start + primer3_coords[1]  # length
+    primer_trans_coords = Coords(feat0.trans.name, start, end,
+                                 strand='+', size=feat0.trans.size)
+    return transcript_range_to_features(target_transcript.features, primer_trans_coords)
 
 def _validate_primer_features(features_5p, features_3p):
     for feature_5p in features_5p:
@@ -140,9 +136,9 @@ def _check_coords_overlap(features, coordses):
 
 def _check_hit_overlap(target_transcript, left_coordses, right_coordses):
     """check overlap based on list of genomic coordinates"""
-    features_5p, features_3p = target_transcript.get_genome_ordered_features()
-    return (_check_coords_overlap(features_5p, left_coordses) and
-            _check_coords_overlap(features_3p, right_coordses))
+    features_first, features_last = target_transcript.get_genome_ordered_features()
+    return (_check_coords_overlap(features_first, left_coordses) and
+            _check_coords_overlap(features_last, right_coordses))
 
 def _check_genome_hit_overlap(target_transcript, hit):
     """does a genome uniqueness hit correspond to the target regions"""
@@ -196,7 +192,6 @@ def _transcriptome_uniqueness_query(uniqueness_query, target_transcript, ppair_i
 
 def _build_primer_design(target_transcript, target_id, result_num, primer3_pair, uniqueness_query):
     ppair_id = "{}+pp{}".format(target_id, result_num)
-    print("\n@@", ppair_id)
     features_5p = _get_exon_features(target_transcript, primer3_pair.PRIMER_LEFT)
     features_3p = _get_exon_features(target_transcript, primer3_pair.PRIMER_RIGHT)
     _validate_primer_features(features_5p, features_3p)

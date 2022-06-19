@@ -4,8 +4,8 @@ region_3p: chr19:47221197-47221914
 strand: -
 transcripts:
 transcript: WTC11_consolidated FSM_45580
-region_5p: Feature(genome=chr19:47228327-47231039, trans=FSM_45580:1456-1686)
-region_3p: Feature(genome=chr19:47221197-47221914, trans=FSM_45580:374-1091)
+region_5p: Feature(genome=chr19:47228327-47231039/+, trans=FSM_45580:1456-1686/-)
+region_3p: Feature(genome=chr19:47221197-47221914/+, trans=FSM_45580:374-1091/-)
 features_5p:
 [   ExonFeature(genome=Coords(name='chr19', start=47228327, end=47228446, strand='+', size=58617616), trans=Coords(name='FSM_45580', start=1456, end=1575, strand='-', size=1841)),
     IntronFeature(genome=Coords(name='chr19', start=47228446, end=47230928, strand='+', size=58617616), trans=Coords(name='FSM_45580', start=1575, end=1575, strand='-', size=1841)),

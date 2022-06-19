@@ -59,13 +59,8 @@ class Feature(namedtuple("Feature", ("genome", "trans"))):
             assert other.contains(trans_intr), f"{other}.contains({trans_intr})"
             assert self.trans.contains(trans_intr), f"{self.trans}.contains({trans_intr})"
             trans_off = (trans_intr.start - self.trans.start)
-            if self.genome.strand == self.trans.strand:
-                genome_start = self.genome.start + trans_off
-                genome_end = genome_start + len(trans_intr)
-            else:
-                genome_end = self.genome.end - trans_off
-                genome_start = genome_end - len(trans_intr)
-
+            genome_start = self.genome.start + trans_off
+            genome_end = genome_start + len(trans_intr)
             assert genome_start < genome_end
             genome_intr = Coords(self.genome.name, genome_start, genome_end,
                                  self.genome.strand, self.genome.size)
@@ -105,6 +100,7 @@ class Features(list):
             if isinstance(f, ftype):
                 yield f
 
+    # FIXME: weird names
     def genome_coords_type(self, ftype):
         return [f.genome for f in self.iter_type(ftype)]
 

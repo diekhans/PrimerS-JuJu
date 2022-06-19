@@ -6,8 +6,7 @@ tests cover
 
 import pytest
 from pycbio.hgdata.coords import Coords
-from pycbio.sys import fileOps
-from primersjuju.transcript_features import ExonFeature, IntronFeature, bed_to_features, features_intersect_genome
+from primersjuju.transcript_features import ExonFeature, IntronFeature, bed_to_features, features_intersect_genome, transcript_range_to_features
 from primersjuju.primer_targets import primer_targets_build
 
 
@@ -131,12 +130,6 @@ def test_target_build_junc2(genome_data, example_wtc11_targets_specs_set1):
                              [ExonFeature(genome=Coords(name='chr19', start=47221197, end=47221914, strand='+', size=58617616),
                                           trans=Coords(name='FSM_45580', start=374, end=1091, strand='-', size=1841))])
 
-##
-# test data for coordinate intersection and mapping
-##
-
-
-
 def test_genome_inter_pos_pos():
     feat = ExonFeature(Coords("chr24", 6, 12, strand='+', size=24),
                        Coords("tr12", 0, 12, strand='+', size=12))
@@ -149,14 +142,42 @@ def test_genome_inter_pos_pos():
     feat_intr2 = feat.intersect_genome(grange.reverse())
     assert feat_intr2 == expect
 
-def test_genome_inter_pos_neg():
+def test_trans_inter_pos_neg():
     feat = ExonFeature(Coords("chr24", 6, 12, strand='+', size=24),
                        Coords("tr12", 0, 12, strand='-', size=12))
-    grange = Coords("chr24", 3, 8, strand='+', size=24)
+    trange = Coords("tr12", 3, 8, strand='+', size=12)
 
-    feat_intr1 = feat.intersect_genome(grange)
-    expect = ExonFeature(genome=Coords(name='chr24', start=6, end=8, strand='+', size=24),
-                         trans=Coords(name='tr12', start=0, end=2, strand='-', size=12))
+    feat_intr1 = feat.intersect_transcript(trange)
+    expect = ExonFeature(genome=Coords(name='chr24', start=10, end=15, strand='+', size=24),
+                         trans=Coords(name='tr12', start=4, end=9, strand='-', size=12))
     assert feat_intr1 == expect
-    feat_intr2 = feat.intersect_genome(grange.reverse())
+    feat_intr2 = feat.intersect_transcript(trange.reverse())
     assert feat_intr2 == expect
+
+def test_transcript_mapping():
+    # ZBTB45+1 / FSM_45682
+    transcript_features = [
+        ExonFeature(genome=Coords(name='chr19', start=58513529, end=58514310, strand='+', size=58617616),
+                    trans=Coords(name='FSM_45682', start=0, end=781, strand='-', size=2136)),
+        IntronFeature(genome=Coords(name='chr19', start=58514310, end=58516394, strand='+', size=58617616),
+                      trans=Coords(name='FSM_45682', start=781, end=781, strand='-', size=2136)),
+        ExonFeature(genome=Coords(name='chr19', start=58516394, end=58517673, strand='+', size=58617616),
+                    trans=Coords(name='FSM_45682', start=781, end=2060, strand='-', size=2136)),
+        IntronFeature(genome=Coords(name='chr19', start=58517673, end=58519741, strand='+', size=58617616),
+                      trans=Coords(name='FSM_45682', start=2060, end=2060, strand='-', size=2136)),
+        ExonFeature(genome=Coords(name='chr19', start=58519741, end=58519817, strand='+', size=58617616),
+                    trans=Coords(name='FSM_45682', start=2060, end=2136, strand='-', size=2136))]
+
+    primer_trans_coord_5p = Coords(name='FSM_45682', start=61, end=81, strand='+', size=2136)
+    primer_trans_coord_3p = Coords(name='FSM_45682', start=1403, end=1423, strand='+', size=2136)
+
+    genome_features_5p = transcript_range_to_features(transcript_features, primer_trans_coord_5p)
+
+    assert genome_features_5p == [
+        ExonFeature(genome=Coords(name='chr19', start=58517668, end=58517673, strand='+', size=58617616), trans=Coords(name='FSM_45682', start=2055, end=2060, strand='-', size=2136)),
+        ExonFeature(genome=Coords(name='chr19', start=58519741, end=58519756, strand='+', size=58617616), trans=Coords(name='FSM_45682', start=2060, end=2075, strand='-', size=2136))
+    ]
+    genome_features_3p = transcript_range_to_features(transcript_features, primer_trans_coord_3p)
+    assert genome_features_3p == [
+        ExonFeature(genome=Coords(name='chr19', start=58514242, end=58514262, strand='+', size=58617616), trans=Coords(name='FSM_45682', start=713, end=733, strand='-', size=2136))
+    ]
