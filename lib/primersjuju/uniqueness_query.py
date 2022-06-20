@@ -32,7 +32,7 @@ class IsPcrServerSpec:
 
 @dataclass
 class GenomeHit:
-    "one isPcr hit to the genome, in positive genomic coords"
+    "one isPcr hit to the genome, in positive genomic coords and order"
     left_coords: Coords
     right_coords: Coords
     alignment: Psl
@@ -46,7 +46,7 @@ class GenomeHit:
 
 @dataclass
 class TranscriptomeHit:
-    "one isPcr hit to a transcript, with mappings back to genome, in positive genomic coords"
+    "one isPcr hit to a transcript, with mappings back to genome, in positive genomic coordinates and order"
     trans_id: str
     gene_name: str
     left_features: Features
@@ -111,6 +111,8 @@ def _trans_psl_to_hit(trans_to_features, psl):
     # multiple features per primer if crosses splice sites
     features_list = [_trans_range_to_features(trans_features, coords)
                      for coords in coords_list]
+    if features_list[0][0].genome.start > features_list[1][0].genome.start:
+        features_list.reverse()   # put in genomic order
     return TranscriptomeHit(trans_id, gene_name, *features_list, psl)
 
 

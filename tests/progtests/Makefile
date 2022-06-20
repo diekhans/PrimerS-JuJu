@@ -31,6 +31,7 @@ test-design-good3: mkdirs
 	${diff_results}
 	bedToBigBed -tab -type=bed12+ -as=${ROOT}/etc/bigPrimerBed.as -sizesIsBb -extraIndex=name \
 	   output/test-design-good3/ZBTB45+1/ZBTB45+1.primers.bed ${chromAlias_hg38} output/$@/ZBTB45+1.bb
+	rm output/$@/ZBTB45+1.bb
 
 test-design-subset: mkdirs
 	rm -rf output/$@

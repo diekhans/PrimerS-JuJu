@@ -31,7 +31,7 @@ def test_uniqueness_query_transcriptome_junc(hg38_uniqueness_query):
     # this failed to find one spanning the intron
     hits = hg38_uniqueness_query.query_transcriptome("ZBTB45+1", ZBTB45_PRIMER_LEFT_SEQUENCE, ZBTB45_PRIMER_RIGHT_SEQUENCE, 200000)
     assert hits == [TranscriptomeHit(trans_id='ENST00000594051.6', gene_name='ZBTB45',
-                                     left_features=[ExonFeature(genome=Coords(name='chr19', start=58517667, end=58517673, strand='+', size=58617616), trans=Coords(name='ENST00000594051.6', start=2054, end=2060, strand='-', size=2129)),
-                                                    ExonFeature(genome=Coords(name='chr19', start=58519741, end=58519755, strand='+', size=58617616), trans=Coords(name='ENST00000594051.6', start=2060, end=2074, strand='-', size=2129))],
-                                     right_features=[ExonFeature(genome=Coords(name='chr19', start=58514260, end=58514280, strand='+', size=58617616), trans=Coords(name='ENST00000594051.6', start=731, end=751, strand='-', size=2129))],
+                                     left_features=[ExonFeature(genome=Coords(name='chr19', start=58514260, end=58514280, strand='+', size=58617616), trans=Coords(name='ENST00000594051.6', start=731, end=751, strand='-', size=2129))],
+                                     right_features=[ExonFeature(genome=Coords(name='chr19', start=58517667, end=58517673, strand='+', size=58617616), trans=Coords(name='ENST00000594051.6', start=2054, end=2060, strand='-', size=2129)),
+                                                     ExonFeature(genome=Coords(name='chr19', start=58519741, end=58519755, strand='+', size=58617616), trans=Coords(name='ENST00000594051.6', start=2060, end=2074, strand='-', size=2129))],
                                      alignment=Psl.fromRow(['40', '0', '0', '0', '1', '1303', '1', '1303', '+', 'ZBTB45+1', '1343', '0', '1343', 'ENST00000594051.6__ZBTB45', '2129', '55', '1398', '2', '20,20,', '0,1323,', '55,1378,']))]

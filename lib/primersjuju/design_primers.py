@@ -123,7 +123,7 @@ def _is_target_chrom(genome_data, chrom_name):
     all sequences are conserved a target.
     """
     if genome_data.assembly_info is None:
-        # no information so consider in a possible target
+        # no information so consider this a possible target
         return True
     chrom_info = genome_data.assembly_info.getByName(chrom_name)
     return ((chrom_info.sequenceRole == "assembled-molecule") and
@@ -173,7 +173,7 @@ def _check_transcriptome_hit_overlap(target_transcript, hit):
                               hit.left_features.genome_coords_type(ExonFeature),
                               hit.right_features.genome_coords_type(ExonFeature))
 
-def _transcriptome_uniqueness_check(genome_data, target_transcript, hits):
+def _transcriptome_uniqueness_classify(genome_data, target_transcript, hits):
     on_targets = []
     off_targets = []
     non_targets = []
@@ -190,7 +190,7 @@ def _transcriptome_uniqueness_query(uniqueness_query, target_transcript, ppair_i
     """guery to find transcriptome on and off target hits via an alignment method"""
     max_size = 500_000  # arbitrary
     hits = uniqueness_query.query_transcriptome(ppair_id, primer3_pair.PRIMER_LEFT_SEQUENCE, primer3_pair.PRIMER_RIGHT_SEQUENCE, max_size)
-    return _transcriptome_uniqueness_check(uniqueness_query.genome_data, target_transcript, hits)
+    return _transcriptome_uniqueness_classify(uniqueness_query.genome_data, target_transcript, hits)
 
 def _build_primer_design(target_transcript, target_id, result_num, primer3_pair, uniqueness_query):
     ppair_id = "{}+pp{}".format(target_id, result_num)
