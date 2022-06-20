@@ -4,6 +4,7 @@ region_3p: chr19:58513744-58514287
 strand: -
 transcripts:
 transcript: WTC11_consolidated FSM_45682
+coords: chr19:58513529-58519817
 region_5p: Feature(genome=chr19:58517554-58519807/+, trans=FSM_45682:1941-2126/-)
 region_3p: Feature(genome=chr19:58513744-58514287/+, trans=FSM_45682:215-758/-)
 features_5p:

@@ -53,7 +53,7 @@ class TargetTranscript:
     def dump(self, dump_fh):
         pp = pprint.PrettyPrinter(stream=dump_fh, sort_dicts=False, indent=4)
         print("transcript:", self.track_name, self.trans_id, file=dump_fh)
-        print("coords:", str(self.trans_coords))
+        print("coords:", str(self.trans_coords), file=dump_fh)
         print("region_5p:", self.region_5p, file=dump_fh)
         print("region_3p:", self.region_3p, file=dump_fh)
         print("features_5p:", file=dump_fh)

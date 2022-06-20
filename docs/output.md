@@ -20,7 +20,7 @@ Color coding:
 * orange  - a primer that has both on-target and off-target mappings when querying both the genome and transcriptome.
 * red - a primer that only has off-target mappings when querying both the genome and transcriptome.
 * purple - primer that is only has mappings to non-target chromosomes when querying both the genome and transcriptome.  A non-target chromosome is an alternate or patch sequence
-* orangered - primer that is no mappings when querying both the genome and transcriptome.
+* darkorange - primer that is no mappings when querying both the genome and transcriptome.
 
 # uniquness track
 

@@ -10,21 +10,21 @@ test: lib-tests prog-tests
 test-fast: lib-tests-fast prog-tests-fast
 
 lib-tests:
-	${PYTEST} ${tests}
+	cd libtests && ${MAKE} $@
 
 lib-tests-fast:
-	${PYTEST} --ignore=libtests/test_design_primers.py ${tests}
+	cd libtests && ${MAKE} $@
 
 prog-tests:
-	cd progtests && ${MAKE} prog-tests
+	cd progtests && ${MAKE} $@
 
 prog-tests-fast:
-	cd progtests && ${MAKE} prog-tests-fast
+	cd progtests && ${MAKE} $@
 
 
 lint:
-	cd .. && ${MAKE} lint
+	cd ${ROOT} && ${MAKE} lint
 
 clean:
-	rm -rf output
-	cd progtests && ${MAKE} clean
+	cd libtests && ${MAKE} $@
+	cd progtests && ${MAKE} $@

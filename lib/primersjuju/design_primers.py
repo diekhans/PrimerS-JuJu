@@ -30,6 +30,7 @@ class PrimerDesign:
     features_5p: Features
     features_3p: Features
     # results from uniqueness query, non_target are ones on sequences liked fixes and alts
+    # None if uniqueness check was not done.
     genome_on_targets: Sequence[GenomeHit]
     genome_off_targets: Sequence[GenomeHit]
     genome_non_targets: Sequence[GenomeHit]
@@ -89,6 +90,7 @@ class PrimerDesigns:
     primer_targets: PrimerTargets
     target_transcript: TargetTranscript
     primer3_results: Primer3Results
+    uniqueness_checked: bool
     designs: Sequence[PrimerDesign]
     status: DesignStatus
 
@@ -225,8 +227,8 @@ def get_design_status(primer_design_list) -> DesignStatus:
 def _build_primer_designs(primer_targets, target_transcript, primer3_results, uniqueness_query):
     primer_design_list = [_build_primer_design(target_transcript, primer_targets.target_id, i + 1, pair, uniqueness_query)
                           for i, pair in enumerate(primer3_results.pairs)]
-    return PrimerDesigns(primer_targets.target_id,
-                         primer_targets, target_transcript, primer3_results,
+    return PrimerDesigns(primer_targets.target_id, primer_targets, target_transcript, primer3_results,
+                         uniqueness_query is not None,
                          primer_design_list, get_design_status(primer_design_list))
 
 def design_primers(genome_data, primer_targets, *, uniqueness_query=None):

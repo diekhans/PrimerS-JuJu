@@ -1,5 +1,6 @@
-* TargetTranscripts is a poor name, this really describe the whole design target
-DesignTarget?
 * renamed ppair_id
 * primer_design -> design_pairs
 * rename to indicated if they are features_5p, features_3p are genome or transcriptome order
+* created primers that went beyond 3' end of region.  This maybe something primer3 does
+see test_design_primers_guts.py test_FBXL16(request, genome_data, wtc11_targets_specs_set1):
+

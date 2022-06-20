@@ -19,7 +19,7 @@ TARGET_FEAT_COLOR = SvgColors.green
 PRIMERS_ON_COLOR = SvgColors.green
 PRIMERS_ON_OFF_COLOR = SvgColors.orange
 PRIMERS_OFF_COLOR = SvgColors.red
-PRIMERS_NONE_COLOR = SvgColors.orangered
+PRIMERS_NONE_COLOR = SvgColors.darkorange
 PRIMERS_NON_COLOR = SvgColors.purple
 
 # uniquness track
@@ -35,8 +35,8 @@ def _coords_to_bed(name, color, coords_list, *, strand=None, extra_cols=None, th
     if strand is None:
         strand = first.strand
     assert strand is not None
-    #FIXME enable once other bug is fixed: if thick_coords is None:
-    thick_coords = first.adjrange(first.start, last.end)
+    if thick_coords is None:
+        thick_coords = first.adjrange(first.start, last.end)
 
     bed = Bed(first.name, first.start, last.end, name, strand=strand,
               thickStart=thick_coords.start, thickEnd=thick_coords.end,
@@ -55,7 +55,7 @@ def build_target_beds(primer_targets):
     # transcript, with amplicon as thick
     trans0 = primer_targets.transcripts[0]
 
-    features_first, features_last= trans0.get_genome_ordered_features()
+    features_first, features_last = trans0.get_genome_ordered_features()
     thick_coords = trans0.trans_coords.adjrange(features_first[0].genome.start,
                                                 features_last[-1].genome.end)
     feat_beds = [_coords_to_bed(trans0.trans_id, TARGET_FEAT_COLOR,
@@ -217,9 +217,11 @@ def _make_uniqeness_hits_browser_coords(hits):
     """this makes a list of coordinates, there isn't a way to add multiple
     hyperlinks to a cell via a TSV"""
     # drop duplicates
-    coords_list = sorted(set([h.get_genome_range() for h in hits]))
-
-    return ", ".join([str(c) for c in coords_list])
+    if hits is None:
+        return ""
+    else:
+        coords_list = sorted(set([h.get_genome_range() for h in hits]))
+        return ", ".join([str(c) for c in coords_list])
 
 def _write_primer_pair_design(fh, primer_designs, primer_design, first, hub_urls):
     "write one design, if primer_design is None, it means there were no primers found"
@@ -264,10 +266,11 @@ def output_target_beds(outdir, primer_targets, primer_designs):
                 _get_out_path(outdir, primer_targets, "target.bed"))
     _write_beds(build_primer_beds(primer_designs),
                 _get_out_path(outdir, primer_targets, "primers.bed"))
-    _write_beds(build_genome_uniqueness_hits_beds(primer_designs),
-                _get_out_path(outdir, primer_targets, "genome-uniqueness.bed"))
-    _write_beds(build_transcriptome_uniqueness_hits_beds(primer_designs),
-                _get_out_path(outdir, primer_targets, "transcriptome-uniqueness.bed"))
+    if primer_designs.uniqueness_checked:
+        _write_beds(build_genome_uniqueness_hits_beds(primer_designs),
+                    _get_out_path(outdir, primer_targets, "genome-uniqueness.bed"))
+        _write_beds(build_transcriptome_uniqueness_hits_beds(primer_designs),
+                    _get_out_path(outdir, primer_targets, "transcriptome-uniqueness.bed"))
 
 def _write_primer_designs(fh, primer_designs, hub_urls):
     fileOps.prRow(fh, _design_tsv_header)

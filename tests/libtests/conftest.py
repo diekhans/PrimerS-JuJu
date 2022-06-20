@@ -26,9 +26,12 @@ def genome_data():
 def example_targets_specs():
     return primer_target_specs_read(osp.join(mydir, "../../docs/primer-targets-example.tsv"))
 
+@pytest.fixture(scope="session")
+def wtc11_track(genome_data):
+    return genome_data.get_track("WTC11_consolidated")
 
 @pytest.fixture(scope="session")
-def example_wtc11_targets_specs_set1():
+def wtc11_targets_specs_set1():
     return primer_target_specs_read(osp.join(mydir, "../input/LRGASP_WTC11_Target_set1.tsv"))
 
 @pytest.fixture(scope="session")

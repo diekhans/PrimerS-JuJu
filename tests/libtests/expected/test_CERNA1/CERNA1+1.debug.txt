@@ -4,6 +4,7 @@ region_3p: chr15:52205137-52205695
 strand: +
 transcripts:
 transcript: WTC11_consolidated FSM_12039
+coords: chr15:52180000-52206281
 region_5p: Feature(genome=chr15:52180131-52181192/+, trans=FSM_12039:131-544/+)
 region_3p: Feature(genome=chr15:52205137-52205695/+, trans=FSM_12039:803-1361/+)
 features_5p:
