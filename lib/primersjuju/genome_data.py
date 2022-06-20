@@ -78,12 +78,11 @@ class GenomeData:
         except KeyError:
             raise PrimersJuJuDataError(f"unknown annotation track: '{track_name}'")
 
-def bigbed_read_by_names(bigbed, names):
+def _bigbed_read_with_names(bigbed, names):
     # FIXME:
     # stdin=pipettor.DataWriter('\n'.join(names) + '\n')
     # for some reason work on MacOS, but not Linux
     transcript_beds = {}
-
     tmpNamesFile = fileOps.tmpFileGet()
     fileOps.writeLines(tmpNamesFile, names)
     with pipettor.Popen(['bigBedNamedItems', '-nameFile', bigbed, tmpNamesFile, '/dev/stdout'],
@@ -91,13 +90,22 @@ def bigbed_read_by_names(bigbed, names):
         for b in BedReader(fh):
             transcript_beds[b.name] = b
     os.unlink(tmpNamesFile)
+    return transcript_beds
 
+def _bigbed_read_check_names(bigbed, names, transcript_beds):
     missing_names = set(names) - set(transcript_beds.keys())
     if len(missing_names) > 0:
         plural = "s" if len(missing_names) > 1 else ""
         raise PrimersJuJuDataError(f"record{plural} not found in bigBed {bigbed}: " + ", ".join(sorted(missing_names)))
+
+def bigbed_read_by_names(bigbed, names):
+    transcript_beds = _bigbed_read_with_names(bigbed, names)
+    _bigbed_read_check_names(bigbed, names, transcript_beds)
     return transcript_beds
 
 def bigbed_read_by_name(bigbed, name):
-    transcript_beds = bigbed_read_by_names(bigbed, [name])
-    return transcript_beds[name]
+    return bigbed_read_by_names(bigbed, [name])[name]
+
+def bigbed_fetch_by_name(bigbed, name):
+    "returns None if not found"
+    return _bigbed_read_with_names(bigbed, [name]).get(name)

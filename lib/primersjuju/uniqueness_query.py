@@ -8,7 +8,7 @@ import pipettor
 from pycbio.hgdata.psl import Psl, PslReader
 from pycbio.hgdata.coords import Coords
 
-from .genome_data import bigbed_read_by_names
+from .genome_data import bigbed_read_by_name, bigbed_fetch_by_name
 from .transcript_features import Features, bed_to_features, transcript_range_to_features
 from . import PrimersJuJuError
 
@@ -21,7 +21,9 @@ def _coords_range(coords_list):
 @dataclass
 class IsPcrServerSpec:
     """Specification of an isPCR server, static or dynamic;
-    for genome or transcriptome"""
+    for genome or transcriptome.  Transcriptome BED either use
+    UCSSC isPcr server convention of <trans_id>__<gene_name> or
+    just gene_id, both are tried."""
     host: str
     port: str
     target_seq_dir: str  # contains 2bit matching one returned by server
@@ -47,6 +49,7 @@ class GenomeHit:
 @dataclass
 class TranscriptomeHit:
     "one isPcr hit to a transcript, with mappings back to genome, in positive genomic coordinates and order"
+    ispcr_id: str  # mayb be in the form <trans_id>__<gene_name> or just <trans_id>
     trans_id: str
     gene_name: str
     left_features: Features
@@ -88,11 +91,16 @@ def _split_transcriptome_id(ispcr_trans_id):
     """split id in the form ENST00000244050.3__SNAI1, second part is optional"""
     return ispcr_trans_id.split('__')
 
-def _trans_to_features(genome_data, transcriptome_spec, trans_pcr_psls):
-    """alignments of transcripts to the genome as features"""
-    trans_ids = set([_split_transcriptome_id(p.tName)[0] for p in trans_pcr_psls])
-    return {b.name: bed_to_features(genome_data, b)
-            for b in bigbed_read_by_names(transcriptome_spec.trans_bigbed, trans_ids).values()}
+def _get_transcriptome_bed(transcriptome_spec, ispcr_id, trans_id):
+    # try both names if different; fetch doesn't return an error
+    if ispcr_id == trans_id:
+        return bigbed_read_by_name(transcriptome_spec.trans_bigbed, trans_id)
+    else:
+        bed = bigbed_fetch_by_name(transcriptome_spec.trans_bigbed, ispcr_id)
+        if bed is not None:
+            return bed
+        else:
+            return bigbed_read_by_name(transcriptome_spec.trans_bigbed, trans_id)
 
 def _trans_range_to_features(trans_features, coords):
     """map a transcript range to features, with positive genome coordinates"""
@@ -101,11 +109,13 @@ def _trans_range_to_features(trans_features, coords):
         features = features.reverse()
     return features
 
-def _trans_psl_to_hit(trans_to_features, psl):
+def _trans_psl_to_hit(genome_data, transcriptome_spec, psl):
     _check_psl(psl)
     trans_id, gene_name = _split_transcriptome_id(psl.tName)
-    trans_features = trans_to_features[trans_id]
-    # transcript coordinates
+    trans_features = bed_to_features(genome_data,
+                                     _get_transcriptome_bed(transcriptome_spec, psl.tName, trans_id))
+
+    # hit transcript coordinates
     coords_list = [Coords(trans_id, psl.blocks[i].tStart, psl.blocks[i].tEnd, psl.tStrand, psl.tSize)
                    for i in range(2)]
     # multiple features per primer if crosses splice sites
@@ -113,7 +123,7 @@ def _trans_psl_to_hit(trans_to_features, psl):
                      for coords in coords_list]
     if features_list[0][0].genome.start > features_list[1][0].genome.start:
         features_list.reverse()   # put in genomic order
-    return TranscriptomeHit(trans_id, gene_name, *features_list, psl)
+    return TranscriptomeHit(psl.tName, trans_id, gene_name, *features_list, psl)
 
 
 class UniquenessQuery:
@@ -132,5 +142,4 @@ class UniquenessQuery:
     def query_transcriptome(self, name, left_primer, right_primer, max_size) -> Sequence[TranscriptomeHit]:
         """query for primer hits in transcriptome"""
         trans_pcr_psls = _gfPcr(self.transcriptome_spec, name, left_primer, right_primer, max_size)
-        trans_to_features = _trans_to_features(self.genome_data, self.transcriptome_spec, trans_pcr_psls)
-        return [_trans_psl_to_hit(trans_to_features, psl) for psl in trans_pcr_psls]
+        return [_trans_psl_to_hit(self.genome_data, self.transcriptome_spec, psl) for psl in trans_pcr_psls]
