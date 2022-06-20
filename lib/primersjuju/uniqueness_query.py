@@ -89,7 +89,11 @@ def _genome_psl_to_hit(psl):
 
 def _split_transcriptome_id(ispcr_trans_id):
     """split id in the form ENST00000244050.3__SNAI1, second part is optional"""
-    return ispcr_trans_id.split('__')
+    parts = ispcr_trans_id.split('__')
+    if len(parts) == 1:
+        return parts[0], None
+    else:
+        return parts
 
 def _get_transcriptome_bed(transcriptome_spec, ispcr_id, trans_id):
     # try both names if different; fetch doesn't return an error
