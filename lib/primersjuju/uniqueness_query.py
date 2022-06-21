@@ -95,16 +95,18 @@ def _split_transcriptome_id(ispcr_trans_id):
     else:
         return parts
 
-def _get_transcriptome_bed(transcriptome_spec, ispcr_id, trans_id):
+def _get_transcript_bed(transcriptome_spec, ispcr_id, trans_id):
     # try both names if different; fetch doesn't return an error
     if ispcr_id == trans_id:
-        return bigbed_read_by_name(transcriptome_spec.trans_bigbed, trans_id)
+        bed = bigbed_read_by_name(transcriptome_spec.trans_bigbed, trans_id)
     else:
         bed = bigbed_fetch_by_name(transcriptome_spec.trans_bigbed, ispcr_id)
-        if bed is not None:
-            return bed
-        else:
-            return bigbed_read_by_name(transcriptome_spec.trans_bigbed, trans_id)
+        if bed is None:
+            # error if not found
+            bed = bigbed_read_by_name(transcriptome_spec.trans_bigbed, trans_id)
+    # fix up BED id to match psl
+    bed.name = ispcr_id
+    return bed
 
 def _trans_range_to_features(trans_features, coords):
     """map a transcript range to features, with positive genome coordinates"""
@@ -115,12 +117,15 @@ def _trans_range_to_features(trans_features, coords):
 
 def _trans_psl_to_hit(genome_data, transcriptome_spec, psl):
     _check_psl(psl)
+    # the fact that the server and transcript BED might have
+    # different names due to the ispcr server conventions requires
+    # some care here to use the same name
     trans_id, gene_name = _split_transcriptome_id(psl.tName)
-    trans_features = bed_to_features(genome_data,
-                                     _get_transcriptome_bed(transcriptome_spec, psl.tName, trans_id))
+    transcriptome_bed = _get_transcript_bed(transcriptome_spec, psl.tName, trans_id)
+    trans_features = bed_to_features(genome_data, transcriptome_bed)
 
     # hit transcript coordinates
-    coords_list = [Coords(trans_id, psl.blocks[i].tStart, psl.blocks[i].tEnd, psl.tStrand, psl.tSize)
+    coords_list = [Coords(psl.tName, psl.blocks[i].tStart, psl.blocks[i].tEnd, psl.tStrand, psl.tSize)
                    for i in range(2)]
     # multiple features per primer if crosses splice sites
     features_list = [_trans_range_to_features(trans_features, coords)

@@ -1,5 +1,5 @@
 MAKEFLAGS = --no-builtin-rules
-SHELL = /bin/bash
+SHELL = /bin/bash -e
 
 pycbio = ${HOME}/compbio/code/pycbio
 

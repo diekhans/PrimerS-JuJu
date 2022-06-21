@@ -176,8 +176,8 @@ Primer3Pair 4:
     ]
     genome_non_targets [
     ]
-    transcriptome_on_targets [TranscriptomeHit(left=[ExonFeature(genome=chr20:49983006-49983026/+, trans=ENST00000244050.3:27-47/+)
-    ],right=[ExonFeature(genome=chr20:49988321-49988341/+, trans=ENST00000244050.3:1140-1160/+)
+    transcriptome_on_targets [TranscriptomeHit(left=[ExonFeature(genome=chr20:49983006-49983026/+, trans=ENST00000244050.3__SNAI1:27-47/+)
+    ],right=[ExonFeature(genome=chr20:49988321-49988341/+, trans=ENST00000244050.3__SNAI1:1140-1160/+)
     ])
     ]
     transcriptome_off_targets [
@@ -199,8 +199,8 @@ Primer3Pair 4:
     ]
     genome_non_targets [
     ]
-    transcriptome_on_targets [TranscriptomeHit(left=[ExonFeature(genome=chr20:49983006-49983026/+, trans=ENST00000244050.3:27-47/+)
-    ],right=[ExonFeature(genome=chr20:49988261-49988281/+, trans=ENST00000244050.3:1080-1100/+)
+    transcriptome_on_targets [TranscriptomeHit(left=[ExonFeature(genome=chr20:49983006-49983026/+, trans=ENST00000244050.3__SNAI1:27-47/+)
+    ],right=[ExonFeature(genome=chr20:49988261-49988281/+, trans=ENST00000244050.3__SNAI1:1080-1100/+)
     ])
     ]
     transcriptome_off_targets [
@@ -222,8 +222,8 @@ Primer3Pair 4:
     ]
     genome_non_targets [
     ]
-    transcriptome_on_targets [TranscriptomeHit(left=[ExonFeature(genome=chr20:49983006-49983026/+, trans=ENST00000244050.3:27-47/+)
-    ],right=[ExonFeature(genome=chr20:49988188-49988208/+, trans=ENST00000244050.3:1007-1027/+)
+    transcriptome_on_targets [TranscriptomeHit(left=[ExonFeature(genome=chr20:49983006-49983026/+, trans=ENST00000244050.3__SNAI1:27-47/+)
+    ],right=[ExonFeature(genome=chr20:49988188-49988208/+, trans=ENST00000244050.3__SNAI1:1007-1027/+)
     ])
     ]
     transcriptome_off_targets [
@@ -245,8 +245,8 @@ Primer3Pair 4:
     ]
     genome_non_targets [
     ]
-    transcriptome_on_targets [TranscriptomeHit(left=[ExonFeature(genome=chr20:49983006-49983026/+, trans=ENST00000244050.3:27-47/+)
-    ],right=[ExonFeature(genome=chr20:49988571-49988591/+, trans=ENST00000244050.3:1390-1410/+)
+    transcriptome_on_targets [TranscriptomeHit(left=[ExonFeature(genome=chr20:49983006-49983026/+, trans=ENST00000244050.3__SNAI1:27-47/+)
+    ],right=[ExonFeature(genome=chr20:49988571-49988591/+, trans=ENST00000244050.3__SNAI1:1390-1410/+)
     ])
     ]
     transcriptome_off_targets [
@@ -268,8 +268,8 @@ Primer3Pair 4:
     ]
     genome_non_targets [
     ]
-    transcriptome_on_targets [TranscriptomeHit(left=[ExonFeature(genome=chr20:49983006-49983026/+, trans=ENST00000244050.3:27-47/+)
-    ],right=[ExonFeature(genome=chr20:49988150-49988170/+, trans=ENST00000244050.3:969-989/+)
+    transcriptome_on_targets [TranscriptomeHit(left=[ExonFeature(genome=chr20:49983006-49983026/+, trans=ENST00000244050.3__SNAI1:27-47/+)
+    ],right=[ExonFeature(genome=chr20:49988150-49988170/+, trans=ENST00000244050.3__SNAI1:969-989/+)
     ])
     ]
     transcriptome_off_targets [

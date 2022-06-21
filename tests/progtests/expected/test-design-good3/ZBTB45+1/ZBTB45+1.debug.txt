@@ -179,9 +179,9 @@ Primer3Pair 4:
     ]
     genome_non_targets [
     ]
-    transcriptome_on_targets [TranscriptomeHit(left=[ExonFeature(genome=chr19:58514260-58514280/+, trans=ENST00000594051.6:731-751/-)
-    ],right=[ExonFeature(genome=chr19:58517667-58517673/+, trans=ENST00000594051.6:2054-2060/-),
-	ExonFeature(genome=chr19:58519741-58519755/+, trans=ENST00000594051.6:2060-2074/-)
+    transcriptome_on_targets [TranscriptomeHit(left=[ExonFeature(genome=chr19:58514260-58514280/+, trans=ENST00000594051.6__ZBTB45:731-751/-)
+    ],right=[ExonFeature(genome=chr19:58517667-58517673/+, trans=ENST00000594051.6__ZBTB45:2054-2060/-),
+	ExonFeature(genome=chr19:58519741-58519755/+, trans=ENST00000594051.6__ZBTB45:2060-2074/-)
     ])
     ]
     transcriptome_off_targets [
@@ -204,9 +204,9 @@ Primer3Pair 4:
     ]
     genome_non_targets [
     ]
-    transcriptome_on_targets [TranscriptomeHit(left=[ExonFeature(genome=chr19:58513882-58513902/+, trans=ENST00000594051.6:353-373/-)
-    ],right=[ExonFeature(genome=chr19:58517667-58517673/+, trans=ENST00000594051.6:2054-2060/-),
-	ExonFeature(genome=chr19:58519741-58519755/+, trans=ENST00000594051.6:2060-2074/-)
+    transcriptome_on_targets [TranscriptomeHit(left=[ExonFeature(genome=chr19:58513882-58513902/+, trans=ENST00000594051.6__ZBTB45:353-373/-)
+    ],right=[ExonFeature(genome=chr19:58517667-58517673/+, trans=ENST00000594051.6__ZBTB45:2054-2060/-),
+	ExonFeature(genome=chr19:58519741-58519755/+, trans=ENST00000594051.6__ZBTB45:2060-2074/-)
     ])
     ]
     transcriptome_off_targets [
@@ -229,9 +229,9 @@ Primer3Pair 4:
     ]
     genome_non_targets [
     ]
-    transcriptome_on_targets [TranscriptomeHit(left=[ExonFeature(genome=chr19:58513875-58513895/+, trans=ENST00000594051.6:346-366/-)
-    ],right=[ExonFeature(genome=chr19:58517667-58517673/+, trans=ENST00000594051.6:2054-2060/-),
-	ExonFeature(genome=chr19:58519741-58519755/+, trans=ENST00000594051.6:2060-2074/-)
+    transcriptome_on_targets [TranscriptomeHit(left=[ExonFeature(genome=chr19:58513875-58513895/+, trans=ENST00000594051.6__ZBTB45:346-366/-)
+    ],right=[ExonFeature(genome=chr19:58517667-58517673/+, trans=ENST00000594051.6__ZBTB45:2054-2060/-),
+	ExonFeature(genome=chr19:58519741-58519755/+, trans=ENST00000594051.6__ZBTB45:2060-2074/-)
     ])
     ]
     transcriptome_off_targets [
@@ -254,9 +254,9 @@ Primer3Pair 4:
     ]
     genome_non_targets [
     ]
-    transcriptome_on_targets [TranscriptomeHit(left=[ExonFeature(genome=chr19:58514249-58514269/+, trans=ENST00000594051.6:720-740/-)
-    ],right=[ExonFeature(genome=chr19:58517667-58517673/+, trans=ENST00000594051.6:2054-2060/-),
-	ExonFeature(genome=chr19:58519741-58519755/+, trans=ENST00000594051.6:2060-2074/-)
+    transcriptome_on_targets [TranscriptomeHit(left=[ExonFeature(genome=chr19:58514249-58514269/+, trans=ENST00000594051.6__ZBTB45:720-740/-)
+    ],right=[ExonFeature(genome=chr19:58517667-58517673/+, trans=ENST00000594051.6__ZBTB45:2054-2060/-),
+	ExonFeature(genome=chr19:58519741-58519755/+, trans=ENST00000594051.6__ZBTB45:2060-2074/-)
     ])
     ]
     transcriptome_off_targets [
@@ -279,9 +279,9 @@ Primer3Pair 4:
     ]
     genome_non_targets [
     ]
-    transcriptome_on_targets [TranscriptomeHit(left=[ExonFeature(genome=chr19:58513899-58513919/+, trans=ENST00000594051.6:370-390/-)
-    ],right=[ExonFeature(genome=chr19:58517667-58517673/+, trans=ENST00000594051.6:2054-2060/-),
-	ExonFeature(genome=chr19:58519741-58519755/+, trans=ENST00000594051.6:2060-2074/-)
+    transcriptome_on_targets [TranscriptomeHit(left=[ExonFeature(genome=chr19:58513899-58513919/+, trans=ENST00000594051.6__ZBTB45:370-390/-)
+    ],right=[ExonFeature(genome=chr19:58517667-58517673/+, trans=ENST00000594051.6__ZBTB45:2054-2060/-),
+	ExonFeature(genome=chr19:58519741-58519755/+, trans=ENST00000594051.6__ZBTB45:2060-2074/-)
     ])
     ]
     transcriptome_off_targets [

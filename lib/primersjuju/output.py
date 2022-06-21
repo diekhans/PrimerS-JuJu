@@ -149,7 +149,10 @@ def build_genome_uniqueness_hits_beds(primer_designs):
     return beds
 
 def _transcriptome_hit_to_bed(hit, name_pre, color):
-    return _coords_to_bed(name_pre + '|' + hit.trans_id + '|' + hit.gene_name, color,
+    name = name_pre + '|' + hit.trans_id
+    if hit.gene_name is not None:
+        name += '|' + hit.gene_name
+    return _coords_to_bed(name, color,
                           features_to_genomic_coords(hit.left_features, ExonFeature) +
                           features_to_genomic_coords(hit.right_features, ExonFeature))
 
