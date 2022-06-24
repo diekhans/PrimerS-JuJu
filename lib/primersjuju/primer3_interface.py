@@ -171,12 +171,11 @@ def _make_region_char_inserts(region_range, start_char, end_char):
             (region_range[1], end_char))
 
 def primer3_annotate_rna(target_transcript, *, global_args=_global_args_defaults):
-    """Generate primer3-style annotated RNA, for debugging purposes """
+    """Generate primer3 web annotated RNA, for debugging purposes"""
     # internally we use SEQUENCE_PRIMER_PAIR_OK_REGION_LIST to define regions to
     # design primers.  However, this isn't support by primer3 annotations, instead we
     # define:
-    #   Included Region: {} entire transcript
-    #   Excluded Regions: <>  Regions before/after amplicon
+    #   Excluded Regions:  Regions before/after amplicon are convert to N (<> didn't work)
     #   Targets: [ ] Region inside of specified primer regions
     # base on SEQUENCE_PRIMER_PAIR_OK_REGION_LIST
     # we also add targeted junctions: '-'
@@ -197,17 +196,20 @@ def primer3_annotate_rna(target_transcript, *, global_args=_global_args_defaults
 
     # Build insert list [(before_index, char), ...], sort for insertion order.  transcript must cover
     # the whole range
-    inserts = sorted(_make_region_char_inserts(before, '<', '>') +
-                     _make_region_char_inserts(after, '<', '>') +
-                     _make_region_char_inserts(target, '[', ']') +
+    inserts = sorted(_make_region_char_inserts(target, '[', ']') +
                      _make_point_char_inserts(seq_args.SEQUENCE_OVERLAP_JUNCTION_LIST, '-'))
     # generate annotated sequence
-    ann_rna_parts = ['{']
-    prev_end = 0
+    ann_rna_parts = []
+    # replaced 5' exclude with Ns
+    prev_end = before[1]
+    ann_rna_parts.append(before[1] * 'N')
+    # add target and junctions
     for idx, char in inserts:
         ann_rna_parts.append(rna[prev_end:idx])
         ann_rna_parts.append(char)
         prev_end = idx
-    ann_rna_parts.append(rna[prev_end:])
-    ann_rna_parts.append('}')
+    # 3' primer region
+    ann_rna_parts.append(rna[prev_end:after[0]])
+    # replaced 3' exclude with Ns
+    ann_rna_parts.append((after[1] - after[0]) * 'N')
     return "".join(ann_rna_parts)
