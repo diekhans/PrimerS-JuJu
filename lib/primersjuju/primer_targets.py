@@ -7,7 +7,7 @@ import pprint
 from pycbio.hgdata.coords import Coords
 from pycbio.hgdata.bed import Bed
 from . import PrimersJuJuError, PrimersJuJuDataError
-from .transcript_features import IntronFeature, ExonFeature, Features, bed_to_features, features_intersect_genome, get_features_rna
+from .transcript_features import Feature, IntronFeature, ExonFeature, Features, bed_to_features, features_intersect_genome, get_features_rna
 
 @dataclass
 class TargetTranscript:
@@ -25,8 +25,9 @@ class TargetTranscript:
         return self.bed.name
 
     @property
-    def trans_coords(self):
-        return self.features.bounds.genome
+    def bounds(self) -> Feature:
+        "bounds of transcript "
+        return self.features.bounds
 
     @property
     def strand(self):
@@ -53,7 +54,7 @@ class TargetTranscript:
     def dump(self, dump_fh):
         pp = pprint.PrettyPrinter(stream=dump_fh, sort_dicts=False, indent=4)
         print("transcript:", self.track_name, self.trans_id, file=dump_fh)
-        print("coords:", str(self.trans_coords), file=dump_fh)
+        print("coords:", str(self.bounds), file=dump_fh)
         print("region_5p:", self.region_5p, file=dump_fh)
         print("region_3p:", self.region_3p, file=dump_fh)
         print("features_5p:", file=dump_fh)

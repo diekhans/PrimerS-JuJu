@@ -1,6 +1,10 @@
+* rna annotates doesn't work right
 * renamed ppair_id
+* delete empty columns in spec
 * primer_design -> design_pairs
 * rename to indicated if they are features_5p, features_3p are genome or transcriptome order
 * created primers that went beyond 3' end of region.  This maybe something primer3 does
 see test_design_primers_guts.py test_FBXL16(request, genome_data, wtc11_targets_specs_set1):
-
+* include seq_args and global_args in Primer3Results and dump from there,
+primer3_dump_args should not have to recalculate
+* bounds() name not so clear

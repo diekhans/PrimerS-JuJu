@@ -8,7 +8,11 @@ import primer3
 from pycbio.sys.objDict import ObjDict
 from . import PrimersJuJuDataError, PrimersJuJuError
 
+# Notes:
+# forces the use of 0-based indexing
+
 _global_args_defaults = ObjDict(PRIMER_TASK="generic",
+                                PRIMER_FIRST_BASE_INDEX=0,
                                 PRIMER_PICK_LEFT_PRIMER=1,
                                 PRIMER_PICK_INTERNAL_OLIGO=0,
                                 PRIMER_PICK_RIGHT_PRIMER=1,
@@ -80,16 +84,17 @@ def primer3_parse_output(p3_output):
     return results
 
 def make_ok_region(target_transcript):
-    # positive transcript strand
+    # for SEQUENCE_PRIMER_PAIR_OK_REGION_LIST
+    # positive transcript strand, (0-based, length)
     region_5p = target_transcript.region_5p.trans.abs()
     region_3p = target_transcript.region_3p.trans.abs()
-    return [[region_5p.start + 1, len(region_5p),
-             region_3p.start + 1, len(region_3p)]]
+    return [[region_5p.start, len(region_5p),
+             region_3p.start, len(region_3p)]]
 
 def _build_junction_overlap(features):
-    # The junction associated with a given position is the space immediately
-    # to the right of that position in the template sequence on the strand
-    # given as input.
+    # For SEQUENCE_OVERLAP_JUNCTION_LIST, the junctions are specified as a position
+    # to the right on the 1-based position in the sequence.  This is true even
+    # if PRIMER_FIRST_BASE_INDEX=0
     assert len(features) in (1, 3)
     if len(features) == 3:
         return (features[1].trans.abs().start + 1,)
@@ -127,6 +132,8 @@ def primer3_design(target_transcript, *, global_args=_global_args_defaults, misp
     """main entry to run primer3
     global_args defined here:
     https://www.primer3plus.com/primer3plusHelp.html#globalTags
+
+    global PRIMER_FIRST_BASE_INDEX must be zero.
     """
 
     global_args = _build_global_args(target_transcript, global_args)
@@ -153,39 +160,54 @@ def primer3_dump_args(fh, target_transcript, *, global_args=_global_args_default
     print("seq_args:", file=fh)
     pp.pprint(seq_args)
 
-def _make_point_char_inserts(point_list, mark_char):
-    # primer3 point 1-based index position before junction
-    return [(p - 1, mark_char) for p in point_list]
+def _make_point_char_inserts(points, mark_char):
+    # primer3 point 0-based index position before junction
+    return tuple((p, mark_char) for p in points)
 
-def _make_region_char_inserts(region_lists, start_char, end_char):
-    # primer3 region 1-based index plus length, with multiple regions
-    # in same list
-    # [[1457, 230, 375, 717]]
-    inserts = []
-    for region_list in region_lists:
-        for i in range(0, len(region_list), 2):
-            start = region_list[i]
-            end = start + region_list[i + 1]
-            inserts.append((start - 1, start_char))
-            inserts.append((end, end_char))
-    return inserts
+def _make_region_char_inserts(region_range, start_char, end_char):
+    # region_range is (start, end)
+    assert region_range[0] < region_range[1], f"{region_range[0]} < {region_range[1]}"
+    return ((region_range[0], start_char),
+            (region_range[1], end_char))
 
 def primer3_annotate_rna(target_transcript, *, global_args=_global_args_defaults):
     """Generate primer3-style annotated RNA, for debugging purposes """
-
+    # internally we use SEQUENCE_PRIMER_PAIR_OK_REGION_LIST to define regions to
+    # design primers.  However, this isn't support by primer3 annotations, instead we
+    # define:
+    #   Included Region: {} entire transcript
+    #   Excluded Regions: <>  Regions before/after amplicon
+    #   Targets: [ ] Region inside of specified primer regions
+    # base on SEQUENCE_PRIMER_PAIR_OK_REGION_LIST
+    # we also add targeted junctions: '-'
     rna = target_transcript.rna
     seq_args = _build_seq_args(target_transcript)
 
-    # build insert list [(before_index, char), ...]
-    # include regions: {}, junctions: -
-    inserts = sorted(_make_region_char_inserts(seq_args.SEQUENCE_PRIMER_PAIR_OK_REGION_LIST, '{', '}') +
+    # build regions in primer3 style, first convert to [start, end]
+    trans_len = target_transcript.region_5p.trans.size
+    ok_region_ranges = []
+    for ok_regions in seq_args.SEQUENCE_PRIMER_PAIR_OK_REGION_LIST:
+        ok_region_ranges += [(ok_regions[i], ok_regions[i] + ok_regions[i + 1])
+                             for i in range(0, len(ok_regions) - 1, 2)]
+    assert len(ok_region_ranges) == 2
+    # build (start, end) lists
+    before = (0, ok_region_ranges[0][0])
+    after = (ok_region_ranges[1][1], trans_len)
+    target = (ok_region_ranges[0][1], ok_region_ranges[1][0])
+
+    # Build insert list [(before_index, char), ...], sort for insertion order.  transcript must cover
+    # the whole range
+    inserts = sorted(_make_region_char_inserts(before, '<', '>') +
+                     _make_region_char_inserts(after, '<', '>') +
+                     _make_region_char_inserts(target, '[', ']') +
                      _make_point_char_inserts(seq_args.SEQUENCE_OVERLAP_JUNCTION_LIST, '-'))
     # generate annotated sequence
-    ann_rna_parts = []
+    ann_rna_parts = ['{']
     prev_end = 0
     for idx, char in inserts:
         ann_rna_parts.append(rna[prev_end:idx])
         ann_rna_parts.append(char)
         prev_end = idx
     ann_rna_parts.append(rna[prev_end:])
+    ann_rna_parts.append('}')
     return "".join(ann_rna_parts)

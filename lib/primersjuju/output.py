@@ -56,8 +56,8 @@ def build_target_beds(primer_targets):
     trans0 = primer_targets.transcripts[0]
 
     features_first, features_last = trans0.get_genome_ordered_features()
-    thick_coords = trans0.trans_coords.adjrange(features_first[0].genome.start,
-                                                features_last[-1].genome.end)
+    thick_coords = trans0.bounds.genome.adjrange(features_first[0].genome.start,
+                                                 features_last[-1].genome.end)
     feat_beds = [_coords_to_bed(trans0.trans_id, TARGET_FEAT_COLOR,
                                 trans0.features_5p.genome_coords_type(ExonFeature) + trans0.features_3p.genome_coords_type(ExonFeature),
                                 strand=primer_targets.strand, thick_coords=thick_coords)]
@@ -214,7 +214,7 @@ def _make_browser_link(genome_name, position, hub_urls=None):
 
 def _make_design_browser_link(primer_designs, hub_urls):
     return _make_browser_link(primer_designs.primer_targets.genome_name,
-                              primer_designs.target_transcript.trans_coords, hub_urls)
+                              primer_designs.target_transcript.bounds.genome, hub_urls)
 
 def _make_uniqeness_hits_browser_coords(hits):
     """this makes a list of coordinates, there isn't a way to add multiple

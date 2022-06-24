@@ -13,9 +13,9 @@ def test_SNAI1(request, genome_data, wtc11_targets_specs_set1, hg38_uniqueness_q
     assert len(primer_designs.designs) == 5
 
     p3p = primer_designs.designs[0].primer3_pair
-    assert p3p.PRIMER_LEFT == (27, 20)
+    assert p3p.PRIMER_LEFT == (22, 20)
     assert p3p.PRIMER_RIGHT == (1159, 20)
-    assert p3p.PRIMER_LEFT_SEQUENCE == 'GGTTCTTCTGCGCTACTGCT'
+    assert p3p.PRIMER_LEFT_SEQUENCE == 'CGAGTGGTTCTTCTGCGCTA'
     assert p3p.PRIMER_RIGHT_SEQUENCE == 'CAAAAACCCACGCAGACAGG'
 
 
