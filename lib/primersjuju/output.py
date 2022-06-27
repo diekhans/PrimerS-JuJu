@@ -180,21 +180,20 @@ def _write_beds(beds, bed_file):
         for bed in beds:
             bed.write(fh)
 
-def _get_out_path(outdir, primer_targets, suffix):
-    return osp.join(outdir, primer_targets.target_id + "." + suffix)
+def _get_out_path(outdir, target_id, suffix):
+    return osp.join(outdir, target_id + "." + suffix)
 
-def output_target_design_file(outdir, primer_targets):
+def output_target_design_file(outdir, target_id):
     """get path to target design TSV file for an experiment.  The existence of this file indicates design
     for this target was complete.
     """
-    return _get_out_path(outdir, primer_targets, "designs.tsv")
+    return _get_out_path(outdir, target_id, "designs.tsv")
 
 _design_tsv_header = ("target_id", "design_status", "transcript_id", "browser",
                       "primer_id", "left_primer", "right_primer",
                       "on_target_trans", "off_target_trans",
                       "on_target_genome", "off_target_genome",
                       "annotated_rna")
-
 
 def _make_excel_link(url, position):
     return f'=HYPERLINK("{url}", "{str(position)}")'
@@ -253,7 +252,7 @@ def _write_primer_pair_design(fh, primer_designs, primer_design, first, hub_urls
 def output_target_debug(outdir, primer_targets, primer_designs):
     target_transcript = primer_targets.transcripts[0]
     fileOps.ensureDir(outdir)
-    with open(_get_out_path(outdir, primer_targets, "debug.txt"), 'w') as fh:
+    with open(_get_out_path(outdir, primer_targets.target_id, "debug.txt"), 'w') as fh:
         primer_targets.dump(fh)
         print("annotated_rna:", primer3_annotate_rna(primer_targets.transcripts[0]), file=fh)
         primer3_dump_args(fh, target_transcript)
@@ -266,14 +265,14 @@ def output_target_debug(outdir, primer_targets, primer_designs):
 def output_target_beds(outdir, primer_targets, primer_designs):
     fileOps.ensureDir(outdir)
     _write_beds(build_target_beds(primer_targets),
-                _get_out_path(outdir, primer_targets, "target.bed"))
+                _get_out_path(outdir, primer_targets.target_id, "target.bed"))
     _write_beds(build_primer_beds(primer_designs),
-                _get_out_path(outdir, primer_targets, "primers.bed"))
+                _get_out_path(outdir, primer_targets.target_id, "primers.bed"))
     if primer_designs.uniqueness_checked:
         _write_beds(build_genome_uniqueness_hits_beds(primer_designs),
-                    _get_out_path(outdir, primer_targets, "genome-uniqueness.bed"))
+                    _get_out_path(outdir, primer_targets.target_id, "genome-uniqueness.bed"))
         _write_beds(build_transcriptome_uniqueness_hits_beds(primer_designs),
-                    _get_out_path(outdir, primer_targets, "transcriptome-uniqueness.bed"))
+                    _get_out_path(outdir, primer_targets.target_id, "transcriptome-uniqueness.bed"))
 
 def _write_primer_designs(fh, primer_designs, hub_urls):
     fileOps.prRow(fh, _design_tsv_header)
@@ -287,7 +286,7 @@ def _write_primer_designs(fh, primer_designs, hub_urls):
 
 def output_primer_designs(outdir, primer_targets, primer_designs, hub_urls):
     fileOps.ensureDir(outdir)
-    with fileOps.AtomicFileCreate(_get_out_path(outdir, primer_targets, "designs.tsv")) as tmp_tsv:
+    with fileOps.AtomicFileCreate(_get_out_path(outdir, primer_targets.target_id, "designs.tsv")) as tmp_tsv:
         with open(tmp_tsv, "w") as fh:
             _write_primer_designs(fh, primer_designs, hub_urls)
 

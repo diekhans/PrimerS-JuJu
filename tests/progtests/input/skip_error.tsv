@@ -1,0 +1,3 @@
+trans_track	region_5p	region_3p	trans_id	gene_name	target_id	trans_cat	trans_structural_cat	notes	trans_notes
+WTC11_consolidated	chr19:37228328-37231039	chr19:47221198-47221914	FSM_45580	BBC3	BBC3+2			PB-specific	Invalid region_5p
+WTC11_consolidated	chr19:47228328-47231039	chr19:47221198-47221914	FSM_45580	BBC3	BBC3+1			PB-specific	Design primer specific to junction highlighted in region_5p

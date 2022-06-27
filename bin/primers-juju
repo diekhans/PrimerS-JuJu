@@ -4,6 +4,7 @@ import sys
 from os import path as osp
 import argparse
 import traceback
+from dataclasses import dataclass
 
 from pycbio.sys.configInPy import evalConfigFile
 
@@ -17,11 +18,24 @@ from primersjuju.output import output_target_designs, output_target_design_file
 from primersjuju.primer_target_spec import primer_target_specs_read
 
 
+@dataclass
+class ErrorInfo:
+    """Options for how to handle errors and other cases, along with a counter of
+    errors that were skipped"""
+    debug: bool
+    force: bool = False
+    stop_on_error: bool = False
+    error_cnt: int = 0
+
 def parse_args():
     desc = """Primers-JuJu tool to assist in designing RTC-PCR primers
     with Primer3.
 
     https://github.com/diekhans/PrimerS-JuJu/
+
+    Designing primers:
+    If output exists for a target, it is skipped unless --force is specified.
+    D
     """
 
     def _add_primer_targets(parser):
@@ -50,26 +64,32 @@ def parse_args():
                            help="only design the specified target ids; maybe repeated")
     sp_design.add_argument("--huburl", action="append", dest="hub_urls",
                            help="hub URL to include when linking to UCSC browser; maybe repeated")
-    sp_design.add_argument("--force", action="store_true",
+    sp_design.add_argument("--force", action="store_true", default=False,
                            help="force creation of design")
+    sp_design.add_argument("--stop-on-error", dest="stop_on_error", action="store_true", default=False,
+                           help="stop if there is a target specification error rather than continue")
     sp_design.add_argument("outdir",
                            help="output directory, which is created if it doesn't exist")
 
     args = parser.parse_args()
+    if args.subcommand == "check":
+        args.error_info = ErrorInfo(args.debug)
+    elif args.subcommand == "design":
+        args.error_info = ErrorInfo(args.debug, args.force, args.stop_on_error)
+
     return args
 
-def handle_prog_errors(ex, debug):
-    """Prints error messages without call stack and exit. For expected exceptions """
+def print_prog_errors(ex, error_info):
+    """Prints error messages without call stack unless debug is specified. For expected exceptions """
     print("Error: " + str(ex), file=sys.stderr)
-    if debug:
+    if error_info.debug:
         traceback.print_tb(ex.__traceback__, file=sys.stderr)
     exc = ex.__cause__
     while exc is not None:
         print("caused by: " + str(exc), file=sys.stderr)
-        if debug:
+        if error_info.debug:
             traceback.print_tb(exc.__traceback__, file=sys.stderr)
         exc = exc.__cause__
-    exit(1)
 
 def _do_load_config(config_py, genome) -> GenomeConfig:
     """gets GenomeConfig object from config for genome, which maybe None if only one genome"""
@@ -99,24 +119,37 @@ def check_subcommand(args):
     _load_config(args.config_py, args.genome)
     primer_target_specs_read(args.primer_targets_tsv)
 
-def _do_design_target(config, primer_targets, hub_urls, outdir):
+
+def _do_design_target(config, primer_target_spec, error_info, hub_urls, outdir):
     "design and output one target"
+    primer_targets = primer_targets_build(config.genome_data, primer_target_spec)
     primer_designs = design_primers(config.genome_data, primer_targets, uniqueness_query=config.uniqueness_query)
     output_target_designs(outdir, primer_targets, primer_designs, hub_urls)
 
-def _design_target(config, primer_target_spec, force, hub_urls, outdir):
-    "design and output one target"
-    primer_targets = primer_targets_build(config.genome_data, primer_target_spec)
-    # target_design_file is created atomically
-    if force or (not osp.exists(output_target_design_file(outdir, primer_targets))):
-        print(f">>> Designing {primer_targets.target_id}")
-        _do_design_target(config, primer_targets, hub_urls, outdir)
-    else:
-        print(f">>> Skipping {primer_targets.target_id}, design exists")
+def _design_target(config, primer_target_spec, error_info, hub_urls, outdir):
+    try:
+        return _do_design_target(config, primer_target_spec, error_info, hub_urls, outdir)
+    except PrimersJuJuDataError as ex:
+        if error_info.stop_on_error:
+            raise
+        else:
+            print(f"*** WARNING: skipping {primer_target_spec.target_id} due to errors in design specification", file=sys.stderr)
+            print_prog_errors(ex, error_info)
+            error_info.error_cnt += 1
 
-def _design_targets(config, primer_target_specs, target_ids, force, hub_urls, outdir):
+def _design_target_maybe(config, primer_target_spec, error_info, hub_urls, outdir):
+    # target_design_file is created atomically
+    if error_info.force or (not osp.exists(output_target_design_file(outdir, primer_target_spec.target_id))):
+        print(f">>> Designing {primer_target_spec.target_id}", file=sys.stderr)
+        _design_target(config, primer_target_spec, error_info, hub_urls, outdir)
+    else:
+        print(f">>> Skipping {primer_target_spec.target_id}, design exists", file=sys.stderr)
+
+def _design_targets(config, primer_target_specs, target_ids, error_info, hub_urls, outdir):
     for target_id in target_ids:
-        _design_target(config, primer_target_specs.targets[target_id], force, hub_urls, osp.join(outdir, target_id))
+        _design_target_maybe(config, primer_target_specs.targets[target_id], error_info,
+                             hub_urls, osp.join(outdir, target_id))
+    print(f">>> Designs complete", file=sys.stderr)
 
 def _get_target_ids(primer_target_specs, target_id_subset):
     "generate list of target ids, possible filtered by a specified subset"
@@ -127,7 +160,7 @@ def _get_target_ids(primer_target_specs, target_id_subset):
     bad = target_id_subset - all_target_ids
     if len(bad) > 0:
         raise PrimersJuJuDataError("target id(s) not in spec file: '{}'".format("', '".join(bad)))
-    return target_id_subset
+    return sorted(target_id_subset)
 
 def design_subcommand(args):
     "run primer design on input"
@@ -135,7 +168,7 @@ def design_subcommand(args):
     primer_target_specs = primer_target_specs_read(args.primer_targets_tsv)
     _design_targets(config, primer_target_specs,
                     _get_target_ids(primer_target_specs, args.target_ids),
-                    args.force, args.hub_urls, args.outdir)
+                    args.error_info, args.hub_urls, args.outdir)
 
 def primersJuJu(args):
     try:
@@ -144,6 +177,9 @@ def primersJuJu(args):
         elif args.subcommand == "design":
             design_subcommand(args)
     except Exception as ex:
-        handle_prog_errors(ex, args.debug)
+        print_prog_errors(ex, args.error_info)
+    if args.error_info.error_cnt > 0:
+        print(f"*** {args.error_info.error_cnt} task(s) failed", file=sys.stderr)
+        exit(1)
 
 primersJuJu(parse_args())

@@ -95,15 +95,17 @@ class PrimerTargets:
         for t in self.transcripts:
             t.dump(dump_fh)
 
-def _primer_region_check_features(desc, track_name, trans_id, features):
+def _primer_region_check_features(desc, track_name, trans_id, region, features):
     "check that features are sane, desc is used in error messages"
     exon_cnt = features.count_type(ExonFeature)
     intron_cnt = features.count_type(IntronFeature)
-    if not (((exon_cnt == 1) and (intron_cnt == 0)) or ((exon_cnt == 2) and (intron_cnt == 1))):
-        raise PrimersJuJuDataError(f"{desc} for transcript ({track_name}, {trans_id}) must contain either one exon, or two exons and an intron: {str(features)}")
+    if (exon_cnt + intron_cnt) == 0:
+        raise PrimersJuJuDataError(f"{desc} {region} does not overlap transcript ({track_name}, {trans_id})")
+    elif not (((exon_cnt == 1) and (intron_cnt == 0)) or ((exon_cnt == 2) and (intron_cnt == 1))):
+        raise PrimersJuJuDataError(f"{desc} {region} for transcript ({track_name}, {trans_id}) must contain either one exon, or two exons and an intron: {str(features)}")
     if not (isinstance(features[0], ExonFeature) and
             isinstance(features[-1], ExonFeature)):
-        raise PrimersJuJuDataError(f"{desc} transcript ({track_name}, {trans_id}) primer region does not end in exons: {features}")
+        raise PrimersJuJuDataError(f"{desc} transcript ({track_name}, {trans_id}) primer region does not end in exons: {str(features)}")
 
 
 def _block_features(trans_bed, trans_off, trans_size, region, genome_size, prev_blk, blk, features):
@@ -143,7 +145,7 @@ def _get_regions_transcript_orient(trans, region_5p, region_3p):
 
 def _build_region_transcript_features(track_name, trans_name, features, region):
     region_features = features_intersect_genome(features, region)
-    _primer_region_check_features("initially specified primer region", track_name, trans_name, region_features)
+    _primer_region_check_features("specified primer region", track_name, trans_name, region, region_features)
     return region_features
 
 def _build_target_transcript(genome_data, primer_target_spec, trans_spec):
@@ -185,7 +187,7 @@ def _adjust_transcript_region_features(target_transcript, common_region, feats_f
         if ofeat.genome.overlaps(common_region):
             adj_features.append(ofeat.intersect_genome(common_region))
 
-    _primer_region_check_features("common adjusted primer region", target_transcript.track_name, target_transcript.trans_id, adj_features)
+    _primer_region_check_features("common adjusted primer region", target_transcript.track_name, target_transcript.trans_id, common_region, adj_features)
 
     # this updates transcript features
     feats_func(target_transcript, adj_features)
@@ -230,5 +232,7 @@ def primer_targets_build(genome_data, primer_target_spec):
     """
     try:
         return _do_primer_targets_build(genome_data, primer_target_spec)
+    except PrimersJuJuDataError as ex:
+        raise PrimersJuJuDataError(f"target {primer_target_spec.target_id} failed") from ex
     except PrimersJuJuError as ex:
         raise PrimersJuJuError(f"target {primer_target_spec.target_id} failed") from ex

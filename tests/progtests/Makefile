@@ -17,7 +17,7 @@ test-fast: prog-tests-fast
 
 prog-tests: prog-tests-fast prog-tests-slow
 
-prog-tests-fast: test-check-good test-design-subset
+prog-tests-fast: test-check-good test-design-subset test-design-skip-error
 
 prog-tests-slow: test-design-good3
 
@@ -44,6 +44,13 @@ test-design-skip-existing: mkdirs
 	${primers_juju} ${DEBUG} --conf=input/config1.py design --target=BBC3+1 ${hg38_hub_url_args} input/LRGASP_WTC11_Target_subset3.tsv output/$@ >& output/$@.skip.out
 	diff expected/$@.design.out output/$@.design.out
 	diff expected/$@.skip.out output/$@.skip.out
+
+test-design-skip-error: mkdirs
+	rm -rf output/$@
+	${primers_juju}  --conf=input/config1.py design ${hg38_hub_url_args} input/skip_error.tsv output/$@ >& output/$@.design.out  && (echo "Error: BBC3+2 should have failed" 1>&2; exit 1) || true
+	@test -e output/$@/BBC3+2/BBC3+2.designs.tsv && (echo "Error: BBC3+2 show not have produced output/$@/BBC3+2/BBC3+2.designs.tsv file" 1>&2; exit 1) || true
+	diff expected/$@.design.out output/$@.design.out
+	${diff_results}
 
 mkdirs:
 	@mkdir -p output
