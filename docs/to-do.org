@@ -2,7 +2,7 @@
 * check for exact match
 * bad primers BEDs
 ** CCDC106+1 - outside of target
-** DPP3+1 - doesn't cross intron
+** DPP3+1 - doesn't cross intro.
 * CERNA1+1 - some of isPCr showed going into retained intron
 * add TM to primer to spread sheet ; want highest
 * Another suggestion if possible for better visualisation

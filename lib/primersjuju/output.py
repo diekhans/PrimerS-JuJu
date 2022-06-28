@@ -7,7 +7,7 @@ from pycbio.sys.svgcolors import SvgColors
 from pycbio.hgdata.bed import Bed
 from primersjuju.transcript_features import features_to_genomic_coords
 from primersjuju.primer_targets import ExonFeature
-from primersjuju.primer3_interface import primer3_dump_args, primer3_annotate_rna
+from primersjuju.primer3_interface import primer3_dump_args, primer3_annotate_amplicon
 
 # Document these in README
 
@@ -194,7 +194,7 @@ _design_tsv_header = ("target_id", "design_status", "transcript_id", "browser",
                       "amplicon_len", "amplicon_exons", "left_delta_G", "right_delta_G",
                       "on_target_trans", "off_target_trans",
                       "on_target_genome", "off_target_genome",
-                      "annotated_rna")
+                      "annotated_amplicon")
 
 def _make_excel_link(url, position):
     return f'=HYPERLINK("{url}", "{str(position)}")'
@@ -257,7 +257,7 @@ def _write_primer_pair_design(fh, primer_designs, primer_design, first, hub_urls
                 _make_uniqeness_hits_browser_coords(primer_design.genome_on_targets),
                 _make_uniqeness_hits_browser_coords(primer_design.genome_off_targets)]
     if first:
-        row.append(primer3_annotate_rna(primer_designs.primer_targets.transcripts[0]))
+        row.append(primer3_annotate_amplicon(primer_designs.primer_targets.transcripts[0]))
     else:
         row.append('')
     fileOps.prRow(fh, row)
@@ -267,7 +267,7 @@ def output_target_debug(outdir, primer_targets, primer_designs):
     fileOps.ensureDir(outdir)
     with open(_get_out_path(outdir, primer_targets.target_id, "debug.txt"), 'w') as fh:
         primer_targets.dump(fh)
-        print("annotated_rna:", primer3_annotate_rna(primer_targets.transcripts[0]), file=fh)
+        print("annotated_amplicon:", primer3_annotate_amplicon(primer_targets.transcripts[0]), file=fh)
         primer3_dump_args(fh, target_transcript)
         print(file=fh)
         primer_designs.primer3_results.dump(fh)

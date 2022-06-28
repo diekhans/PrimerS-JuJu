@@ -170,17 +170,18 @@ def _make_region_char_inserts(region_range, start_char, end_char):
     return ((region_range[0], start_char),
             (region_range[1], end_char))
 
-def primer3_annotate_rna(target_transcript, *, global_args=_global_args_defaults):
-    """Generate primer3 web annotated RNA, for debugging purposes"""
-    # internally we use SEQUENCE_PRIMER_PAIR_OK_REGION_LIST to define regions to
+def primer3_annotate_amplicon(target_transcript, *, global_args=_global_args_defaults):
+    """Generate primer3 web annotated amplicon, for debugging purposes"""
+    # Internally we use SEQUENCE_PRIMER_PAIR_OK_REGION_LIST to define regions to
     # design primers.  However, this isn't support by primer3 annotations, instead we
     # define:
     #   Targets: [ ] Region inside of specified primer regions
-    # base on SEQUENCE_PRIMER_PAIR_OK_REGION_LIST
+    # Base on SEQUENCE_PRIMER_PAIR_OK_REGION_LIST
     # Targeted junctions are marked with: '-'
     #
     # None of the approaches tried to excluding the regions before and after the primer
-    # target regions work.
+    # target regions work, so we output the amplicaton and exclude the before and after
+    # regions
     rna = target_transcript.rna
     seq_args = _build_seq_args(target_transcript)
 
@@ -190,10 +191,9 @@ def primer3_annotate_rna(target_transcript, *, global_args=_global_args_defaults
         ok_region_ranges += [(ok_regions[i], ok_regions[i] + ok_regions[i + 1])
                              for i in range(0, len(ok_regions) - 1, 2)]
     assert len(ok_region_ranges) == 2
-    # build (start, end) lists
-    # unused since don't know how to restrict to regions
-    #   before = (0, ok_region_ranges[0][0])
-    #   after = (ok_region_ranges[1][1], target_transcript.region_5p.trans.size)
+    # regions we consider
+    before = (0, ok_region_ranges[0][0])
+    after = (ok_region_ranges[1][1], target_transcript.region_5p.trans.size)
     target = (ok_region_ranges[0][1], ok_region_ranges[1][0])
 
     # Build insert list [(before_index, char), ...], sort for insertion order.  transcript must cover
@@ -201,12 +201,12 @@ def primer3_annotate_rna(target_transcript, *, global_args=_global_args_defaults
     inserts = sorted(_make_region_char_inserts(target, '[', ']') +
                      _make_point_char_inserts(seq_args.SEQUENCE_OVERLAP_JUNCTION_LIST, '-'))
     # generate annotated sequence
-    ann_rna_parts = []
-    prev_end = 0
+    amplicon_parts = []
+    prev_end = before[1]
     # add target and junctions
     for idx, char in inserts:
-        ann_rna_parts.append(rna[prev_end:idx])
-        ann_rna_parts.append(char)
+        amplicon_parts.append(rna[prev_end:idx])
+        amplicon_parts.append(char)
         prev_end = idx
-    ann_rna_parts.append(rna[prev_end:])
-    return "".join(ann_rna_parts)
+    amplicon_parts.append(rna[prev_end:after[0]])
+    return "".join(amplicon_parts)
