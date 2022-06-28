@@ -27,7 +27,7 @@ class PrimerDesign:
     """information collected on one primer pair"""
     ppair_id: str
     primer3_pair: Primer3Pair
-    features_5p: Features
+    features_5p: Features  # in transcription order, positive genomic strand
     features_3p: Features
     # results from uniqueness query, non_target are ones on sequences liked fixes and alts
     # None if uniqueness check was not done.
@@ -38,6 +38,20 @@ class PrimerDesign:
     transcriptome_on_targets: Sequence[TranscriptomeHit]
     transcriptome_off_targets: Sequence[TranscriptomeHit]
     transcriptome_non_targets: Sequence[TranscriptomeHit]
+
+    def amplicon_trans_coords(self) -> Coords:
+        """amplicon region, in positive transcript coordinates """
+        trans_5p = self.features_5p[0].trans
+        trans_3p = self.features_3p[0].trans
+        if trans_5p.strand == '+':
+            return Coords(trans_5p.name, trans_5p.start, trans_3p.end, '+', trans_5p.size)
+        else:
+            return Coords(trans_5p.name, trans_5p.size - trans_5p.end, trans_5p.size - trans_3p.start, '+', trans_5p.size)
+
+    @property
+    def amplicon_length(self):
+        # ignore strand with abs
+        return abs(self.features_3p[-1].trans.end - self.features_5p[0].trans.start)
 
     def genome_on_target_cnt(self):
         return _len_none(self.genome_on_targets)
@@ -70,6 +84,8 @@ class PrimerDesign:
         print("    ppair_id", self.ppair_id, file=fh)
         print("    features_5p", self.features_5p, file=fh)
         print("    features_3p", self.features_3p, file=fh)
+        print("    amplicon_trans_coords", self.amplicon_trans_coords(), file=fh)
+        print("    amplicon_length", self.amplicon_length, file=fh)
         _print_p3_attr("PRIMER_LEFT")
         _print_p3_attr("PRIMER_RIGHT")
         _print_p3_attr("PRIMER_LEFT_SEQUENCE")

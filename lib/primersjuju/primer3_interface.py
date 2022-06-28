@@ -175,23 +175,25 @@ def primer3_annotate_rna(target_transcript, *, global_args=_global_args_defaults
     # internally we use SEQUENCE_PRIMER_PAIR_OK_REGION_LIST to define regions to
     # design primers.  However, this isn't support by primer3 annotations, instead we
     # define:
-    #   Excluded Regions:  Regions before/after amplicon are convert to N (<> didn't work)
     #   Targets: [ ] Region inside of specified primer regions
     # base on SEQUENCE_PRIMER_PAIR_OK_REGION_LIST
-    # we also add targeted junctions: '-'
+    # Targeted junctions are marked with: '-'
+    #
+    # None of the approaches tried to excluding the regions before and after the primer
+    # target regions work.
     rna = target_transcript.rna
     seq_args = _build_seq_args(target_transcript)
 
     # build regions in primer3 style, first convert to [start, end]
-    trans_len = target_transcript.region_5p.trans.size
     ok_region_ranges = []
     for ok_regions in seq_args.SEQUENCE_PRIMER_PAIR_OK_REGION_LIST:
         ok_region_ranges += [(ok_regions[i], ok_regions[i] + ok_regions[i + 1])
                              for i in range(0, len(ok_regions) - 1, 2)]
     assert len(ok_region_ranges) == 2
     # build (start, end) lists
-    before = (0, ok_region_ranges[0][0])
-    after = (ok_region_ranges[1][1], trans_len)
+    # unused since don't know how to restrict to regions
+    #   before = (0, ok_region_ranges[0][0])
+    #   after = (ok_region_ranges[1][1], target_transcript.region_5p.trans.size)
     target = (ok_region_ranges[0][1], ok_region_ranges[1][0])
 
     # Build insert list [(before_index, char), ...], sort for insertion order.  transcript must cover
@@ -200,16 +202,11 @@ def primer3_annotate_rna(target_transcript, *, global_args=_global_args_defaults
                      _make_point_char_inserts(seq_args.SEQUENCE_OVERLAP_JUNCTION_LIST, '-'))
     # generate annotated sequence
     ann_rna_parts = []
-    # replaced 5' exclude with Ns
-    prev_end = before[1]
-    ann_rna_parts.append(before[1] * 'N')
+    prev_end = 0
     # add target and junctions
     for idx, char in inserts:
         ann_rna_parts.append(rna[prev_end:idx])
         ann_rna_parts.append(char)
         prev_end = idx
-    # 3' primer region
-    ann_rna_parts.append(rna[prev_end:after[0]])
-    # replaced 3' exclude with Ns
-    ann_rna_parts.append((after[1] - after[0]) * 'N')
+    ann_rna_parts.append(rna[prev_end:])
     return "".join(ann_rna_parts)

@@ -191,6 +191,7 @@ def output_target_design_file(outdir, target_id):
 
 _design_tsv_header = ("target_id", "design_status", "transcript_id", "browser",
                       "primer_id", "left_primer", "right_primer",
+                      "amplicon_len", "amplicon_exons", "left_delta_G" "right_delta_G",
                       "on_target_trans", "off_target_trans",
                       "on_target_genome", "off_target_genome",
                       "annotated_rna")
@@ -225,6 +226,14 @@ def _make_uniqeness_hits_browser_coords(hits):
         coords_list = sorted(set([h.get_genome_range() for h in hits]))
         return ", ".join([str(c) for c in coords_list])
 
+def _count_amplicon_primers(primer_design, target_transcript):
+    amp_coords = primer_design.amplicon_trans_coords()
+    cnt = 0
+    for exon in target_transcript.features.iter_type(ExonFeature):
+        if exon.trans.overlaps(amp_coords):
+            cnt += 1
+    return cnt
+
 def _write_primer_pair_design(fh, primer_designs, primer_design, first, hub_urls):
     "write one design, if primer_design is None, it means there were no primers found"
     row = [primer_designs.primer_targets.target_id,
@@ -234,11 +243,15 @@ def _write_primer_pair_design(fh, primer_designs, primer_design, first, hub_urls
     else:
         row.append('')
     if primer_design is None:
-        row += 7 * ['']
+        row += 11 * ['']
     else:
         row += [primer_design.ppair_id,
                 primer_design.primer3_pair.PRIMER_LEFT_SEQUENCE,
                 primer_design.primer3_pair.PRIMER_RIGHT_SEQUENCE,
+                primer_design.amplicon_length,
+                _count_amplicon_primers(primer_design, primer_designs.target_transcript),
+                primer_design.primer3_pair.PRIMER_LEFT_END_STABILITY,
+                primer_design.primer3_pair.PRIMER_RIGHT_END_STABILITY,
                 _make_uniqeness_hits_browser_coords(primer_design.transcriptome_on_targets),
                 _make_uniqeness_hits_browser_coords(primer_design.transcriptome_off_targets),
                 _make_uniqeness_hits_browser_coords(primer_design.genome_on_targets),

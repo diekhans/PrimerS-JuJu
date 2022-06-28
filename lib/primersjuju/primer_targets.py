@@ -73,8 +73,8 @@ class PrimerTargets:
     """
     target_id: str
     genome_name: str
-    # adjusted original specification based on transcript feature, transcription order
-    # strand is genomic
+    # Adjusted original genomic specification based on transcript feature, in transcription order.
+    # The genomic strand is positive.
     region_5p: Coords
     region_3p: Coords
     strand: str

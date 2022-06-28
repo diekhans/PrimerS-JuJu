@@ -1,7 +1,7 @@
+>>> Designing BBC3+1
 >>> Designing BBC3+2
-*** WARNING: skipping BBC3+2 due to errors in design specification
+*** Error: skipping BBC3+2 due to errors in design specification:
 Error: target BBC3+2 failed
 caused by: specified primer region chr19:37228327-37231039 does not overlap transcript (WTC11_consolidated, FSM_45580)
->>> Designing BBC3+1
 >>> Designs complete
 *** 1 task(s) failed

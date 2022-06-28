@@ -133,7 +133,7 @@ def _design_target(config, primer_target_spec, error_info, hub_urls, outdir):
         if error_info.stop_on_error:
             raise
         else:
-            print(f"*** WARNING: skipping {primer_target_spec.target_id} due to errors in design specification", file=sys.stderr)
+            print(f"*** Error: skipping {primer_target_spec.target_id} due to errors in design specification:", file=sys.stderr)
             print_prog_errors(ex, error_info)
             error_info.error_cnt += 1
 
@@ -149,13 +149,13 @@ def _design_targets(config, primer_target_specs, target_ids, error_info, hub_url
     for target_id in target_ids:
         _design_target_maybe(config, primer_target_specs.targets[target_id], error_info,
                              hub_urls, osp.join(outdir, target_id))
-    print(f">>> Designs complete", file=sys.stderr)
+    print(">>> Designs complete", file=sys.stderr)
 
 def _get_target_ids(primer_target_specs, target_id_subset):
     "generate list of target ids, possible filtered by a specified subset"
     all_target_ids = set(primer_target_specs.targets.keys())
     if (target_id_subset is None) or (len(target_id_subset) == 0):
-        return all_target_ids
+        return sorted(all_target_ids)
     target_id_subset = set(target_id_subset)
     bad = target_id_subset - all_target_ids
     if len(bad) > 0:
@@ -178,6 +178,7 @@ def primersJuJu(args):
             design_subcommand(args)
     except Exception as ex:
         print_prog_errors(ex, args.error_info)
+        exit(1)
     if args.error_info.error_cnt > 0:
         print(f"*** {args.error_info.error_cnt} task(s) failed", file=sys.stderr)
         exit(1)
