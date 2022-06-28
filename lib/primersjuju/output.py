@@ -191,7 +191,7 @@ def output_target_design_file(outdir, target_id):
 
 _design_tsv_header = ("target_id", "design_status", "transcript_id", "browser",
                       "primer_id", "left_primer", "right_primer",
-                      "amplicon_len", "amplicon_exons", "left_delta_G" "right_delta_G",
+                      "amplicon_len", "amplicon_exons", "left_delta_G", "right_delta_G",
                       "on_target_trans", "off_target_trans",
                       "on_target_genome", "off_target_genome",
                       "annotated_rna")
