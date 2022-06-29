@@ -28,10 +28,14 @@ UNIQ_OFF_COLOR = SvgColors.red
 UNIQ_NON_COLOR = SvgColors.purple
 
 
+def _coords_list_to_range(coords_list):
+    return coords_list[0].adjrange(None, end=coords_list[-1].end)
+
 def _coords_to_bed(name, color, coords_list, *, strand=None, extra_cols=None, thick_coords=None):
     coords_list = sorted(coords_list, key=lambda c: (c.name, c.start, c.end))
     first = coords_list[0]
     last = coords_list[-1]
+    assert first < last
     if strand is None:
         strand = first.strand
     assert strand is not None
@@ -50,7 +54,8 @@ def build_target_beds(primer_targets):
     # specified target regions
     target_beds = [_coords_to_bed(primer_targets.target_id, TARGET_SPEC_COLOR,
                                   [primer_targets.region_5p, primer_targets.region_3p],
-                                  strand=primer_targets.strand)]
+                                  strand=primer_targets.strand,
+                                  thick_coords=primer_targets.region_5p)]
 
     # transcript, with amplicon as thick
     trans0 = primer_targets.transcripts[0]
@@ -59,7 +64,7 @@ def build_target_beds(primer_targets):
     thick_coords = trans0.bounds.genome.adjrange(features_first[0].genome.start,
                                                  features_last[-1].genome.end)
     feat_beds = [_coords_to_bed(trans0.trans_id, TARGET_FEAT_COLOR,
-                                trans0.features_5p.genome_coords_type(ExonFeature) + trans0.features_3p.genome_coords_type(ExonFeature),
+                                features_to_genomic_coords(trans0.features, ExonFeature),
                                 strand=primer_targets.strand, thick_coords=thick_coords)]
     return target_beds + feat_beds
 
@@ -118,17 +123,20 @@ def _primer_color(primer_design):
         return PRIMERS_NONE_COLOR
 
 def _primer_to_bed(primer_designs, primer_design):
-    coords_list = (features_to_genomic_coords(primer_design.features_5p, ExonFeature) +
-                   features_to_genomic_coords(primer_design.features_3p, ExonFeature))
-    return _coords_to_bed(primer_design.ppair_id, _primer_color(primer_design), coords_list,
+    coords_5p_list = features_to_genomic_coords(primer_design.features_5p, ExonFeature)
+    coords_3p_list = features_to_genomic_coords(primer_design.features_3p, ExonFeature)
+    return _coords_to_bed(primer_design.ppair_id, _primer_color(primer_design),
+                          coords_5p_list + coords_3p_list,
                           strand=primer_designs.primer_targets.strand,
+                          thick_coords=_coords_list_to_range(coords_5p_list),
                           extra_cols=_get_extra_cols(primer_design))
 
 def build_primer_beds(primer_designs):
     return [_primer_to_bed(primer_designs, pd) for pd in primer_designs.designs]
 
 def _genome_hit_to_bed(hit, name, color):
-    return _coords_to_bed(name, color, (hit.left_coords, hit.right_coords))
+    return _coords_to_bed(name, color, (hit.left_coords, hit.right_coords),
+                          thick_coords=hit.left_coords)
 
 def _genome_hits_to_bed(hits, name, color):
     if hits is None:
@@ -152,9 +160,10 @@ def _transcriptome_hit_to_bed(hit, name_pre, color):
     name = name_pre + '|' + hit.trans_id
     if hit.gene_name is not None:
         name += '|' + hit.gene_name
-    return _coords_to_bed(name, color,
-                          features_to_genomic_coords(hit.left_features, ExonFeature) +
-                          features_to_genomic_coords(hit.right_features, ExonFeature))
+    left_features = features_to_genomic_coords(hit.left_features, ExonFeature)
+    right_features = features_to_genomic_coords(hit.right_features, ExonFeature)
+    return _coords_to_bed(name, color, left_features + right_features,
+                          thick_coords=_coords_list_to_range(left_features))
 
 def _transcriptome_hits_to_bed(hits, name_pre, color):
     if hits is None:
