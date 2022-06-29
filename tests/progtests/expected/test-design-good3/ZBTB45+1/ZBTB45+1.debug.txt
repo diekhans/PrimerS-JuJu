@@ -165,7 +165,7 @@ Primer3Pair 4:
     target_id ZBTB45+1
     tran_id WTC11_consolidated FSM_45682
 >>> PrimerDesign <<<
-    ppair_id ZBTB45+1+pp1
+    ppair_id ZBTB45+1_pp1
     features_5p [ExonFeature(genome=Coords(name='chr19', start=58517667, end=58517673, strand='+', size=58617616), trans=Coords(name='FSM_45682', start=2054, end=2060, strand='-', size=2136))
  ExonFeature(genome=Coords(name='chr19', start=58519741, end=58519755, strand='+', size=58617616), trans=Coords(name='FSM_45682', start=2060, end=2074, strand='-', size=2136))]
     features_3p [ExonFeature(genome=Coords(name='chr19', start=58514261, end=58514281, strand='+', size=58617616), trans=Coords(name='FSM_45682', start=732, end=752, strand='-', size=2136))]
@@ -192,7 +192,7 @@ Primer3Pair 4:
     transcriptome_non_targets [
     ]
 >>> PrimerDesign <<<
-    ppair_id ZBTB45+1+pp2
+    ppair_id ZBTB45+1_pp2
     features_5p [ExonFeature(genome=Coords(name='chr19', start=58517667, end=58517673, strand='+', size=58617616), trans=Coords(name='FSM_45682', start=2054, end=2060, strand='-', size=2136))
  ExonFeature(genome=Coords(name='chr19', start=58519741, end=58519755, strand='+', size=58617616), trans=Coords(name='FSM_45682', start=2060, end=2074, strand='-', size=2136))]
     features_3p [ExonFeature(genome=Coords(name='chr19', start=58513883, end=58513903, strand='+', size=58617616), trans=Coords(name='FSM_45682', start=354, end=374, strand='-', size=2136))]
@@ -219,7 +219,7 @@ Primer3Pair 4:
     transcriptome_non_targets [
     ]
 >>> PrimerDesign <<<
-    ppair_id ZBTB45+1+pp3
+    ppair_id ZBTB45+1_pp3
     features_5p [ExonFeature(genome=Coords(name='chr19', start=58517667, end=58517673, strand='+', size=58617616), trans=Coords(name='FSM_45682', start=2054, end=2060, strand='-', size=2136))
  ExonFeature(genome=Coords(name='chr19', start=58519741, end=58519755, strand='+', size=58617616), trans=Coords(name='FSM_45682', start=2060, end=2074, strand='-', size=2136))]
     features_3p [ExonFeature(genome=Coords(name='chr19', start=58513876, end=58513896, strand='+', size=58617616), trans=Coords(name='FSM_45682', start=347, end=367, strand='-', size=2136))]
@@ -246,7 +246,7 @@ Primer3Pair 4:
     transcriptome_non_targets [
     ]
 >>> PrimerDesign <<<
-    ppair_id ZBTB45+1+pp4
+    ppair_id ZBTB45+1_pp4
     features_5p [ExonFeature(genome=Coords(name='chr19', start=58517667, end=58517673, strand='+', size=58617616), trans=Coords(name='FSM_45682', start=2054, end=2060, strand='-', size=2136))
  ExonFeature(genome=Coords(name='chr19', start=58519741, end=58519755, strand='+', size=58617616), trans=Coords(name='FSM_45682', start=2060, end=2074, strand='-', size=2136))]
     features_3p [ExonFeature(genome=Coords(name='chr19', start=58514250, end=58514270, strand='+', size=58617616), trans=Coords(name='FSM_45682', start=721, end=741, strand='-', size=2136))]
@@ -273,7 +273,7 @@ Primer3Pair 4:
     transcriptome_non_targets [
     ]
 >>> PrimerDesign <<<
-    ppair_id ZBTB45+1+pp5
+    ppair_id ZBTB45+1_pp5
     features_5p [ExonFeature(genome=Coords(name='chr19', start=58517667, end=58517673, strand='+', size=58617616), trans=Coords(name='FSM_45682', start=2054, end=2060, strand='-', size=2136))
  ExonFeature(genome=Coords(name='chr19', start=58519741, end=58519755, strand='+', size=58617616), trans=Coords(name='FSM_45682', start=2060, end=2074, strand='-', size=2136))]
     features_3p [ExonFeature(genome=Coords(name='chr19', start=58513900, end=58513920, strand='+', size=58617616), trans=Coords(name='FSM_45682', start=371, end=391, strand='-', size=2136))]

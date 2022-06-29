@@ -218,7 +218,7 @@ def _transcriptome_uniqueness_query(uniqueness_query, target_transcript, ppair_i
     return _transcriptome_uniqueness_classify(uniqueness_query.genome_data, target_transcript, hits)
 
 def _build_primer_design(target_transcript, target_id, result_num, primer3_pair, uniqueness_query):
-    ppair_id = "{}+pp{}".format(target_id, result_num)
+    ppair_id = "{}_pp{}".format(target_id, result_num)
     features_5p = _get_exon_left_features(target_transcript, primer3_pair.PRIMER_LEFT)
     features_3p = _get_exon_right_features(target_transcript, primer3_pair.PRIMER_RIGHT)
     _validate_primer_features(features_5p, features_3p)

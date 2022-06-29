@@ -163,7 +163,7 @@ Primer3Pair 4:
     target_id SNAI1+1
     tran_id WTC11_consolidated FSM_23673
 >>> PrimerDesign <<<
-    ppair_id SNAI1+1+pp1
+    ppair_id SNAI1+1_pp1
     features_5p [ExonFeature(genome=Coords(name='chr20', start=49983001, end=49983021, strand='+', size=64444167), trans=Coords(name='FSM_23673', start=22, end=42, strand='+', size=1703))]
     features_3p [ExonFeature(genome=Coords(name='chr20', start=49988320, end=49988340, strand='+', size=64444167), trans=Coords(name='FSM_23673', start=1139, end=1159, strand='+', size=1703))]
     amplicon_trans_coords FSM_23673:22-1159
@@ -188,7 +188,7 @@ Primer3Pair 4:
     transcriptome_non_targets [
     ]
 >>> PrimerDesign <<<
-    ppair_id SNAI1+1+pp2
+    ppair_id SNAI1+1_pp2
     features_5p [ExonFeature(genome=Coords(name='chr20', start=49983001, end=49983021, strand='+', size=64444167), trans=Coords(name='FSM_23673', start=22, end=42, strand='+', size=1703))]
     features_3p [ExonFeature(genome=Coords(name='chr20', start=49988260, end=49988280, strand='+', size=64444167), trans=Coords(name='FSM_23673', start=1079, end=1099, strand='+', size=1703))]
     amplicon_trans_coords FSM_23673:22-1099
@@ -213,7 +213,7 @@ Primer3Pair 4:
     transcriptome_non_targets [
     ]
 >>> PrimerDesign <<<
-    ppair_id SNAI1+1+pp3
+    ppair_id SNAI1+1_pp3
     features_5p [ExonFeature(genome=Coords(name='chr20', start=49983001, end=49983021, strand='+', size=64444167), trans=Coords(name='FSM_23673', start=22, end=42, strand='+', size=1703))]
     features_3p [ExonFeature(genome=Coords(name='chr20', start=49988187, end=49988207, strand='+', size=64444167), trans=Coords(name='FSM_23673', start=1006, end=1026, strand='+', size=1703))]
     amplicon_trans_coords FSM_23673:22-1026
@@ -238,7 +238,7 @@ Primer3Pair 4:
     transcriptome_non_targets [
     ]
 >>> PrimerDesign <<<
-    ppair_id SNAI1+1+pp4
+    ppair_id SNAI1+1_pp4
     features_5p [ExonFeature(genome=Coords(name='chr20', start=49983001, end=49983021, strand='+', size=64444167), trans=Coords(name='FSM_23673', start=22, end=42, strand='+', size=1703))]
     features_3p [ExonFeature(genome=Coords(name='chr20', start=49988570, end=49988590, strand='+', size=64444167), trans=Coords(name='FSM_23673', start=1389, end=1409, strand='+', size=1703))]
     amplicon_trans_coords FSM_23673:22-1409
@@ -263,7 +263,7 @@ Primer3Pair 4:
     transcriptome_non_targets [
     ]
 >>> PrimerDesign <<<
-    ppair_id SNAI1+1+pp5
+    ppair_id SNAI1+1_pp5
     features_5p [ExonFeature(genome=Coords(name='chr20', start=49983001, end=49983021, strand='+', size=64444167), trans=Coords(name='FSM_23673', start=22, end=42, strand='+', size=1703))]
     features_3p [ExonFeature(genome=Coords(name='chr20', start=49988149, end=49988169, strand='+', size=64444167), trans=Coords(name='FSM_23673', start=968, end=988, strand='+', size=1703))]
     amplicon_trans_coords FSM_23673:22-988
