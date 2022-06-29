@@ -166,11 +166,11 @@ Primer3Pair 4:
     tran_id WTC11_consolidated FSM_12039
 >>> PrimerDesign <<<
     ppair_id CERNA1+1+pp1
-    features_5p [ExonFeature(genome=Coords(name='chr15', start=52180394, end=52180401, strand='+', size=101991189), trans=Coords(name='FSM_12039', start=394, end=401, strand='+', size=1947))
- ExonFeature(genome=Coords(name='chr15', start=52181049, end=52181062, strand='+', size=101991189), trans=Coords(name='FSM_12039', start=401, end=414, strand='+', size=1947))]
-    features_3p [ExonFeature(genome=Coords(name='chr15', start=52205325, end=52205345, strand='+', size=101991189), trans=Coords(name='FSM_12039', start=991, end=1011, strand='+', size=1947))]
-    amplicon_trans_coords FSM_12039:394-1011
-    amplicon_length 617
+    features_5p [ExonFeature(genome=Coords(name='chr15', start=52180395, end=52180401, strand='+', size=101991189), trans=Coords(name='FSM_12039', start=395, end=401, strand='+', size=1947))
+ ExonFeature(genome=Coords(name='chr15', start=52181049, end=52181063, strand='+', size=101991189), trans=Coords(name='FSM_12039', start=401, end=415, strand='+', size=1947))]
+    features_3p [ExonFeature(genome=Coords(name='chr15', start=52205306, end=52205326, strand='+', size=101991189), trans=Coords(name='FSM_12039', start=972, end=992, strand='+', size=1947))]
+    amplicon_trans_coords FSM_12039:395-992
+    amplicon_length 597
     PRIMER_LEFT (395, 20)
     PRIMER_RIGHT (992, 20)
     PRIMER_LEFT_SEQUENCE CCGCAGAGAATGAGAAGGCA
@@ -199,11 +199,11 @@ Primer3Pair 4:
     ]
 >>> PrimerDesign <<<
     ppair_id CERNA1+1+pp2
-    features_5p [ExonFeature(genome=Coords(name='chr15', start=52180394, end=52180401, strand='+', size=101991189), trans=Coords(name='FSM_12039', start=394, end=401, strand='+', size=1947))
- ExonFeature(genome=Coords(name='chr15', start=52181049, end=52181062, strand='+', size=101991189), trans=Coords(name='FSM_12039', start=401, end=414, strand='+', size=1947))]
-    features_3p [ExonFeature(genome=Coords(name='chr15', start=52205326, end=52205346, strand='+', size=101991189), trans=Coords(name='FSM_12039', start=992, end=1012, strand='+', size=1947))]
-    amplicon_trans_coords FSM_12039:394-1012
-    amplicon_length 618
+    features_5p [ExonFeature(genome=Coords(name='chr15', start=52180395, end=52180401, strand='+', size=101991189), trans=Coords(name='FSM_12039', start=395, end=401, strand='+', size=1947))
+ ExonFeature(genome=Coords(name='chr15', start=52181049, end=52181063, strand='+', size=101991189), trans=Coords(name='FSM_12039', start=401, end=415, strand='+', size=1947))]
+    features_3p [ExonFeature(genome=Coords(name='chr15', start=52205307, end=52205327, strand='+', size=101991189), trans=Coords(name='FSM_12039', start=973, end=993, strand='+', size=1947))]
+    amplicon_trans_coords FSM_12039:395-993
+    amplicon_length 598
     PRIMER_LEFT (395, 20)
     PRIMER_RIGHT (993, 20)
     PRIMER_LEFT_SEQUENCE CCGCAGAGAATGAGAAGGCA
@@ -232,11 +232,11 @@ Primer3Pair 4:
     ]
 >>> PrimerDesign <<<
     ppair_id CERNA1+1+pp3
-    features_5p [ExonFeature(genome=Coords(name='chr15', start=52180391, end=52180401, strand='+', size=101991189), trans=Coords(name='FSM_12039', start=391, end=401, strand='+', size=1947))
- ExonFeature(genome=Coords(name='chr15', start=52181049, end=52181059, strand='+', size=101991189), trans=Coords(name='FSM_12039', start=401, end=411, strand='+', size=1947))]
-    features_3p [ExonFeature(genome=Coords(name='chr15', start=52205325, end=52205345, strand='+', size=101991189), trans=Coords(name='FSM_12039', start=991, end=1011, strand='+', size=1947))]
-    amplicon_trans_coords FSM_12039:391-1011
-    amplicon_length 620
+    features_5p [ExonFeature(genome=Coords(name='chr15', start=52180392, end=52180401, strand='+', size=101991189), trans=Coords(name='FSM_12039', start=392, end=401, strand='+', size=1947))
+ ExonFeature(genome=Coords(name='chr15', start=52181049, end=52181060, strand='+', size=101991189), trans=Coords(name='FSM_12039', start=401, end=412, strand='+', size=1947))]
+    features_3p [ExonFeature(genome=Coords(name='chr15', start=52205306, end=52205326, strand='+', size=101991189), trans=Coords(name='FSM_12039', start=972, end=992, strand='+', size=1947))]
+    amplicon_trans_coords FSM_12039:392-992
+    amplicon_length 600
     PRIMER_LEFT (392, 20)
     PRIMER_RIGHT (992, 20)
     PRIMER_LEFT_SEQUENCE TGGCCGCAGAGAATGAGAAG
@@ -259,11 +259,11 @@ Primer3Pair 4:
     ]
 >>> PrimerDesign <<<
     ppair_id CERNA1+1+pp4
-    features_5p [ExonFeature(genome=Coords(name='chr15', start=52180391, end=52180401, strand='+', size=101991189), trans=Coords(name='FSM_12039', start=391, end=401, strand='+', size=1947))
- ExonFeature(genome=Coords(name='chr15', start=52181049, end=52181059, strand='+', size=101991189), trans=Coords(name='FSM_12039', start=401, end=411, strand='+', size=1947))]
-    features_3p [ExonFeature(genome=Coords(name='chr15', start=52205326, end=52205346, strand='+', size=101991189), trans=Coords(name='FSM_12039', start=992, end=1012, strand='+', size=1947))]
-    amplicon_trans_coords FSM_12039:391-1012
-    amplicon_length 621
+    features_5p [ExonFeature(genome=Coords(name='chr15', start=52180392, end=52180401, strand='+', size=101991189), trans=Coords(name='FSM_12039', start=392, end=401, strand='+', size=1947))
+ ExonFeature(genome=Coords(name='chr15', start=52181049, end=52181060, strand='+', size=101991189), trans=Coords(name='FSM_12039', start=401, end=412, strand='+', size=1947))]
+    features_3p [ExonFeature(genome=Coords(name='chr15', start=52205307, end=52205327, strand='+', size=101991189), trans=Coords(name='FSM_12039', start=973, end=993, strand='+', size=1947))]
+    amplicon_trans_coords FSM_12039:392-993
+    amplicon_length 601
     PRIMER_LEFT (392, 20)
     PRIMER_RIGHT (993, 20)
     PRIMER_LEFT_SEQUENCE TGGCCGCAGAGAATGAGAAG
@@ -286,11 +286,11 @@ Primer3Pair 4:
     ]
 >>> PrimerDesign <<<
     ppair_id CERNA1+1+pp5
-    features_5p [ExonFeature(genome=Coords(name='chr15', start=52180389, end=52180401, strand='+', size=101991189), trans=Coords(name='FSM_12039', start=389, end=401, strand='+', size=1947))
- ExonFeature(genome=Coords(name='chr15', start=52181049, end=52181057, strand='+', size=101991189), trans=Coords(name='FSM_12039', start=401, end=409, strand='+', size=1947))]
-    features_3p [ExonFeature(genome=Coords(name='chr15', start=52205325, end=52205345, strand='+', size=101991189), trans=Coords(name='FSM_12039', start=991, end=1011, strand='+', size=1947))]
-    amplicon_trans_coords FSM_12039:389-1011
-    amplicon_length 622
+    features_5p [ExonFeature(genome=Coords(name='chr15', start=52180390, end=52180401, strand='+', size=101991189), trans=Coords(name='FSM_12039', start=390, end=401, strand='+', size=1947))
+ ExonFeature(genome=Coords(name='chr15', start=52181049, end=52181058, strand='+', size=101991189), trans=Coords(name='FSM_12039', start=401, end=410, strand='+', size=1947))]
+    features_3p [ExonFeature(genome=Coords(name='chr15', start=52205306, end=52205326, strand='+', size=101991189), trans=Coords(name='FSM_12039', start=972, end=992, strand='+', size=1947))]
+    amplicon_trans_coords FSM_12039:390-992
+    amplicon_length 602
     PRIMER_LEFT (390, 20)
     PRIMER_RIGHT (992, 20)
     PRIMER_LEFT_SEQUENCE CTTGGCCGCAGAGAATGAGA

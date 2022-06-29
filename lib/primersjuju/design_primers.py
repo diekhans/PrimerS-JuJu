@@ -117,13 +117,22 @@ class PrimerDesigns:
         for design in self.designs:
             design.dump(fh)
 
-def _get_exon_features(target_transcript, primer3_coords):
+def _get_exon_features(target_transcript, start, end):
+    # start/end are transcript forward direction
     feat0 = target_transcript.features[0]
-    start = primer3_coords[0] - 1  # one-based
-    end = start + primer3_coords[1]  # length
     primer_trans_coords = Coords(feat0.trans.name, start, end,
                                  strand='+', size=feat0.trans.size)
     return transcript_range_to_features(target_transcript.features, primer_trans_coords)
+
+def _get_exon_left_features(target_transcript, primer3_coords):
+    start = primer3_coords[0]
+    end = start + primer3_coords[1]
+    return _get_exon_features(target_transcript, start, end)
+
+def _get_exon_right_features(target_transcript, primer3_coords):
+    start = primer3_coords[0] - primer3_coords[1]
+    end = start + primer3_coords[1]
+    return _get_exon_features(target_transcript, start, end)
 
 def _validate_primer_features(features_5p, features_3p):
     for feature_5p in features_5p:
@@ -210,8 +219,8 @@ def _transcriptome_uniqueness_query(uniqueness_query, target_transcript, ppair_i
 
 def _build_primer_design(target_transcript, target_id, result_num, primer3_pair, uniqueness_query):
     ppair_id = "{}+pp{}".format(target_id, result_num)
-    features_5p = _get_exon_features(target_transcript, primer3_pair.PRIMER_LEFT)
-    features_3p = _get_exon_features(target_transcript, primer3_pair.PRIMER_RIGHT)
+    features_5p = _get_exon_left_features(target_transcript, primer3_pair.PRIMER_LEFT)
+    features_3p = _get_exon_right_features(target_transcript, primer3_pair.PRIMER_RIGHT)
     _validate_primer_features(features_5p, features_3p)
 
     if uniqueness_query is None:

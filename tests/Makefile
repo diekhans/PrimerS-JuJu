@@ -28,3 +28,7 @@ lint:
 clean:
 	cd libtests && ${MAKE} $@
 	cd progtests && ${MAKE} $@
+
+update:
+	cd libtests/output && (find . -type f | cpio -pdum ../expected)
+	cd progtests/output && (find . -type f | cpio -pdum ../expected)
