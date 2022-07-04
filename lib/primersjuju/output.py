@@ -243,7 +243,7 @@ def _make_uniqeness_hits_browser_coords(hits):
         coords_list = sorted(set([h.get_genome_range() for h in hits]))
         return ", ".join([str(c) for c in coords_list])
 
-def _count_amplicon_primers(primer_design, target_transcript):
+def _count_amplicon_exons(primer_design, target_transcript):
     amp_coords = primer_design.amplicon_trans_coords()
     cnt = 0
     for exon in target_transcript.features.iter_type(ExonFeature):
@@ -266,7 +266,7 @@ def _write_primer_pair_design(fh, primer_designs, primer_design, first, hub_urls
                 primer_design.primer3_pair.PRIMER_LEFT_SEQUENCE,
                 primer_design.primer3_pair.PRIMER_RIGHT_SEQUENCE,
                 primer_design.amplicon_length,
-                _count_amplicon_primers(primer_design, primer_designs.target_transcript),
+                _count_amplicon_exons(primer_design, primer_designs.target_transcript),
                 primer_design.primer3_pair.PRIMER_LEFT_END_STABILITY,
                 primer_design.primer3_pair.PRIMER_RIGHT_END_STABILITY,
                 _make_uniqeness_hits_browser_coords(primer_design.transcriptome_on_targets),
