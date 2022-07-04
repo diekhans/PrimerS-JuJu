@@ -112,34 +112,6 @@ def _primer_region_check_features(desc, track_name, trans_id, region, features):
         raise PrimersJuJuDataError(f"{desc} transcript ({track_name}, {trans_id}) primer region does not end in exons: {str(features)}")
 
 
-def _block_features(trans_bed, trans_off, trans_size, region, genome_size, prev_blk, blk, features):
-    """get intron and exon feature intersection with a genomic range.  trans_off is in the genomic
-    direction, not direction of transcription"""
-
-    def _mk_genome(start, end):
-        "create genomic range for intersecting the region"
-        return Coords(trans_bed.chrom,
-                      max(start, region.start), min(end, region.end),
-                      strand=trans_bed.strand, size=genome_size)
-
-    def _mk_trans(start, end):
-        "create transcript range for intersecting the region"
-        trans = Coords(trans_bed.name, start, end,
-                       strand=trans_bed.strand, size=trans_size)
-        if trans.strand == '-':
-            trans = trans.reverse()
-        return trans
-
-    if (prev_blk is not None) and (prev_blk.end < region.end) and (blk.start > region.start):
-        features.append(IntronFeature(_mk_genome(prev_blk.end, blk.start),
-                                      _mk_trans(trans_off, trans_off)))
-    if (blk.start < region.end) and (blk.end > region.start):
-        genome = _mk_genome(blk.start, blk.end)
-        trans_start = trans_off + (genome.start - blk.start)
-        trans = _mk_trans(trans_start,
-                          trans_start + len(genome))
-        features.append(ExonFeature(genome, trans))
-
 def _get_regions_transcript_orient(trans, region_5p, region_3p):
     "swap regions if needed to be in transcript orientation"
     genome_orient = '+' if (region_5p.end < region_3p.start) else '-'
