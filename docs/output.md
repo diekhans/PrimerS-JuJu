@@ -25,7 +25,7 @@ Color coding:
 
 Primers pair has one end drawn thick, the other thin.
 
-# uniquness track
+# uniqueness track
 
 BED files, $target_id.transcriptome-uniqueness.bed and $target_id.genome-uniqueness.bed,
 are the alignments produced by querying the transcriptome and genome with isPCR.
