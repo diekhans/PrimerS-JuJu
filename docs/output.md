@@ -7,7 +7,7 @@ BED file, $target_id.target.bed, has the target regions that were specified as i
 
 Color coding:
 * blue - input target regions
-* green - exons regions of the target transcripts in the target regions
+* green - targeted transcript, ampliction is drawn thick
 
 # primer track
 
@@ -16,11 +16,14 @@ back to the genome using the target transcript.  These are colored based
 uniqueness mappings.
 
 Color coding:
+* fuchsia - strong delta-G, (<= -9.0 kcal/mole).
 * green - a primer that is only has on-target mappings when querying both the genome and transcriptome.
 * orange  - a primer that has both on-target and off-target mappings when querying both the genome and transcriptome.
 * red - a primer that only has off-target mappings when querying both the genome and transcriptome.
 * purple - primer that is only has mappings to non-target chromosomes when querying both the genome and transcriptome.  A non-target chromosome is an alternate or patch sequence
 * darkorange - primer that is no mappings when querying both the genome and transcriptome.
+
+Primers pair has one end drawn thick, the other thin.
 
 # uniquness track
 
@@ -32,4 +35,4 @@ Color coding:
 * red - an off-target alignment of a primer
 * purple - a alignment to a non-target chromosome (alt or patch) of a primer
 
-
+Primers pair has one end drawn thick, the other thin.

@@ -1,13 +1,8 @@
-* draw right region narrow
 * check for exact match
 * bad primers BEDs
 ** CCDC106+1 - outside of target
 ** DPP3+1 - doesn't cross intro.
 * CERNA1+1 - some of isPCr showed going into retained intron
-* add TM to primer to spread sheet ; want highest
-* Another suggestion if possible for better visualisation
-We should find a way that we can easy see if delta_G is ok
-should be weaker (more positive) than -9.0 kcal/mole
 * Ordered primers by  score
 * rna annotates doesn't work right
 * renamed ppair_id

@@ -16,6 +16,7 @@ TARGET_SPEC_COLOR = SvgColors.blue
 TARGET_FEAT_COLOR = SvgColors.green
 
 # primer tracks
+PRIMERS_UNSTABLE_COLOR = SvgColors.fuchsia
 PRIMERS_ON_COLOR = SvgColors.green
 PRIMERS_ON_OFF_COLOR = SvgColors.orange
 PRIMERS_OFF_COLOR = SvgColors.red
@@ -27,6 +28,10 @@ UNIQ_ON_COLOR = SvgColors.green
 UNIQ_OFF_COLOR = SvgColors.red
 UNIQ_NON_COLOR = SvgColors.purple
 
+
+#  Delta G: secondary structures of any self-dimers, hairpins, and
+#  heterodimers that should be weaker (more positive) thanÂ -9.0 kcal/mole.
+STABILITY_THRSEHOLD = -9.0
 
 def _coords_list_to_range(coords_list):
     return coords_list[0].adjrange(None, end=coords_list[-1].end)
@@ -110,8 +115,11 @@ def _get_extra_cols(primer_design):
     return extra_cols
 
 def _primer_color(primer_design):
-    if (((primer_design.transcriptome_on_target_cnt() + primer_design.genome_on_target_cnt()) > 0) and
-        ((primer_design.transcriptome_off_target_cnt() + primer_design.genome_off_target_cnt()) > 0)):
+    if ((primer_design.primer3_pair.PRIMER_LEFT_END_STABILITY <= STABILITY_THRSEHOLD) or
+        (primer_design.primer3_pair.PRIMER_RIGHT_END_STABILITY <= STABILITY_THRSEHOLD)):
+        return PRIMERS_UNSTABLE_COLOR
+    elif (((primer_design.transcriptome_on_target_cnt() + primer_design.genome_on_target_cnt()) > 0) and
+          ((primer_design.transcriptome_off_target_cnt() + primer_design.genome_off_target_cnt()) > 0)):
         return PRIMERS_ON_OFF_COLOR
     elif ((primer_design.transcriptome_on_target_cnt() + primer_design.genome_on_target_cnt()) > 0):
         return PRIMERS_ON_COLOR
