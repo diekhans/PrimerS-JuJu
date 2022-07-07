@@ -38,6 +38,7 @@ class PrimerDesign:
     transcriptome_on_targets: Sequence[TranscriptomeHit]
     transcriptome_off_targets: Sequence[TranscriptomeHit]
     transcriptome_non_targets: Sequence[TranscriptomeHit]
+    priority: int = None
 
     def amplicon_trans_coords(self) -> Coords:
         """amplicon region, in positive transcript coordinates """
@@ -48,26 +49,35 @@ class PrimerDesign:
         else:
             return Coords(trans_5p.name, trans_5p.size - trans_5p.end, trans_5p.size - trans_3p.start, '+', trans_5p.size)
 
+    def spans_splice_juncs(self):
+        return (len(self.features_5p) > 1) or (len(self.features_3p) > 1)
+
     @property
     def amplicon_length(self):
         # ignore strand with abs
         return abs(self.features_3p[-1].trans.end - self.features_5p[0].trans.start)
 
+    @property
     def genome_on_target_cnt(self):
         return _len_none(self.genome_on_targets)
 
+    @property
     def genome_off_target_cnt(self):
         return _len_none(self.genome_off_targets)
 
+    @property
     def genome_non_target_cnt(self):
         return _len_none(self.genome_non_targets)
 
+    @property
     def transcriptome_on_target_cnt(self):
         return _len_none(self.transcriptome_on_targets)
 
+    @property
     def transcriptome_off_target_cnt(self):
         return _len_none(self.transcriptome_off_targets)
 
+    @property
     def transcriptome_non_target_cnt(self):
         return _len_none(self.transcriptome_non_targets)
 
@@ -84,6 +94,7 @@ class PrimerDesign:
         print("    ppair_id", self.ppair_id, file=fh)
         print("    features_5p", self.features_5p, file=fh)
         print("    features_3p", self.features_3p, file=fh)
+        print("    priority", self.priority, file=fh)
         print("    amplicon_trans_coords", self.amplicon_trans_coords(), file=fh)
         print("    amplicon_length", self.amplicon_length, file=fh)
         _print_p3_attr("PRIMER_LEFT")
@@ -235,26 +246,57 @@ def _build_primer_design(target_transcript, target_id, result_num, primer3_pair,
                         transcriptome_on_targets, transcriptome_off_targets, transcriptome_non_targets)
 
 def _calc_design_status(primer_design) -> DesignStatus:
-    if primer_design.transcriptome_off_target_cnt() > 0:
+    if primer_design.transcriptome_off_target_cnt > 0:
         return DesignStatus.NOT_TRANSCRIPTOME_UNIQUE
-    elif primer_design.genome_off_target_cnt() > 0:
+    elif primer_design.genome_off_target_cnt > 0:
         return DesignStatus.NOT_GENOME_UNIQUE
     else:
         return DesignStatus.GOOD
 
-def get_design_status(primer_design_list) -> DesignStatus:
+def _get_design_status(primer_design_list) -> DesignStatus:
     "determine status base on primer3 and uniqueness"
     design_status = DesignStatus.NO_PRIMERS  # worst
     for primer_design in primer_design_list:
         design_status = min(design_status, _calc_design_status(primer_design))
     return design_status
 
+def _primer_design_target_score(primer_design):
+    # order of prority:
+    #   on_target only or no alignments in it has introns (might not be in transcriptome)
+    #   no off-target, but can have non-target or no alignments
+    #   off-target
+    on_cnt = primer_design.genome_on_target_cnt + primer_design.transcriptome_on_target_cnt
+    off_cnt = primer_design.genome_off_target_cnt + primer_design.transcriptome_off_target_cnt
+    non_cnt = primer_design.genome_non_target_cnt + primer_design.transcriptome_non_target_cnt
+    if ((off_cnt == 0) and (non_cnt == 0)
+        and ((primer_design.spans_splice_juncs() and on_cnt == 0) or (on_cnt > 0))):
+        return 1
+    elif off_cnt == 0:
+        return 2
+    else:
+        return 3
+
+def _primer_design_sort_key(primer_design):
+    """lowest values are best"""
+    # higher delta-G is better, take total
+    return (_primer_design_target_score(primer_design),
+            -(primer_design.primer3_pair.PRIMER_LEFT_END_STABILITY +
+              primer_design.primer3_pair.PRIMER_RIGHT_END_STABILITY))
+
+def _sort_primer_designs(primer_design_list):
+    "sort and assign priorities"
+    primer_design_list = sorted(primer_design_list, key=_primer_design_sort_key)
+    for i in range(len(primer_design_list)):
+        primer_design_list[i].priority = i + 1
+    return primer_design_list
+
 def _build_primer_designs(primer_targets, target_transcript, primer3_results, uniqueness_query):
     primer_design_list = [_build_primer_design(target_transcript, primer_targets.target_id, i + 1, pair, uniqueness_query)
                           for i, pair in enumerate(primer3_results.pairs)]
+    primer_design_list = _sort_primer_designs(primer_design_list)
     return PrimerDesigns(primer_targets.target_id, primer_targets, target_transcript, primer3_results,
                          uniqueness_query is not None,
-                         primer_design_list, get_design_status(primer_design_list))
+                         primer_design_list, _get_design_status(primer_design_list))
 
 def design_primers(genome_data, primer_targets, *, uniqueness_query=None):
     """design transcripts """

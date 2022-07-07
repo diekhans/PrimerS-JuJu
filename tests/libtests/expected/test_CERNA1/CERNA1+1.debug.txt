@@ -169,6 +169,7 @@ Primer3Pair 4:
     features_5p [ExonFeature(genome=Coords(name='chr15', start=52180395, end=52180401, strand='+', size=101991189), trans=Coords(name='FSM_12039', start=395, end=401, strand='+', size=1947))
  ExonFeature(genome=Coords(name='chr15', start=52181049, end=52181063, strand='+', size=101991189), trans=Coords(name='FSM_12039', start=401, end=415, strand='+', size=1947))]
     features_3p [ExonFeature(genome=Coords(name='chr15', start=52205306, end=52205326, strand='+', size=101991189), trans=Coords(name='FSM_12039', start=972, end=992, strand='+', size=1947))]
+    priority 1
     amplicon_trans_coords FSM_12039:395-992
     amplicon_length 597
     PRIMER_LEFT (395, 20)
@@ -202,6 +203,7 @@ Primer3Pair 4:
     features_5p [ExonFeature(genome=Coords(name='chr15', start=52180395, end=52180401, strand='+', size=101991189), trans=Coords(name='FSM_12039', start=395, end=401, strand='+', size=1947))
  ExonFeature(genome=Coords(name='chr15', start=52181049, end=52181063, strand='+', size=101991189), trans=Coords(name='FSM_12039', start=401, end=415, strand='+', size=1947))]
     features_3p [ExonFeature(genome=Coords(name='chr15', start=52205307, end=52205327, strand='+', size=101991189), trans=Coords(name='FSM_12039', start=973, end=993, strand='+', size=1947))]
+    priority 2
     amplicon_trans_coords FSM_12039:395-993
     amplicon_length 598
     PRIMER_LEFT (395, 20)
@@ -231,10 +233,39 @@ Primer3Pair 4:
     transcriptome_non_targets [
     ]
 >>> PrimerDesign <<<
+    ppair_id CERNA1+1_pp5
+    features_5p [ExonFeature(genome=Coords(name='chr15', start=52180390, end=52180401, strand='+', size=101991189), trans=Coords(name='FSM_12039', start=390, end=401, strand='+', size=1947))
+ ExonFeature(genome=Coords(name='chr15', start=52181049, end=52181058, strand='+', size=101991189), trans=Coords(name='FSM_12039', start=401, end=410, strand='+', size=1947))]
+    features_3p [ExonFeature(genome=Coords(name='chr15', start=52205306, end=52205326, strand='+', size=101991189), trans=Coords(name='FSM_12039', start=972, end=992, strand='+', size=1947))]
+    priority 3
+    amplicon_trans_coords FSM_12039:390-992
+    amplicon_length 602
+    PRIMER_LEFT (390, 20)
+    PRIMER_RIGHT (992, 20)
+    PRIMER_LEFT_SEQUENCE CTTGGCCGCAGAGAATGAGA
+    PRIMER_RIGHT_SEQUENCE CCTAACCCTGACACACACCC
+    PRIMER_PAIR_PRODUCT_SIZE 603
+    genome_on_targets [
+    ]
+    genome_off_targets [
+    ]
+    genome_non_targets [
+    ]
+    transcriptome_on_targets [TranscriptomeHit(left=[ExonFeature(genome=chr15:52180390-52180401/+, trans=ENST00000654724.1__CERNA1:363-374/+),
+	ExonFeature(genome=chr15:52181049-52181058/+, trans=ENST00000654724.1__CERNA1:374-383/+)
+    ],right=[ExonFeature(genome=chr15:52205307-52205327/+, trans=ENST00000654724.1__CERNA1:946-966/+)
+    ])
+    ]
+    transcriptome_off_targets [
+    ]
+    transcriptome_non_targets [
+    ]
+>>> PrimerDesign <<<
     ppair_id CERNA1+1_pp3
     features_5p [ExonFeature(genome=Coords(name='chr15', start=52180392, end=52180401, strand='+', size=101991189), trans=Coords(name='FSM_12039', start=392, end=401, strand='+', size=1947))
  ExonFeature(genome=Coords(name='chr15', start=52181049, end=52181060, strand='+', size=101991189), trans=Coords(name='FSM_12039', start=401, end=412, strand='+', size=1947))]
     features_3p [ExonFeature(genome=Coords(name='chr15', start=52205306, end=52205326, strand='+', size=101991189), trans=Coords(name='FSM_12039', start=972, end=992, strand='+', size=1947))]
+    priority 4
     amplicon_trans_coords FSM_12039:392-992
     amplicon_length 600
     PRIMER_LEFT (392, 20)
@@ -262,6 +293,7 @@ Primer3Pair 4:
     features_5p [ExonFeature(genome=Coords(name='chr15', start=52180392, end=52180401, strand='+', size=101991189), trans=Coords(name='FSM_12039', start=392, end=401, strand='+', size=1947))
  ExonFeature(genome=Coords(name='chr15', start=52181049, end=52181060, strand='+', size=101991189), trans=Coords(name='FSM_12039', start=401, end=412, strand='+', size=1947))]
     features_3p [ExonFeature(genome=Coords(name='chr15', start=52205307, end=52205327, strand='+', size=101991189), trans=Coords(name='FSM_12039', start=973, end=993, strand='+', size=1947))]
+    priority 5
     amplicon_trans_coords FSM_12039:392-993
     amplicon_length 601
     PRIMER_LEFT (392, 20)
@@ -278,33 +310,6 @@ Primer3Pair 4:
     transcriptome_on_targets [TranscriptomeHit(left=[ExonFeature(genome=chr15:52180392-52180401/+, trans=ENST00000654724.1__CERNA1:365-374/+),
 	ExonFeature(genome=chr15:52181049-52181060/+, trans=ENST00000654724.1__CERNA1:374-385/+)
     ],right=[ExonFeature(genome=chr15:52205308-52205328/+, trans=ENST00000654724.1__CERNA1:947-967/+)
-    ])
-    ]
-    transcriptome_off_targets [
-    ]
-    transcriptome_non_targets [
-    ]
->>> PrimerDesign <<<
-    ppair_id CERNA1+1_pp5
-    features_5p [ExonFeature(genome=Coords(name='chr15', start=52180390, end=52180401, strand='+', size=101991189), trans=Coords(name='FSM_12039', start=390, end=401, strand='+', size=1947))
- ExonFeature(genome=Coords(name='chr15', start=52181049, end=52181058, strand='+', size=101991189), trans=Coords(name='FSM_12039', start=401, end=410, strand='+', size=1947))]
-    features_3p [ExonFeature(genome=Coords(name='chr15', start=52205306, end=52205326, strand='+', size=101991189), trans=Coords(name='FSM_12039', start=972, end=992, strand='+', size=1947))]
-    amplicon_trans_coords FSM_12039:390-992
-    amplicon_length 602
-    PRIMER_LEFT (390, 20)
-    PRIMER_RIGHT (992, 20)
-    PRIMER_LEFT_SEQUENCE CTTGGCCGCAGAGAATGAGA
-    PRIMER_RIGHT_SEQUENCE CCTAACCCTGACACACACCC
-    PRIMER_PAIR_PRODUCT_SIZE 603
-    genome_on_targets [
-    ]
-    genome_off_targets [
-    ]
-    genome_non_targets [
-    ]
-    transcriptome_on_targets [TranscriptomeHit(left=[ExonFeature(genome=chr15:52180390-52180401/+, trans=ENST00000654724.1__CERNA1:363-374/+),
-	ExonFeature(genome=chr15:52181049-52181058/+, trans=ENST00000654724.1__CERNA1:374-383/+)
-    ],right=[ExonFeature(genome=chr15:52205307-52205327/+, trans=ENST00000654724.1__CERNA1:946-966/+)
     ])
     ]
     transcriptome_off_targets [

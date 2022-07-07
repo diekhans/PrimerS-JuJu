@@ -98,14 +98,17 @@ _primer_bed_columns = (
     'PRIMER_RIGHT_TM',             # 59.96936157106791
 )
 
-def _get_extra_cols(primer_design):
+def _get_extra_cols(primer_designs, primer_design):
     """get extra BED columns from primer design"""
-    extra_cols = [primer_design.transcriptome_on_target_cnt(),
-                  primer_design.transcriptome_off_target_cnt(),
-                  primer_design.transcriptome_non_target_cnt(),
-                  primer_design.genome_on_target_cnt(),
-                  primer_design.genome_off_target_cnt(),
-                  primer_design.genome_non_target_cnt()]
+    extra_cols = [primer_design.priority,
+                  primer_design.amplicon_length,
+                  _count_amplicon_exons(primer_design, primer_designs.target_transcript),
+                  primer_design.transcriptome_on_target_cnt,
+                  primer_design.transcriptome_off_target_cnt,
+                  primer_design.transcriptome_non_target_cnt,
+                  primer_design.genome_on_target_cnt,
+                  primer_design.genome_off_target_cnt,
+                  primer_design.genome_non_target_cnt]
     # directly from primer3
     for col_name in _primer_bed_columns:
         col = getattr(primer_design.primer3_pair, col_name)
@@ -118,14 +121,14 @@ def _primer_color(primer_design):
     if ((primer_design.primer3_pair.PRIMER_LEFT_END_STABILITY <= STABILITY_THRSEHOLD) or
         (primer_design.primer3_pair.PRIMER_RIGHT_END_STABILITY <= STABILITY_THRSEHOLD)):
         return PRIMERS_UNSTABLE_COLOR
-    elif (((primer_design.transcriptome_on_target_cnt() + primer_design.genome_on_target_cnt()) > 0) and
-          ((primer_design.transcriptome_off_target_cnt() + primer_design.genome_off_target_cnt()) > 0)):
+    elif (((primer_design.transcriptome_on_target_cnt + primer_design.genome_on_target_cnt) > 0) and
+          ((primer_design.transcriptome_off_target_cnt + primer_design.genome_off_target_cnt) > 0)):
         return PRIMERS_ON_OFF_COLOR
-    elif ((primer_design.transcriptome_on_target_cnt() + primer_design.genome_on_target_cnt()) > 0):
+    elif ((primer_design.transcriptome_on_target_cnt + primer_design.genome_on_target_cnt) > 0):
         return PRIMERS_ON_COLOR
-    elif ((primer_design.transcriptome_off_target_cnt() + primer_design.genome_off_target_cnt()) > 0):
+    elif ((primer_design.transcriptome_off_target_cnt + primer_design.genome_off_target_cnt) > 0):
         return PRIMERS_OFF_COLOR
-    elif ((primer_design.transcriptome_non_target_cnt() + primer_design.genome_non_target_cnt()) > 0):
+    elif ((primer_design.transcriptome_non_target_cnt + primer_design.genome_non_target_cnt) > 0):
         return PRIMERS_NON_COLOR
     else:
         return PRIMERS_NONE_COLOR
@@ -137,7 +140,7 @@ def _primer_to_bed(primer_designs, primer_design):
                           coords_5p_list + coords_3p_list,
                           strand=primer_designs.primer_targets.strand,
                           thick_coords=_coords_list_to_range(coords_5p_list),
-                          extra_cols=_get_extra_cols(primer_design))
+                          extra_cols=_get_extra_cols(primer_designs, primer_design))
 
 def build_primer_beds(primer_designs):
     return [_primer_to_bed(primer_designs, pd) for pd in primer_designs.designs]
@@ -206,13 +209,6 @@ def output_target_design_file(outdir, target_id):
     """
     return _get_out_path(outdir, target_id, "designs.tsv")
 
-_design_tsv_header = ("target_id", "design_status", "transcript_id", "browser",
-                      "primer_id", "left_primer", "right_primer",
-                      "amplicon_len", "amplicon_exons", "left_delta_G", "right_delta_G",
-                      "on_target_trans", "off_target_trans",
-                      "on_target_genome", "off_target_genome",
-                      "annotated_amplicon")
-
 def _make_excel_link(url, position):
     return f'=HYPERLINK("{url}", "{str(position)}")'
 
@@ -251,34 +247,6 @@ def _count_amplicon_exons(primer_design, target_transcript):
             cnt += 1
     return cnt
 
-def _write_primer_pair_design(fh, primer_designs, primer_design, first, hub_urls):
-    "write one design, if primer_design is None, it means there were no primers found"
-    row = [primer_designs.primer_targets.target_id,
-           primer_designs.status, primer_designs.primer_targets.transcripts[0].trans_id]
-    if first:
-        row.append(_make_design_browser_link(primer_designs, hub_urls))
-    else:
-        row.append('')
-    if primer_design is None:
-        row += 11 * ['']
-    else:
-        row += [primer_design.ppair_id,
-                primer_design.primer3_pair.PRIMER_LEFT_SEQUENCE,
-                primer_design.primer3_pair.PRIMER_RIGHT_SEQUENCE,
-                primer_design.amplicon_length,
-                _count_amplicon_exons(primer_design, primer_designs.target_transcript),
-                primer_design.primer3_pair.PRIMER_LEFT_END_STABILITY,
-                primer_design.primer3_pair.PRIMER_RIGHT_END_STABILITY,
-                _make_uniqeness_hits_browser_coords(primer_design.transcriptome_on_targets),
-                _make_uniqeness_hits_browser_coords(primer_design.transcriptome_off_targets),
-                _make_uniqeness_hits_browser_coords(primer_design.genome_on_targets),
-                _make_uniqeness_hits_browser_coords(primer_design.genome_off_targets)]
-    if first:
-        row.append(primer3_annotate_amplicon(primer_designs.primer_targets.transcripts[0]))
-    else:
-        row.append('')
-    fileOps.prRow(fh, row)
-
 def output_target_debug(outdir, primer_targets, primer_designs):
     target_transcript = primer_targets.transcripts[0]
     fileOps.ensureDir(outdir)
@@ -303,6 +271,42 @@ def output_target_beds(outdir, primer_targets, primer_designs):
                     _get_out_path(outdir, primer_targets.target_id, "genome-uniqueness.bed"))
         _write_beds(build_transcriptome_uniqueness_hits_beds(primer_designs),
                     _get_out_path(outdir, primer_targets.target_id, "transcriptome-uniqueness.bed"))
+
+_design_tsv_header = ("target_id", "design_status", "transcript_id", "browser",
+                      "primer_id", "left_primer", "right_primer", "pri",
+                      "amplicon_len", "amplicon_exons", "left_delta_G", "right_delta_G",
+                      "on_target_trans", "off_target_trans",
+                      "on_target_genome", "off_target_genome",
+                      "annotated_amplicon")
+
+def _write_primer_pair_design(fh, primer_designs, primer_design, first, hub_urls):
+    "write one design, if primer_design is None, it means there were no primers found"
+    row = [primer_designs.primer_targets.target_id,
+           primer_designs.status, primer_designs.primer_targets.transcripts[0].trans_id]
+    if first:
+        row.append(_make_design_browser_link(primer_designs, hub_urls))
+    else:
+        row.append('')
+    if primer_design is None:
+        row += 12 * ['']
+    else:
+        row += [primer_design.ppair_id,
+                primer_design.primer3_pair.PRIMER_LEFT_SEQUENCE,
+                primer_design.primer3_pair.PRIMER_RIGHT_SEQUENCE,
+                primer_design.priority,
+                primer_design.amplicon_length,
+                _count_amplicon_exons(primer_design, primer_designs.target_transcript),
+                primer_design.primer3_pair.PRIMER_LEFT_END_STABILITY,
+                primer_design.primer3_pair.PRIMER_RIGHT_END_STABILITY,
+                _make_uniqeness_hits_browser_coords(primer_design.transcriptome_on_targets),
+                _make_uniqeness_hits_browser_coords(primer_design.transcriptome_off_targets),
+                _make_uniqeness_hits_browser_coords(primer_design.genome_on_targets),
+                _make_uniqeness_hits_browser_coords(primer_design.genome_off_targets)]
+    if first:
+        row.append(primer3_annotate_amplicon(primer_designs.primer_targets.transcripts[0]))
+    else:
+        row.append('')
+    fileOps.prRow(fh, row)
 
 def _write_primer_designs(fh, primer_designs, hub_urls):
     fileOps.prRow(fh, _design_tsv_header)

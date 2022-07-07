@@ -171,6 +171,7 @@ Primer3Pair 4:
     features_5p [ExonFeature(genome=Coords(name='chr16', start=695064, end=695076, strand='+', size=90338345), trans=Coords(name='NIC_57258', start=2059, end=2071, strand='-', size=2186))
  ExonFeature(genome=Coords(name='chr16', start=695215, end=695222, strand='+', size=90338345), trans=Coords(name='NIC_57258', start=2071, end=2078, strand='-', size=2186))]
     features_3p [ExonFeature(genome=Coords(name='chr16', start=694315, end=694335, strand='+', size=90338345), trans=Coords(name='NIC_57258', start=1814, end=1834, strand='-', size=2186))]
+    priority 1
     amplicon_trans_coords NIC_57258:115-372
     amplicon_length 225
     PRIMER_LEFT (108, 19)
@@ -189,6 +190,7 @@ Primer3Pair 4:
     features_5p [ExonFeature(genome=Coords(name='chr16', start=695063, end=695076, strand='+', size=90338345), trans=Coords(name='NIC_57258', start=2058, end=2071, strand='-', size=2186))
  ExonFeature(genome=Coords(name='chr16', start=695215, end=695221, strand='+', size=90338345), trans=Coords(name='NIC_57258', start=2071, end=2077, strand='-', size=2186))]
     features_3p [ExonFeature(genome=Coords(name='chr16', start=694315, end=694335, strand='+', size=90338345), trans=Coords(name='NIC_57258', start=1814, end=1834, strand='-', size=2186))]
+    priority 2
     amplicon_trans_coords NIC_57258:115-372
     amplicon_length 224
     PRIMER_LEFT (109, 19)
@@ -203,10 +205,30 @@ Primer3Pair 4:
     transcriptome_off_targets None
     transcriptome_non_targets None
 >>> PrimerDesign <<<
+    ppair_id FBXL16+1_pp5
+    features_5p [ExonFeature(genome=Coords(name='chr16', start=695063, end=695076, strand='+', size=90338345), trans=Coords(name='NIC_57258', start=2058, end=2071, strand='-', size=2186))
+ ExonFeature(genome=Coords(name='chr16', start=695215, end=695222, strand='+', size=90338345), trans=Coords(name='NIC_57258', start=2071, end=2078, strand='-', size=2186))]
+    features_3p [ExonFeature(genome=Coords(name='chr16', start=694315, end=694335, strand='+', size=90338345), trans=Coords(name='NIC_57258', start=1814, end=1834, strand='-', size=2186))]
+    priority 3
+    amplicon_trans_coords NIC_57258:115-372
+    amplicon_length 224
+    PRIMER_LEFT (108, 20)
+    PRIMER_RIGHT (372, 20)
+    PRIMER_LEFT_SEQUENCE CTTCCCGGTGTGTACGCATC
+    PRIMER_RIGHT_SEQUENCE TACTTGAAGAGCTCGGGGGT
+    PRIMER_PAIR_PRODUCT_SIZE 265
+    genome_on_targets None
+    genome_off_targets None
+    genome_non_targets None
+    transcriptome_on_targets None
+    transcriptome_off_targets None
+    transcriptome_non_targets None
+>>> PrimerDesign <<<
     ppair_id FBXL16+1_pp3
     features_5p [ExonFeature(genome=Coords(name='chr16', start=695067, end=695076, strand='+', size=90338345), trans=Coords(name='NIC_57258', start=2062, end=2071, strand='-', size=2186))
  ExonFeature(genome=Coords(name='chr16', start=695215, end=695225, strand='+', size=90338345), trans=Coords(name='NIC_57258', start=2071, end=2081, strand='-', size=2186))]
     features_3p [ExonFeature(genome=Coords(name='chr16', start=694315, end=694335, strand='+', size=90338345), trans=Coords(name='NIC_57258', start=1814, end=1834, strand='-', size=2186))]
+    priority 4
     amplicon_trans_coords NIC_57258:115-372
     amplicon_length 228
     PRIMER_LEFT (105, 19)
@@ -225,6 +247,7 @@ Primer3Pair 4:
     features_5p [ExonFeature(genome=Coords(name='chr16', start=695068, end=695076, strand='+', size=90338345), trans=Coords(name='NIC_57258', start=2063, end=2071, strand='-', size=2186))
  ExonFeature(genome=Coords(name='chr16', start=695215, end=695226, strand='+', size=90338345), trans=Coords(name='NIC_57258', start=2071, end=2082, strand='-', size=2186))]
     features_3p [ExonFeature(genome=Coords(name='chr16', start=694315, end=694335, strand='+', size=90338345), trans=Coords(name='NIC_57258', start=1814, end=1834, strand='-', size=2186))]
+    priority 5
     amplicon_trans_coords NIC_57258:115-372
     amplicon_length 229
     PRIMER_LEFT (104, 19)
@@ -232,24 +255,6 @@ Primer3Pair 4:
     PRIMER_LEFT_SEQUENCE CGTCCTTCCCGGTGTGTAC
     PRIMER_RIGHT_SEQUENCE TACTTGAAGAGCTCGGGGGT
     PRIMER_PAIR_PRODUCT_SIZE 269
-    genome_on_targets None
-    genome_off_targets None
-    genome_non_targets None
-    transcriptome_on_targets None
-    transcriptome_off_targets None
-    transcriptome_non_targets None
->>> PrimerDesign <<<
-    ppair_id FBXL16+1_pp5
-    features_5p [ExonFeature(genome=Coords(name='chr16', start=695063, end=695076, strand='+', size=90338345), trans=Coords(name='NIC_57258', start=2058, end=2071, strand='-', size=2186))
- ExonFeature(genome=Coords(name='chr16', start=695215, end=695222, strand='+', size=90338345), trans=Coords(name='NIC_57258', start=2071, end=2078, strand='-', size=2186))]
-    features_3p [ExonFeature(genome=Coords(name='chr16', start=694315, end=694335, strand='+', size=90338345), trans=Coords(name='NIC_57258', start=1814, end=1834, strand='-', size=2186))]
-    amplicon_trans_coords NIC_57258:115-372
-    amplicon_length 224
-    PRIMER_LEFT (108, 20)
-    PRIMER_RIGHT (372, 20)
-    PRIMER_LEFT_SEQUENCE CTTCCCGGTGTGTACGCATC
-    PRIMER_RIGHT_SEQUENCE TACTTGAAGAGCTCGGGGGT
-    PRIMER_PAIR_PRODUCT_SIZE 265
     genome_on_targets None
     genome_off_targets None
     genome_non_targets None
