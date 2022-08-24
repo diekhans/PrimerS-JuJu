@@ -1,4 +1,14 @@
 * check for exact match
+* output a list of additional transcript that will be amplified.
+I would add length of those transcripts. That would provide size estimations that you expect to have in your gel
+amplicon length I would say
+* invalid feature bounds message is hard to read
+caused by: specified primer region, after adjusted for exon bounds contig_18545_pilon:304550-304734 for transcript
+(manatee_consolidated, NNC-298417) must contain either one exon, or two exons and an intron:
+ [IntronFeature(genome=Coords(name='contig_18545_pilon', start=304550, end=304734, strand='+', size=353458),
+                              trans=Coords(name='NNC-298417', start=2697, end=2697, strand='+', size=3955))]
+
+
 * bad primers BEDs
 ** CCDC106+1 - outside of target
 ** DPP3+1 - doesn't cross intro.
