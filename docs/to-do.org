@@ -15,3 +15,16 @@ see test_design_primers_guts.py test_FBXL16(request, genome_data, wtc11_targets_
 primer3_dump_args should not have to recalculate
 * bounds() name not so clear
 * '+' is a bit of a confusing name separator, maybe CCDC106_1_pp1
+
+* if slop on ends of specified range extends too far into intron
+get confusing error message:
+
+caused by: specified primer region contig_18545_pilon:308302-309177 for transcript (manatee_consolidated, NNC-298416) must contain either one exon, or two exons and an intron: [IntronFeature(genome=Coords(name='contig_18545_pilon', start=308302, end=308460, strand='+', size=353458), trans=Coords(name='NNC-298416', start=6264, end=6264, strand='+', size=7336))
+ ExonFeature(genome=Coords(name='contig_18545_pilon', start=308460, end=309177, strand='+', size=353458), trans=Coords(name='NNC-298416', start=6264, end=6981, strand='+', size=7336))]
+* allow for larger slop
+** trimming into exons was not implemented, despite comment:
+def _build_target_transcript(genome_data, primer_target_spec, trans_spec):
+    "build transcript with initial regions trimmed to exons"
+
+
+

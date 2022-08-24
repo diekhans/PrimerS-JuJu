@@ -121,7 +121,8 @@ def _get_regions_transcript_orient(trans, region_5p, region_3p):
 
 def _build_region_transcript_features(track_name, trans_name, features, region):
     region_features = features_intersect_genome(features, region)
-    _primer_region_check_features("specified primer region", track_name, trans_name, region, region_features)
+    _primer_region_check_features("specified primer region, after adjusted for exon bounds",
+                                  track_name, trans_name, region, region_features)
     return region_features
 
 def _build_target_transcript(genome_data, primer_target_spec, trans_spec):
@@ -147,7 +148,7 @@ def _validate_strand(transcripts):
     # must do before other checks, as primer region swap could confuse error messages
     ttrans0 = transcripts[0]
     for ttrans in transcripts[1:]:
-        if ttrans.region_5p.strand != ttrans0.strand:
+        if ttrans.region_5p.trans.strand != ttrans0.strand:
             raise PrimersJuJuDataError(f"transcript on different strands: {ttrans} vs {ttrans0}")
 
 def _find_transcripts_common_region(transcripts, feats_func):
@@ -163,7 +164,8 @@ def _adjust_transcript_region_features(target_transcript, common_region, feats_f
         if ofeat.genome.overlaps(common_region):
             adj_features.append(ofeat.intersect_genome(common_region))
 
-    _primer_region_check_features("common adjusted primer region", target_transcript.track_name, target_transcript.trans_id, common_region, adj_features)
+    _primer_region_check_features("common adjusted primer region",
+                                  target_transcript.track_name, target_transcript.trans_id, common_region, adj_features)
 
     # this updates transcript features
     feats_func(target_transcript, adj_features)

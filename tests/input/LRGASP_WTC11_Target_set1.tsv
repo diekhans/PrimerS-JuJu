@@ -1,6 +1,7 @@
 trans_track	region_5p	region_3p	trans_id	gene_name	target_id	trans_cat	trans_structural_cat	notes	trans_notes
 WTC11_consolidated	chr4:2042042-2042366	chr4:2043863-2043922	FSM_48428	C4orf48	C4orf48+1			PB-specific	
 WTC11_consolidated	chr17:28404662-28405317	chr17:28398703-28399641	FSM_44519	SLC46A1	SLC46A1+1			PB-specific	
+WTC11_consolidated			FSM_86580	SLC46A1	SLC46A1+1			PB-specific	test of multiple transcripts
 WTC11_consolidated	chr19:35944582-35944982	chr19:35936839-35937541	FSM_45884	LRFN3	LRFN3+1			PB-specific	FSM present in PB but not found in ONT
 WTC11_consolidated	chr19:55648062-55648245	chr19:55652456-55652698	FSM_19966	CCDC106	CCDC106+1			PB-specific	
 WTC11_consolidated	chr19:47228328-47231039	chr19:47221198-47221914	FSM_45580	BBC3	BBC3+1			PB-specific	Design primer specific to junction highlighted in region_5p
