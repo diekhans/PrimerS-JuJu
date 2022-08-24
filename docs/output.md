@@ -23,7 +23,7 @@
 * off_target_trans - list of off-target transcriptome alignments locations of the primer pair from isPcr
 * on_target_genome - on-target genome alignments of the primer pair from isPcr.  These should match the designed primers.
 * off_target_genome - list of off-target genome alignments locations of the primer pair from isPcr
-* annotated_amplicon - amplicon sequence with annotation for feeding manually to primer3 web.  This is for debugging and will be drop and may not be correct.
+* amplicon - amplicon sequence 
 
 
 ### target track

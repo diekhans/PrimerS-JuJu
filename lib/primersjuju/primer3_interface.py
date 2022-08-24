@@ -170,7 +170,12 @@ def _make_region_char_inserts(region_range, start_char, end_char):
     return ((region_range[0], start_char),
             (region_range[1], end_char))
 
-def primer3_annotate_amplicon(target_transcript, *, global_args=_global_args_defaults):
+def primer3_amplicon(target_transcript):
+    """return amplicon for targetr"""
+    rna = target_transcript.rna
+
+
+def primer3_annotate_amplicon(target_transcript):
     """Generate primer3 web annotated amplicon, for debugging purposes"""
     # Internally we use SEQUENCE_PRIMER_PAIR_OK_REGION_LIST to define regions to
     # design primers.  However, this isn't support by primer3 annotations, instead we

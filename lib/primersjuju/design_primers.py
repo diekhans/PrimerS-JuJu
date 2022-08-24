@@ -304,3 +304,10 @@ def design_primers(genome_data, primer_targets, *, uniqueness_query=None):
     primer3_results = primer3_design(target_transcript)
 
     return _build_primer_designs(primer_targets, target_transcript, primer3_results, uniqueness_query)
+
+def primer_design_amplicon(primer_design, target_transcript):
+    """return amplicon for and RNA and primer"""
+    rna = target_transcript.rna
+    amplicon_coords = primer_design.amplicon_trans_coords()
+    assert amplicon_coords.end <= len(rna)
+    return rna[amplicon_coords.start : amplicon_coords.start + amplicon_coords.size]
