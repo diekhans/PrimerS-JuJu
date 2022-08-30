@@ -113,7 +113,9 @@ def _build_seq_args(target_transcript):
                        SEQUENCE_TEMPLATE=target_transcript.rna,
                        SEQUENCE_PRIMER_PAIR_OK_REGION_LIST=ok_regions,
                        PRIMER_MUST_MATCH_FIVE_PRIME=match_5p,
-                       SEQUENCE_OVERLAP_JUNCTION_LIST=junction_overlaps)
+                       SEQUENCE_OVERLAP_JUNCTION_LIST=junction_overlaps,
+                       PRIMER_MIN_3_PRIME_OVERLAP_OF_JUNCTION=8,
+                       PRIMER_MIN_5_PRIME_OVERLAP_OF_JUNCTION=8)
     return seq_args
 
 def _build_global_args(target_transcript, global_args):

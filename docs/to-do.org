@@ -1,3 +1,8 @@
+* save away BEDs from test cases for future tests without relying on entire bigBed
+* ability to control splice junction overlap, then try with less stringency
+PRIMER_MIN_3_PRIME_OVERLAP_OF_JUNCTION
+PRIMER_MIN_5_PRIME_OVERLAP_OF_JUNCTION
+for now, default to 8
 * >>> Designing C19orf81+1
 Error: PRIMER_MAX_SIZE > min PRIMER_PRODUCT_SIZE_RANGE
 WTC11_consolidated	chr19:50658491-50658506	chr19:50658963-50659037	NNC_64139	C19orf81	C19orf81+1		
