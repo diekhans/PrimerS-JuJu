@@ -1,10 +1,26 @@
-* check for exact match
+* >>> Designing C19orf81+1
+Error: PRIMER_MAX_SIZE > min PRIMER_PRODUCT_SIZE_RANGE
+WTC11_consolidated	chr19:50658491-50658506	chr19:50658963-50659037	NNC_64139	C19orf81	C19orf81+1		
+# region too small
+'PRIMER_MIN_SIZE': 18,
+    'PRIMER_MAX_SIZE': 22,
+    'PRIMER_EXPLAIN_FLAG': 1,
+    'PRIMER_PRODUCT_SIZE_RANGE': [[19, 110]]}
+
+
 * additional transcripts:
 ** output amplicons for additional transcripts
 ** output a list of additional transcript that will be amplified.
 I would add length of those transcripts. That would provide size estimations that you expect to have in your gel
 amplicon length I would say
 ** clearly explain what additonal transcripts does.
+
+** very unhelpful:
+Error: target IL1B+7 failed
+caused by: specified primer region, after adjusted for exon bounds contig_14815_pilon:23250-23316 does not overlap transcript (manatee_consolidated, NIC-118574)
+
+** instead of stopping, can flag with error in spreed sheet and have tracks to
+help debug
 
 * invalid feature bounds message is hard to read
 caused by: specified primer region, after adjusted for exon bounds contig_18545_pilon:304550-304734 for transcript

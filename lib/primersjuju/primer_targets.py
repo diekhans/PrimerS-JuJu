@@ -119,8 +119,21 @@ def _get_regions_transcript_orient(trans, region_5p, region_3p):
         region_5p, region_3p = region_3p, region_5p
     return region_5p, region_3p
 
+def _adjust_fuzzy_bounds(region_features):
+    if len(region_features) <= 1:
+        return region_features
+    start = 0
+    end = len(region_features)
+    if isinstance(region_features[start], IntronFeature):
+        start += 1
+    if isinstance(region_features[end - 1], IntronFeature):
+        end -= 1
+    return Features(region_features[start:end])
+
 def _build_region_transcript_features(track_name, trans_name, features, region):
-    region_features = features_intersect_genome(features, region)
+    """construct feature for region, possible adjusting for fuzzy exon bounds.  """
+    region_features = _adjust_fuzzy_bounds(features_intersect_genome(features, region))
+
     _primer_region_check_features("specified primer region, after adjusted for exon bounds",
                                   track_name, trans_name, region, region_features)
     return region_features

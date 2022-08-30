@@ -1,6 +1,7 @@
 """
 Interface to primer3 python module
 """
+import sys
 import re
 import copy
 import pprint
@@ -128,6 +129,20 @@ def primer3_global_defaults():
     "get a copy to modify"
     return copy.copy(_global_args_defaults)
 
+def _check_common_errors(target_transcript, seq_args, global_args):
+    """check for common errors in specification that would generate primer3
+    errors and generate more useful error message."""
+
+    def _check_region(region_features, size_desc, min_size):
+        exon_size = len(region_features.bounds.trans)
+        if exon_size < min_size:
+            genome_region = region_features.bounds.genome
+            raise PrimersJuJuDataError(f"transcript {target_transcript} region {genome_region} exon length {exon_size} is less than {size_desc} {min_size}")
+
+    for region_features in (target_transcript.features_5p, target_transcript.features_3p):
+        _check_region(region_features, "PRIMER_MIN_SIZE", global_args.PRIMER_MIN_SIZE)
+        _check_region(region_features, "PRIMER_MAX_SIZE", global_args.PRIMER_MAX_SIZE)
+
 def primer3_design(target_transcript, *, global_args=_global_args_defaults, misprime_lib=None, mishyb_lib=None, debug=False):
     """main entry to run primer3
     global_args defined here:
@@ -138,11 +153,14 @@ def primer3_design(target_transcript, *, global_args=_global_args_defaults, misp
 
     global_args = _build_global_args(target_transcript, global_args)
     seq_args = _build_seq_args(target_transcript)
+    if debug:
+        print(">>>>> primer3 debug:", target_transcript, file=sys.stderr)
+        primer3_dump_args(sys.stderr, target_transcript, global_args=global_args)
 
+    _check_common_errors(target_transcript, seq_args, global_args)
     p3_output = primer3.bindings.designPrimers(seq_args, global_args,
                                                misprime_lib=misprime_lib, mishyb_lib=mishyb_lib,
                                                debug=debug)
-
     results = primer3_parse_output(p3_output)
     if "PRIMER_ERRORS" in results:
         raise PrimersJuJuError(f"primer3 errors: {results.PRIMER_ERRORS}")
@@ -169,11 +187,6 @@ def _make_region_char_inserts(region_range, start_char, end_char):
     assert region_range[0] < region_range[1], f"{region_range[0]} < {region_range[1]}"
     return ((region_range[0], start_char),
             (region_range[1], end_char))
-
-def primer3_amplicon(target_transcript):
-    """return amplicon for targetr"""
-    rna = target_transcript.rna
-
 
 def primer3_annotate_amplicon(target_transcript):
     """Generate primer3 web annotated amplicon, for debugging purposes"""

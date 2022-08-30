@@ -289,7 +289,7 @@ def _write_primer_pair_design(fh, primer_designs, primer_design, first, hub_urls
     else:
         row.append('')
     if primer_design is None:
-        row += 12 * ['']
+        row += 13 * ['']
     else:
         row += [primer_design.ppair_id,
                 primer_design.primer3_pair.PRIMER_LEFT_SEQUENCE,

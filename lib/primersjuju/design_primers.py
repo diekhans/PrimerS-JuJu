@@ -298,10 +298,10 @@ def _build_primer_designs(primer_targets, target_transcript, primer3_results, un
                          uniqueness_query is not None,
                          primer_design_list, _get_design_status(primer_design_list))
 
-def design_primers(genome_data, primer_targets, *, uniqueness_query=None):
+def design_primers(genome_data, primer_targets, *, uniqueness_query=None, primer3_debug=False):
     """design transcripts """
     target_transcript = primer_targets.transcripts[0]
-    primer3_results = primer3_design(target_transcript)
+    primer3_results = primer3_design(target_transcript, debug=primer3_debug)
 
     return _build_primer_designs(primer_targets, target_transcript, primer3_results, uniqueness_query)
 
@@ -310,4 +310,4 @@ def primer_design_amplicon(primer_design, target_transcript):
     rna = target_transcript.rna
     amplicon_coords = primer_design.amplicon_trans_coords()
     assert amplicon_coords.end <= len(rna)
-    return rna[amplicon_coords.start : amplicon_coords.start + amplicon_coords.size]
+    return rna[amplicon_coords.start:amplicon_coords.start + amplicon_coords.size]

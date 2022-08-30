@@ -16,3 +16,6 @@ WTC11_consolidated	chr22:24423870-24433245	chr22:24440659-24441347	NIC_60087	ADO
 WTC11_consolidated	chr16:695026-695252	chr16:694306-694413	NIC_57258	FBXL16	FBXL16+1			PB-ONT-similar	Design primer specific to junction highlighted in region_5p
 WTC11_consolidated	chr1:15409974-15410252	chr1:15425944-15428760	NIC_54729	EFHD2	EFHD2+1			PB-ONT-similar	
 WTC11_consolidated	chr20:49,983,002-49,983,051	chr20:49,987,887-49,988,699	FSM_23673	SNAI1	SNAI1+1			amplicon goal was 1500bp	
+WTC11_consolidated	chr2:218217185-218225938	chr2:218238453-218240799	NIC_485306	ARPC2	ARPC2+1	NIC/NNC-ONT-specific	batch2	need to trim introns	 
+WTC11_consolidated	chr19:35944582-35945182	chr19:35936839-35937541	FSM_45884	LRFN3	LRFN3+2			initial exon fuzzy in adjacent intron	
+WTC11_consolidated	chr19:50658491-50658506	chr19:50658963-50659037	NNC_64139	C19orf81	C19orf81+1	region smaller than maximum primer size			
