@@ -55,12 +55,27 @@ class TargetTranscript:
     def __str__(self):
         return f"({self.track_name}, {self.trans_id})"
 
+    def _features_to_trans_coords(self, features):
+        "get positive strand transcript coords in transcription order"
+        if features[0].trans.strand == '+':
+            return [feat.trans for feat in features
+                    if isinstance(feat, ExonFeature)]
+        else:
+            return [feat.trans.reverse() for feat in reversed(features)
+                    if isinstance(feat, ExonFeature)]
+
+    def _features_to_trans_seqs(self, features):
+        return [self.rna[tc.start:tc.end]
+                for tc in self._features_to_trans_coords(features)]
+
     def dump(self, dump_fh):
         pp = pprint.PrettyPrinter(stream=dump_fh, sort_dicts=False, indent=4)
         print("transcript:", self.track_name, self.trans_id, file=dump_fh)
         print("coords:", str(self.bounds), file=dump_fh)
         print("region_5p:", self.region_5p, file=dump_fh)
         print("region_3p:", self.region_3p, file=dump_fh)
+        print("rna_region_5p:", ','.join(self._features_to_trans_seqs(self.features_5p)), file=dump_fh)
+        print("rna_region_3p:", ','.join(self._features_to_trans_seqs(self.features_3p)), file=dump_fh)
         print("features_5p:", file=dump_fh)
         pp.pprint(self.features_5p)
         print("features_3p:", file=dump_fh)
@@ -68,7 +83,7 @@ class TargetTranscript:
         print("features:", file=dump_fh)
         pp.pprint(self.features)
         print("rna:", self.rna, file=dump_fh)
-
+        print("rna exons:", ','.join(self._features_to_trans_seqs(self.features)), file=dump_fh)
 
 @dataclass
 class PrimerTargets:
