@@ -38,6 +38,8 @@ class PrimerDesign:
     transcriptome_on_targets: Sequence[TranscriptomeHit]
     transcriptome_off_targets: Sequence[TranscriptomeHit]
     transcriptome_non_targets: Sequence[TranscriptomeHit]
+    #
+
     priority: int = None
 
     def amplicon_trans_coords(self) -> Coords:
@@ -124,7 +126,7 @@ class PrimerDesigns:
     def dump(self, fh):
         print(f">>> PrimerDesigns {len(self.designs)} <<<", file=fh)
         print("    target_id", self.target_id, file=fh)
-        print("    tran_id", self.target_transcript.track_name, self.target_transcript.trans_id, file=fh)
+        print("    tran_id", self.target_transcript.trans_id, file=fh)
         for design in self.designs:
             design.dump(fh)
 

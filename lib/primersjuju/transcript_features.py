@@ -2,8 +2,11 @@
 Target transcripts features.  Loads BED into list of genomic and transcript feature coordinates
 and handles conversions of sub0ranges.
 """
+from dataclasses import dataclass, KW_ONLY
+import pprint
 from collections import namedtuple
 from pycbio.hgdata.coords import Coords
+from pycbio.hgdata.bed import Bed
 from . import PrimersJuJuError
 
 class Feature(namedtuple("Feature", ("genome", "trans"))):
@@ -114,6 +117,48 @@ class Features(list):
     def reverse(self):
         """new Features object with strand-reverse coordinates and reversed order"""
         return Features([f.reverse() for f in reversed(self)])
+
+class TranscriptId(namedtuple("TranscriptId", ("track", "name"))):
+    "uniquely identifies a transcript by track and name"
+    __slots__ = ()
+
+    def __str__(self):
+        return f"{self.track}/{self.name}"
+
+@dataclass
+class Transcript:
+    "A transcript with features and optional RNA sequence"
+    _: KW_ONLY
+    trans_id: TranscriptId
+    bed: Bed
+    features: Features
+    rna: str = None
+
+    def __str__(self):
+        return str(self.trans_id)
+
+    @property
+    def bounds(self) -> Feature:
+        "bounds of transcript "
+        return self.features.bounds
+
+    @property
+    def strand(self):
+        return self.bed.strand
+
+    @property
+    def trans_len(self):
+        return self.features[0].trans.size
+
+    def dump(self, dump_fh):
+        pp = pprint.PrettyPrinter(stream=dump_fh, sort_dicts=False, indent=4)
+        print("transcript:", self.trans_id, file=dump_fh)
+        print("coords:", str(self.bounds), file=dump_fh)
+        print("features:", file=dump_fh)
+        pp.pprint(self.features)
+        print("rna:", self.rna, file=dump_fh)
+        print("rna exons:", ','.join(self._features_to_trans_seqs(self.features)), file=dump_fh)
+
 
 def _bed_block_features(trans_bed, trans_start, trans_size, genome_size, prev_blk, blk, features):
     """get intron and exon features for a BED block.  trans_start is in the

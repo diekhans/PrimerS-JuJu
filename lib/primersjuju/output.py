@@ -69,7 +69,7 @@ def build_target_beds(primer_targets):
     features_first, features_last = trans0.get_genome_ordered_features()
     thick_coords = trans0.bounds.genome.adjrange(features_first[0].genome.start,
                                                  features_last[-1].genome.end)
-    feat_beds = [_coords_to_bed(trans0.trans_id, TARGET_FEAT_COLOR,
+    feat_beds = [_coords_to_bed(trans0.trans_id.name, TARGET_FEAT_COLOR,
                                 features_to_genomic_coords(trans0.features, ExonFeature),
                                 strand=primer_targets.strand, thick_coords=thick_coords)]
     return target_beds + feat_beds
@@ -283,7 +283,7 @@ _design_tsv_header = ("target_id", "design_status", "transcript_id", "browser",
 def _write_primer_pair_design(fh, primer_designs, primer_design, first, hub_urls):
     "write one design, if primer_design is None, it means there were no primers found"
     row = [primer_designs.primer_targets.target_id,
-           primer_designs.status, primer_designs.primer_targets.transcripts[0].trans_id]
+           primer_designs.status, primer_designs.primer_targets.transcripts[0].trans_id.name]
     if first:
         row.append(_make_design_browser_link(primer_designs, hub_urls))
     else:

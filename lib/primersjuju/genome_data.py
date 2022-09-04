@@ -109,3 +109,10 @@ def bigbed_read_by_name(bigbed, name):
 def bigbed_fetch_by_name(bigbed, name):
     "returns None if not found"
     return _bigbed_read_with_names(bigbed, [name]).get(name)
+
+def bigbed_read_by_range(bigbed, coords):
+    "read by genomic range"
+    with pipettor.Popen(['bigBedToBed',
+                         '-chrom=' + coords.name, '-start=' + str(coords.start), '-end=' + str(coords.end),
+                         bigbed, '/dev/stdout']) as fh:
+        return [b for b in BedReader(fh)]

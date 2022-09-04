@@ -136,7 +136,7 @@ def test_annotate_amplicon(genome_data_hg38, wtc11_targets_specs_set1):
     target_spec = wtc11_targets_specs_set1.get_target('ZBTB45+1')
     primer_targets = primer_targets_build(genome_data_hg38, target_spec)
     target_transcript = primer_targets.transcripts[0]
-    assert target_transcript.trans_id == 'FSM_45682'
+    assert target_transcript.trans_id.name == 'FSM_45682'
 
     ann_rna = primer3_annotate_amplicon(target_transcript)
 

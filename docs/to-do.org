@@ -1,3 +1,10 @@
+* Document multiple transcript with same amplicon, add new sets.
+* PRIMER_LEFT_END_STABILITY is different than we though:
+** IDT's does it per potential dimer
+** primer3: f is the delta G of disruption of the five 3' bases of the primer.
+* tools for dimer prediction
+** http://biotools.nubic.northwestern.edu/OligoCalc.html
+http://biotools.nubic.northwestern.edu/OligoCalcSource3.19.zip
 * save away BEDs from test cases for future tests without relying on entire bigBed
 * ability to control splice junction overlap, then try with less stringency
 PRIMER_MIN_3_PRIME_OVERLAP_OF_JUNCTION

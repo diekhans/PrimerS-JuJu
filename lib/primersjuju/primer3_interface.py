@@ -109,7 +109,7 @@ def _build_seq_args(target_transcript):
 
     ok_regions = make_ok_region(target_transcript)
     junction_overlaps = _build_junction_overlap(target_transcript.features_5p) + _build_junction_overlap(target_transcript.features_3p)
-    seq_args = ObjDict(SEQUENCE_ID=target_transcript.trans_id,
+    seq_args = ObjDict(SEQUENCE_ID=target_transcript.trans_id.name,
                        SEQUENCE_TEMPLATE=target_transcript.rna,
                        SEQUENCE_PRIMER_PAIR_OK_REGION_LIST=ok_regions,
                        PRIMER_MUST_MATCH_FIVE_PRIME=match_5p,
