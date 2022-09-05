@@ -134,7 +134,6 @@ def _trans_psl_to_hit(genome_data, transcriptome_spec, psl):
         features_list.reverse()   # put in genomic order
     return TranscriptomeHit(psl.tName, trans_id, gene_name, *features_list, psl)
 
-
 class UniquenessQuery:
     """Interface to UCSC isPCR server to query for uniqueness."""
     def __init__(self, genome_data, genome_spec, transcriptome_spec):

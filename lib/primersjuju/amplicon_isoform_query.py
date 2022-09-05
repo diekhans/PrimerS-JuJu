@@ -2,6 +2,7 @@
 Find unspecified transcripts that will be amplified by an amplicon.
 """
 
+from pycbio.hgdata.coords import Coords
 from .genome_data import bigbed_read_by_range
 from .transcript_features import TranscriptId, Transcript, bed_to_features
 
@@ -38,5 +39,4 @@ class AmpliconIsoformQuery:
     def __init__(self, transcripts):
         self.transcripts = transcripts
 
-
-    #def _amplified(self, transcript):
+    #def _is_amplified(self, primer_design, transcript):

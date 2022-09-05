@@ -8,8 +8,8 @@ from pycbio.hgdata.coords import Coords
 from . import PrimersJuJuError
 from .primer3_interface import Primer3Results, Primer3Pair, primer3_design
 from .primer_targets import PrimerTargets, TargetTranscript
-from .transcript_features import Features, ExonFeature, transcript_range_to_features
-from .uniqueness_query import GenomeHit, TranscriptomeHit
+from .transcript_features import Features, transcript_range_to_features
+from .primer_uniqueness import PrimerUniqueness, primer_uniqueness_query, primer_uniqueness_none
 
 class DesignStatus(SymEnum):
     """Status of the design for a given target.  Smaller is better"""
@@ -18,10 +18,6 @@ class DesignStatus(SymEnum):
     NOT_TRANSCRIPTOME_UNIQUE = 2
     NO_PRIMERS = 3
 
-def _len_none(l):
-    "0 if list is None, else length"
-    return 0 if l is None else len(l)
-
 @dataclass
 class PrimerDesign:
     """information collected on one primer pair"""
@@ -29,17 +25,8 @@ class PrimerDesign:
     primer3_pair: Primer3Pair
     features_5p: Features  # in transcription order, positive genomic strand
     features_3p: Features
-    # results from uniqueness query, non_target are ones on sequences liked fixes and alts
-    # None if uniqueness check was not done.
-    genome_on_targets: Sequence[GenomeHit]
-    genome_off_targets: Sequence[GenomeHit]
-    genome_non_targets: Sequence[GenomeHit]
-    # results from transcriptome query
-    transcriptome_on_targets: Sequence[TranscriptomeHit]
-    transcriptome_off_targets: Sequence[TranscriptomeHit]
-    transcriptome_non_targets: Sequence[TranscriptomeHit]
-    #
-
+    uniqueness: PrimerUniqueness
+    # ranking by stability and uniqueness
     priority: int = None
 
     def amplicon_trans_coords(self) -> Coords:
@@ -58,30 +45,6 @@ class PrimerDesign:
     def amplicon_length(self):
         # ignore strand with abs
         return abs(self.features_3p[-1].trans.end - self.features_5p[0].trans.start)
-
-    @property
-    def genome_on_target_cnt(self):
-        return _len_none(self.genome_on_targets)
-
-    @property
-    def genome_off_target_cnt(self):
-        return _len_none(self.genome_off_targets)
-
-    @property
-    def genome_non_target_cnt(self):
-        return _len_none(self.genome_non_targets)
-
-    @property
-    def transcriptome_on_target_cnt(self):
-        return _len_none(self.transcriptome_on_targets)
-
-    @property
-    def transcriptome_off_target_cnt(self):
-        return _len_none(self.transcriptome_off_targets)
-
-    @property
-    def transcriptome_non_target_cnt(self):
-        return _len_none(self.transcriptome_non_targets)
 
     def dump(self, fh):
         def _lfmt(l):
@@ -104,12 +67,12 @@ class PrimerDesign:
         _print_p3_attr("PRIMER_LEFT_SEQUENCE")
         _print_p3_attr("PRIMER_RIGHT_SEQUENCE")
         _print_p3_attr("PRIMER_PAIR_PRODUCT_SIZE")
-        print("    genome_on_targets", _lfmt(self.genome_on_targets), file=fh)
-        print("    genome_off_targets", _lfmt(self.genome_off_targets), file=fh)
-        print("    genome_non_targets", _lfmt(self.genome_non_targets), file=fh)
-        print("    transcriptome_on_targets", _lfmt(self.transcriptome_on_targets), file=fh)
-        print("    transcriptome_off_targets", _lfmt(self.transcriptome_off_targets), file=fh)
-        print("    transcriptome_non_targets", _lfmt(self.transcriptome_non_targets), file=fh)
+        print("    genome_on_targets", _lfmt(self.uniqueness.genome_on_targets), file=fh)
+        print("    genome_off_targets", _lfmt(self.uniqueness.genome_off_targets), file=fh)
+        print("    genome_non_targets", _lfmt(self.uniqueness.genome_non_targets), file=fh)
+        print("    transcriptome_on_targets", _lfmt(self.uniqueness.transcriptome_on_targets), file=fh)
+        print("    transcriptome_off_targets", _lfmt(self.uniqueness.transcriptome_off_targets), file=fh)
+        print("    transcriptome_non_targets", _lfmt(self.uniqueness.transcriptome_non_targets), file=fh)
 
 
 @dataclass
@@ -155,102 +118,23 @@ def _validate_primer_features(features_5p, features_3p):
             if feature_5p.genome.overlaps(feature_3p.genome):
                 raise PrimersJuJuError(f"primer3 pairs overlap in genome space {features_5p} and {features_3p}")
 
-def _is_target_chrom(genome_data, chrom_name):
-    """Should a chromosome be consider at target for off-target/on target
-    check.  This excludes patches and alts.  For genomes without this information,
-    all sequences are conserved a target.
-    """
-    if genome_data.assembly_info is None:
-        # no information so consider this a possible target
-        return True
-    chrom_info = genome_data.assembly_info.getByName(chrom_name)
-    return ((chrom_info.sequenceRole == "assembled-molecule") and
-            (chrom_info.assemblyUnit == "Primary Assembly"))
-
-def _check_gcoords_overlap(features, gcoordss):
-    for f in features.iter_type(ExonFeature):
-        for gcoords in gcoordss:
-            if f.genome.overlaps(gcoords):
-                return True
-    return False
-
-def _check_hit_overlap(target_transcript, left_gcoordss, right_gcoordss):
-    """check overlap based on list of genomic coordinates"""
-    features_first, features_last = target_transcript.get_genome_ordered_features()
-    return (_check_gcoords_overlap(features_first, left_gcoordss) and
-            _check_gcoords_overlap(features_last, right_gcoordss))
-
-def _check_genome_hit_overlap(target_transcript, hit):
-    """does a genome uniqueness hit correspond to the target regions"""
-    # Genome hits will not span introns, but may partially align one
-    # of the exons
-    return _check_hit_overlap(target_transcript, [hit.left_gcoords], [hit.right_gcoords])
-
-def _genome_uniqueness_classify(genome_data, target_transcript, hits):
-    on_targets = []
-    off_targets = []
-    non_targets = []
-    for hit in hits:
-        if not _is_target_chrom(genome_data, hit.left_gcoords.name):
-            non_targets.append(hit)
-        elif _check_genome_hit_overlap(target_transcript, hit):
-            on_targets.append(hit)
-        else:
-            off_targets.append(hit)
-    return on_targets, off_targets, non_targets
-
-def _genome_uniqueness_query(uniqueness_query, target_transcript, ppair_id, primer3_pair):
-    """guery to find genomic on and off target hits via an alignment method"""
-    max_size = 1_000_000  # arbitrary
-    hits = uniqueness_query.query_genome(ppair_id, primer3_pair.PRIMER_LEFT_SEQUENCE, primer3_pair.PRIMER_RIGHT_SEQUENCE, max_size)
-    return _genome_uniqueness_classify(uniqueness_query.genome_data, target_transcript, hits)
-
-def _check_transcriptome_hit_overlap(target_transcript, hit):
-    """does a transcriptome uniqueness hit correspond to the target regions"""
-    return _check_hit_overlap(target_transcript,
-                              hit.left_features.genome_coords_type(ExonFeature),
-                              hit.right_features.genome_coords_type(ExonFeature))
-
-def _transcriptome_uniqueness_classify(genome_data, target_transcript, hits):
-    on_targets = []
-    off_targets = []
-    non_targets = []
-    for hit in hits:
-        if not _is_target_chrom(genome_data, hit.left_features[0].genome.name):
-            non_targets.append(hit)
-        elif _check_transcriptome_hit_overlap(target_transcript, hit):
-            on_targets.append(hit)
-        else:
-            off_targets.append(hit)
-    return on_targets, off_targets, non_targets
-
-def _transcriptome_uniqueness_query(uniqueness_query, target_transcript, ppair_id, primer3_pair):
-    """guery to find transcriptome on and off target hits via an alignment method"""
-    max_size = 500_000  # arbitrary
-    hits = uniqueness_query.query_transcriptome(ppair_id, primer3_pair.PRIMER_LEFT_SEQUENCE, primer3_pair.PRIMER_RIGHT_SEQUENCE, max_size)
-    return _transcriptome_uniqueness_classify(uniqueness_query.genome_data, target_transcript, hits)
-
 def _build_primer_design(target_transcript, target_id, result_num, primer3_pair, uniqueness_query):
     ppair_id = "{}_pp{}".format(target_id, result_num)
     features_5p = _get_exon_left_features(target_transcript, primer3_pair.PRIMER_LEFT)
     features_3p = _get_exon_right_features(target_transcript, primer3_pair.PRIMER_RIGHT)
     _validate_primer_features(features_5p, features_3p)
 
-    if uniqueness_query is None:
-        genome_on_targets = genome_off_targets = genome_non_targets = None
-        transcriptome_on_targets = transcriptome_off_targets = transcriptome_non_targets = None
+    if uniqueness_query is not None:
+        uniqueness = primer_uniqueness_query(uniqueness_query, target_transcript, ppair_id, primer3_pair)
     else:
-        genome_on_targets, genome_off_targets, genome_non_targets = _genome_uniqueness_query(uniqueness_query, target_transcript, ppair_id, primer3_pair)
-        transcriptome_on_targets, transcriptome_off_targets, transcriptome_non_targets = _transcriptome_uniqueness_query(uniqueness_query, target_transcript, ppair_id, primer3_pair)
+        uniqueness = primer_uniqueness_none()
 
-    return PrimerDesign(ppair_id, primer3_pair, features_5p, features_3p,
-                        genome_on_targets, genome_off_targets, genome_non_targets,
-                        transcriptome_on_targets, transcriptome_off_targets, transcriptome_non_targets)
+    return PrimerDesign(ppair_id, primer3_pair, features_5p, features_3p, uniqueness)
 
 def _calc_design_status(primer_design) -> DesignStatus:
-    if primer_design.transcriptome_off_target_cnt > 0:
+    if primer_design.uniqueness.transcriptome_off_target_cnt > 0:
         return DesignStatus.NOT_TRANSCRIPTOME_UNIQUE
-    elif primer_design.genome_off_target_cnt > 0:
+    elif primer_design.uniqueness.genome_off_target_cnt > 0:
         return DesignStatus.NOT_GENOME_UNIQUE
     else:
         return DesignStatus.GOOD
@@ -267,9 +151,11 @@ def _primer_design_target_score(primer_design):
     #   on_target only or no alignments in it has introns (might not be in transcriptome)
     #   no off-target, but can have non-target or no alignments
     #   off-target
-    on_cnt = primer_design.genome_on_target_cnt + primer_design.transcriptome_on_target_cnt
-    off_cnt = primer_design.genome_off_target_cnt + primer_design.transcriptome_off_target_cnt
-    non_cnt = primer_design.genome_non_target_cnt + primer_design.transcriptome_non_target_cnt
+    on_cnt = off_cnt = non_cnt = 0
+    uniqueness = primer_design.uniqueness
+    on_cnt = uniqueness.genome_on_target_cnt + uniqueness.transcriptome_on_target_cnt
+    off_cnt = uniqueness.genome_off_target_cnt + uniqueness.transcriptome_off_target_cnt
+    non_cnt = uniqueness.genome_non_target_cnt + uniqueness.transcriptome_non_target_cnt
     if ((off_cnt == 0) and (non_cnt == 0)
         and ((primer_design.spans_splice_juncs() and on_cnt == 0) or (on_cnt > 0))):
         return 1

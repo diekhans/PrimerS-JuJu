@@ -24,7 +24,7 @@ PRIMERS_OFF_COLOR = SvgColors.red
 PRIMERS_NONE_COLOR = SvgColors.darkorange
 PRIMERS_NON_COLOR = SvgColors.purple
 
-# uniquness track
+# uniqueness track
 UNIQ_ON_COLOR = SvgColors.green
 UNIQ_OFF_COLOR = SvgColors.red
 UNIQ_NON_COLOR = SvgColors.purple
@@ -101,15 +101,16 @@ _primer_bed_columns = (
 
 def _get_extra_cols(primer_designs, primer_design):
     """get extra BED columns from primer design"""
+    uniqueness = primer_design.uniqueness
     extra_cols = [primer_design.priority,
                   primer_design.amplicon_length,
                   _count_amplicon_exons(primer_design, primer_designs.target_transcript),
-                  primer_design.transcriptome_on_target_cnt,
-                  primer_design.transcriptome_off_target_cnt,
-                  primer_design.transcriptome_non_target_cnt,
-                  primer_design.genome_on_target_cnt,
-                  primer_design.genome_off_target_cnt,
-                  primer_design.genome_non_target_cnt]
+                  uniqueness.transcriptome_on_target_cnt,
+                  uniqueness.transcriptome_off_target_cnt,
+                  uniqueness.transcriptome_non_target_cnt,
+                  uniqueness.genome_on_target_cnt,
+                  uniqueness.genome_off_target_cnt,
+                  uniqueness.genome_non_target_cnt]
     # directly from primer3
     for col_name in _primer_bed_columns:
         col = getattr(primer_design.primer3_pair, col_name)
@@ -122,17 +123,17 @@ def _primer_color(primer_design):
     if ((primer_design.primer3_pair.PRIMER_LEFT_END_STABILITY <= STABILITY_THRSEHOLD) or
         (primer_design.primer3_pair.PRIMER_RIGHT_END_STABILITY <= STABILITY_THRSEHOLD)):
         return PRIMERS_UNSTABLE_COLOR
-    elif (((primer_design.transcriptome_on_target_cnt + primer_design.genome_on_target_cnt) > 0) and
-          ((primer_design.transcriptome_off_target_cnt + primer_design.genome_off_target_cnt) > 0)):
+    uniqueness = primer_design.uniqueness
+    if (((uniqueness.transcriptome_on_target_cnt + uniqueness.genome_on_target_cnt) > 0) and
+        ((uniqueness.transcriptome_off_target_cnt + uniqueness.genome_off_target_cnt) > 0)):
         return PRIMERS_ON_OFF_COLOR
-    elif ((primer_design.transcriptome_on_target_cnt + primer_design.genome_on_target_cnt) > 0):
+    if ((uniqueness.transcriptome_on_target_cnt + uniqueness.genome_on_target_cnt) > 0):
         return PRIMERS_ON_COLOR
-    elif ((primer_design.transcriptome_off_target_cnt + primer_design.genome_off_target_cnt) > 0):
+    if ((uniqueness.transcriptome_off_target_cnt + uniqueness.genome_off_target_cnt) > 0):
         return PRIMERS_OFF_COLOR
-    elif ((primer_design.transcriptome_non_target_cnt + primer_design.genome_non_target_cnt) > 0):
+    if ((uniqueness.transcriptome_non_target_cnt + uniqueness.genome_non_target_cnt) > 0):
         return PRIMERS_NON_COLOR
-    else:
-        return PRIMERS_NONE_COLOR
+    return PRIMERS_NONE_COLOR
 
 def _primer_to_bed(primer_designs, primer_design):
     gcoords_5p_list = features_to_genomic_coords(primer_design.features_5p, ExonFeature)
@@ -157,9 +158,9 @@ def _genome_hits_to_bed(hits, name, color):
 
 def _build_genome_uniqueness_hits_beds(primer_design):
     beds = []
-    beds += _genome_hits_to_bed(primer_design.genome_on_targets, "on:" + primer_design.ppair_id, UNIQ_ON_COLOR)
-    beds += _genome_hits_to_bed(primer_design.genome_off_targets, "off:" + primer_design.ppair_id, UNIQ_OFF_COLOR)
-    beds += _genome_hits_to_bed(primer_design.genome_non_targets, "non:" + primer_design.ppair_id, UNIQ_NON_COLOR)
+    beds += _genome_hits_to_bed(primer_design.uniqueness.genome_on_targets, "on:" + primer_design.ppair_id, UNIQ_ON_COLOR)
+    beds += _genome_hits_to_bed(primer_design.uniqueness.genome_off_targets, "off:" + primer_design.ppair_id, UNIQ_OFF_COLOR)
+    beds += _genome_hits_to_bed(primer_design.uniqueness.genome_non_targets, "non:" + primer_design.ppair_id, UNIQ_NON_COLOR)
     return beds
 
 def build_genome_uniqueness_hits_beds(primer_designs):
@@ -184,9 +185,9 @@ def _transcriptome_hits_to_bed(hits, name_pre, color):
 
 def _build_transcriptome_uniqueness_hits_beds(primer_design):
     beds = []
-    beds += _transcriptome_hits_to_bed(primer_design.transcriptome_on_targets, "on:" + primer_design.ppair_id, UNIQ_ON_COLOR)
-    beds += _transcriptome_hits_to_bed(primer_design.transcriptome_off_targets, "off:" + primer_design.ppair_id, UNIQ_OFF_COLOR)
-    beds += _transcriptome_hits_to_bed(primer_design.transcriptome_non_targets, "non:" + primer_design.ppair_id, UNIQ_NON_COLOR)
+    beds += _transcriptome_hits_to_bed(primer_design.uniqueness.transcriptome_on_targets, "on:" + primer_design.ppair_id, UNIQ_ON_COLOR)
+    beds += _transcriptome_hits_to_bed(primer_design.uniqueness.transcriptome_off_targets, "off:" + primer_design.ppair_id, UNIQ_OFF_COLOR)
+    beds += _transcriptome_hits_to_bed(primer_design.uniqueness.transcriptome_non_targets, "non:" + primer_design.ppair_id, UNIQ_NON_COLOR)
     return beds
 
 def build_transcriptome_uniqueness_hits_beds(primer_designs):
@@ -299,10 +300,10 @@ def _write_primer_pair_design(fh, primer_designs, primer_design, first, hub_urls
                 _count_amplicon_exons(primer_design, primer_designs.target_transcript),
                 primer_design.primer3_pair.PRIMER_LEFT_END_STABILITY,
                 primer_design.primer3_pair.PRIMER_RIGHT_END_STABILITY,
-                _make_uniqeness_hits_browser_gcoords(primer_design.transcriptome_on_targets),
-                _make_uniqeness_hits_browser_gcoords(primer_design.transcriptome_off_targets),
-                _make_uniqeness_hits_browser_gcoords(primer_design.genome_on_targets),
-                _make_uniqeness_hits_browser_gcoords(primer_design.genome_off_targets),
+                _make_uniqeness_hits_browser_gcoords(primer_design.uniqueness.transcriptome_on_targets),
+                _make_uniqeness_hits_browser_gcoords(primer_design.uniqueness.transcriptome_off_targets),
+                _make_uniqeness_hits_browser_gcoords(primer_design.uniqueness.genome_on_targets),
+                _make_uniqeness_hits_browser_gcoords(primer_design.uniqueness.genome_off_targets),
                 primer_design_amplicon(primer_design, primer_designs.primer_targets.transcripts[0])]
     fileOps.prRow(fh, row)
 
