@@ -133,18 +133,18 @@ class PrimerDesigns:
 def _get_exon_features(target_transcript, start, end):
     # start/end are transcript forward direction
     feat0 = target_transcript.features[0]
-    primer_trans_coords = Coords(feat0.trans.name, start, end,
-                                 strand='+', size=feat0.trans.size)
-    return transcript_range_to_features(target_transcript.features, primer_trans_coords)
+    primer_tcoords = Coords(feat0.trans.name, start, end,
+                            strand='+', size=feat0.trans.size)
+    return transcript_range_to_features(target_transcript.features, primer_tcoords)
 
-def _get_exon_left_features(target_transcript, primer3_coords):
-    start = primer3_coords[0]
-    end = start + primer3_coords[1]
+def _get_exon_left_features(target_transcript, primer3_tcoords):
+    start = primer3_tcoords[0]
+    end = start + primer3_tcoords[1]
     return _get_exon_features(target_transcript, start, end)
 
-def _get_exon_right_features(target_transcript, primer3_coords):
-    start = primer3_coords[0] - primer3_coords[1]
-    end = start + primer3_coords[1]
+def _get_exon_right_features(target_transcript, primer3_tcoords):
+    start = primer3_tcoords[0] - primer3_tcoords[1]
+    end = start + primer3_tcoords[1]
     return _get_exon_features(target_transcript, start, end)
 
 def _validate_primer_features(features_5p, features_3p):
@@ -167,31 +167,31 @@ def _is_target_chrom(genome_data, chrom_name):
     return ((chrom_info.sequenceRole == "assembled-molecule") and
             (chrom_info.assemblyUnit == "Primary Assembly"))
 
-def _check_coords_overlap(features, coordses):
+def _check_gcoords_overlap(features, gcoordss):
     for f in features.iter_type(ExonFeature):
-        for coords in coordses:
-            if f.genome.overlaps(coords):
+        for gcoords in gcoordss:
+            if f.genome.overlaps(gcoords):
                 return True
     return False
 
-def _check_hit_overlap(target_transcript, left_coordses, right_coordses):
+def _check_hit_overlap(target_transcript, left_gcoordss, right_gcoordss):
     """check overlap based on list of genomic coordinates"""
     features_first, features_last = target_transcript.get_genome_ordered_features()
-    return (_check_coords_overlap(features_first, left_coordses) and
-            _check_coords_overlap(features_last, right_coordses))
+    return (_check_gcoords_overlap(features_first, left_gcoordss) and
+            _check_gcoords_overlap(features_last, right_gcoordss))
 
 def _check_genome_hit_overlap(target_transcript, hit):
     """does a genome uniqueness hit correspond to the target regions"""
-    # GENOME hits will not span introns, but may partially align one
+    # Genome hits will not span introns, but may partially align one
     # of the exons
-    return _check_hit_overlap(target_transcript, [hit.left_coords], [hit.right_coords])
+    return _check_hit_overlap(target_transcript, [hit.left_gcoords], [hit.right_gcoords])
 
 def _genome_uniqueness_classify(genome_data, target_transcript, hits):
     on_targets = []
     off_targets = []
     non_targets = []
     for hit in hits:
-        if not _is_target_chrom(genome_data, hit.left_coords.name):
+        if not _is_target_chrom(genome_data, hit.left_gcoords.name):
             non_targets.append(hit)
         elif _check_genome_hit_overlap(target_transcript, hit):
             on_targets.append(hit)
@@ -300,7 +300,8 @@ def _build_primer_designs(primer_targets, target_transcript, primer3_results, un
                          uniqueness_query is not None,
                          primer_design_list, _get_design_status(primer_design_list))
 
-def design_primers(genome_data, primer_targets, *, uniqueness_query=None, primer3_debug=False):
+def design_primers(genome_data, primer_targets, *, uniqueness_query=None, primer3_debug=False,
+                   amplicon_isoform_query=None):
     """design transcripts """
     target_transcript = primer_targets.transcripts[0]
     primer3_results = primer3_design(target_transcript, debug=primer3_debug)
@@ -310,6 +311,6 @@ def design_primers(genome_data, primer_targets, *, uniqueness_query=None, primer
 def primer_design_amplicon(primer_design, target_transcript):
     """return amplicon for and RNA and primer"""
     rna = target_transcript.rna
-    amplicon_coords = primer_design.amplicon_trans_coords()
-    assert amplicon_coords.end <= len(rna)
-    return rna[amplicon_coords.start:amplicon_coords.start + amplicon_coords.size]
+    amplicon_tcoords = primer_design.amplicon_trans_coords()
+    assert amplicon_tcoords.end <= len(rna)
+    return rna[amplicon_tcoords.start:amplicon_tcoords.start + amplicon_tcoords.size]

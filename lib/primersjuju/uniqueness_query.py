@@ -35,16 +35,16 @@ class IsPcrServerSpec:
 @dataclass
 class GenomeHit:
     "one isPcr hit to the genome, in positive genomic coords and order"
-    left_coords: Coords
-    right_coords: Coords
+    left_gcoords: Coords
+    right_gcoords: Coords
     alignment: Psl
 
     def __str__(self):
-        return f"{self.__class__.__name__}(left={str(self.left_coords)},right={str(self.right_coords)})"
+        return f"{self.__class__.__name__}(left={str(self.left_gcoords)},right={str(self.right_gcoords)})"
 
     def get_genome_range(self):
         """get the range covering both alignments"""
-        return _coords_range([self.left_coords, self.right_coords])
+        return _coords_range([self.left_gcoords, self.right_gcoords])
 
 @dataclass
 class TranscriptomeHit:
@@ -83,9 +83,9 @@ def _check_psl(psl):
 def _genome_psl_to_hit(psl):
     """create hit records in positive genomic coordinates"""
     _check_psl(psl)
-    coords = [Coords(psl.tName, psl.blocks[i].tStart, psl.blocks[i].tEnd, psl.tStrand, psl.tSize).abs()
-              for i in range(2)]
-    return GenomeHit(*coords, psl)
+    gcoords = [Coords(psl.tName, psl.blocks[i].tStart, psl.blocks[i].tEnd, psl.tStrand, psl.tSize).abs()
+               for i in range(2)]
+    return GenomeHit(*gcoords, psl)
 
 def _split_transcriptome_id(ispcr_trans_id):
     """split id in the form ENST00000244050.3__SNAI1, second part is optional"""
@@ -108,9 +108,9 @@ def _get_transcript_bed(transcriptome_spec, ispcr_id, trans_id):
     bed.name = ispcr_id
     return bed
 
-def _trans_range_to_features(trans_features, coords):
+def _trans_range_to_features(trans_features, tcoords):
     """map a transcript range to features, with positive genome coordinates"""
-    features = transcript_range_to_features(trans_features, coords)
+    features = transcript_range_to_features(trans_features, tcoords)
     if features[0].genome.strand == '-':
         features = features.reverse()
     return features
@@ -124,12 +124,12 @@ def _trans_psl_to_hit(genome_data, transcriptome_spec, psl):
     transcriptome_bed = _get_transcript_bed(transcriptome_spec, psl.tName, trans_id)
     trans_features = bed_to_features(genome_data, transcriptome_bed)
 
-    # hit transcript coordinates
-    coords_list = [Coords(psl.tName, psl.blocks[i].tStart, psl.blocks[i].tEnd, psl.tStrand, psl.tSize)
-                   for i in range(2)]
+    # hit genomic coordinates
+    tcoords_list = [Coords(psl.tName, psl.blocks[i].tStart, psl.blocks[i].tEnd, psl.tStrand, psl.tSize)
+                    for i in range(2)]
     # multiple features per primer if crosses splice sites
-    features_list = [_trans_range_to_features(trans_features, coords)
-                     for coords in coords_list]
+    features_list = [_trans_range_to_features(trans_features, tcoords)
+                     for tcoords in tcoords_list]
     if features_list[0][0].genome.start > features_list[1][0].genome.start:
         features_list.reverse()   # put in genomic order
     return TranscriptomeHit(psl.tName, trans_id, gene_name, *features_list, psl)

@@ -15,7 +15,7 @@ from . import PrimersJuJuDataError
 class Track:
     """access annotations in a bigBed track by name.  Must be a bed12.  The
     bedBed maybe a file path or URL.  srcUrl is for doc and error message"""
-    track_name: str
+    name: str
     bigbed: str
     src_url: str
 
@@ -29,7 +29,7 @@ class Track:
         try:
             return bigbed_read_by_names(self.bigbed, names)
         except Exception as ex:
-            raise PrimersJuJuDataError(f"track {self.track_name}: {ex}") from ex
+            raise PrimersJuJuDataError(f"track {self.name}: {ex}") from ex
 
 class GenomeData:
     """Genome sequence and annotations tracks.  Files are opened in a lazy manner,
@@ -59,12 +59,12 @@ class GenomeData:
     def add_track(self, track_name, bigBed, srcUrl):
         self.tracks[track_name] = Track(track_name, bigBed, srcUrl)
 
-    def get_genome_seq(self, coords, *, strand='+'):
+    def get_genome_seq(self, gcoords, *, strand='+'):
         """reverses coordinates if has '-' strand; with reverse-complement of sequence will
         be don't if strand is '-' """
-        if coords.strand == '-':
-            coords = coords.reverse()
-        bases = self.genome_seqs[coords.name][coords.start:coords.end]
+        if gcoords.strand == '-':
+            gcoords = gcoords.reverse()
+        bases = self.genome_seqs[gcoords.name][gcoords.start:gcoords.end]
         if strand == '-':
             bases = dnaOps.reverseComplement(bases)
         return bases
@@ -110,9 +110,9 @@ def bigbed_fetch_by_name(bigbed, name):
     "returns None if not found"
     return _bigbed_read_with_names(bigbed, [name]).get(name)
 
-def bigbed_read_by_range(bigbed, coords):
+def bigbed_read_by_range(bigbed, gcoords):
     "read by genomic range"
     with pipettor.Popen(['bigBedToBed',
-                         '-chrom=' + coords.name, '-start=' + str(coords.start), '-end=' + str(coords.end),
+                         '-chrom=' + gcoords.name, '-start=' + str(gcoords.start), '-end=' + str(gcoords.end),
                          bigbed, '/dev/stdout']) as fh:
         return [b for b in BedReader(fh)]

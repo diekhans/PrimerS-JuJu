@@ -131,7 +131,7 @@ class Transcript:
     _: KW_ONLY
     trans_id: TranscriptId
     bed: Bed
-    features: Features
+    features: Features  # in genomic order
     rna: str = None
 
     def __str__(self):

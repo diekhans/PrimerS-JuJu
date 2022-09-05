@@ -37,41 +37,41 @@ STABILITY_THRSEHOLD = -9.0
 def _coords_list_to_range(coords_list):
     return coords_list[0].adjrange(None, end=coords_list[-1].end)
 
-def _coords_to_bed(name, color, coords_list, *, strand=None, extra_cols=None, thick_coords=None):
-    coords_list = sorted(coords_list, key=lambda c: (c.name, c.start, c.end))
-    first = coords_list[0]
-    last = coords_list[-1]
+def _gcoords_to_bed(name, color, gcoords_list, *, strand=None, extra_cols=None, thick_gcoords=None):
+    gcoords_list = sorted(gcoords_list, key=lambda c: (c.name, c.start, c.end))
+    first = gcoords_list[0]
+    last = gcoords_list[-1]
     assert first < last
     if strand is None:
         strand = first.strand
     assert strand is not None
-    if thick_coords is None:
-        thick_coords = first.adjrange(first.start, last.end)
+    if thick_gcoords is None:
+        thick_gcoords = first.adjrange(first.start, last.end)
 
     bed = Bed(first.name, first.start, last.end, name, strand=strand,
-              thickStart=thick_coords.start, thickEnd=thick_coords.end,
+              thickStart=thick_gcoords.start, thickEnd=thick_gcoords.end,
               itemRgb=color.toRgb8Str(), numStdCols=12,
               extraCols=extra_cols)
-    for coords in coords_list:
-        bed.addBlock(coords.start, coords.end)
+    for gcoords in gcoords_list:
+        bed.addBlock(gcoords.start, gcoords.end)
     return bed
 
 def build_target_beds(primer_targets):
     # specified target regions
-    target_beds = [_coords_to_bed(primer_targets.target_id, TARGET_SPEC_COLOR,
-                                  [primer_targets.region_5p, primer_targets.region_3p],
-                                  strand=primer_targets.strand,
-                                  thick_coords=primer_targets.region_5p)]
+    target_beds = [_gcoords_to_bed(primer_targets.target_id, TARGET_SPEC_COLOR,
+                                   [primer_targets.region_5p, primer_targets.region_3p],
+                                   strand=primer_targets.strand,
+                                   thick_gcoords=primer_targets.region_5p)]
 
     # transcript, with amplicon as thick
     trans0 = primer_targets.transcripts[0]
 
     features_first, features_last = trans0.get_genome_ordered_features()
-    thick_coords = trans0.bounds.genome.adjrange(features_first[0].genome.start,
-                                                 features_last[-1].genome.end)
-    feat_beds = [_coords_to_bed(trans0.trans_id.name, TARGET_FEAT_COLOR,
-                                features_to_genomic_coords(trans0.features, ExonFeature),
-                                strand=primer_targets.strand, thick_coords=thick_coords)]
+    thick_gcoords = trans0.bounds.genome.adjrange(features_first[0].genome.start,
+                                                  features_last[-1].genome.end)
+    feat_beds = [_gcoords_to_bed(trans0.trans_id.name, TARGET_FEAT_COLOR,
+                                 features_to_genomic_coords(trans0.features, ExonFeature),
+                                 strand=primer_targets.strand, thick_gcoords=thick_gcoords)]
     return target_beds + feat_beds
 
 _primer_bed_columns = (
@@ -135,20 +135,20 @@ def _primer_color(primer_design):
         return PRIMERS_NONE_COLOR
 
 def _primer_to_bed(primer_designs, primer_design):
-    coords_5p_list = features_to_genomic_coords(primer_design.features_5p, ExonFeature)
-    coords_3p_list = features_to_genomic_coords(primer_design.features_3p, ExonFeature)
-    return _coords_to_bed(primer_design.ppair_id, _primer_color(primer_design),
-                          coords_5p_list + coords_3p_list,
-                          strand=primer_designs.primer_targets.strand,
-                          thick_coords=_coords_list_to_range(coords_5p_list),
-                          extra_cols=_get_extra_cols(primer_designs, primer_design))
+    gcoords_5p_list = features_to_genomic_coords(primer_design.features_5p, ExonFeature)
+    gcoords_3p_list = features_to_genomic_coords(primer_design.features_3p, ExonFeature)
+    return _gcoords_to_bed(primer_design.ppair_id, _primer_color(primer_design),
+                           gcoords_5p_list + gcoords_3p_list,
+                           strand=primer_designs.primer_targets.strand,
+                           thick_gcoords=_coords_list_to_range(gcoords_5p_list),
+                           extra_cols=_get_extra_cols(primer_designs, primer_design))
 
 def build_primer_beds(primer_designs):
     return [_primer_to_bed(primer_designs, pd) for pd in primer_designs.designs]
 
 def _genome_hit_to_bed(hit, name, color):
-    return _coords_to_bed(name, color, (hit.left_coords, hit.right_coords),
-                          thick_coords=hit.left_coords)
+    return _gcoords_to_bed(name, color, (hit.left_gcoords, hit.right_gcoords),
+                           thick_gcoords=hit.left_gcoords)
 
 def _genome_hits_to_bed(hits, name, color):
     if hits is None:
@@ -172,10 +172,10 @@ def _transcriptome_hit_to_bed(hit, name_pre, color):
     name = name_pre + '|' + hit.trans_id
     if hit.gene_name is not None:
         name += '|' + hit.gene_name
-    left_features = features_to_genomic_coords(hit.left_features, ExonFeature)
-    right_features = features_to_genomic_coords(hit.right_features, ExonFeature)
-    return _coords_to_bed(name, color, left_features + right_features,
-                          thick_coords=_coords_list_to_range(left_features))
+    left_gcoords = features_to_genomic_coords(hit.left_features, ExonFeature)
+    right_gcoords = features_to_genomic_coords(hit.right_features, ExonFeature)
+    return _gcoords_to_bed(name, color, left_gcoords + right_gcoords,
+                           thick_gcoords=_coords_list_to_range(left_gcoords))
 
 def _transcriptome_hits_to_bed(hits, name_pre, color):
     if hits is None:
@@ -230,21 +230,21 @@ def _make_design_browser_link(primer_designs, hub_urls):
     return _make_browser_link(primer_designs.primer_targets.genome_name,
                               primer_designs.target_transcript.bounds.genome, hub_urls)
 
-def _make_uniqeness_hits_browser_coords(hits):
+def _make_uniqeness_hits_browser_gcoords(hits):
     """this makes a list of coordinates, there isn't a way to add multiple
     hyperlinks to a cell via a TSV"""
     # drop duplicates
     if hits is None:
         return ""
     else:
-        coords_list = sorted(set([h.get_genome_range() for h in hits]))
-        return ", ".join([str(c) for c in coords_list])
+        gcoords_list = sorted(set([h.get_genome_range() for h in hits]))
+        return ", ".join([str(c) for c in gcoords_list])
 
 def _count_amplicon_exons(primer_design, target_transcript):
-    amp_coords = primer_design.amplicon_trans_coords()
+    amp_tcoords = primer_design.amplicon_trans_coords()
     cnt = 0
     for exon in target_transcript.features.iter_type(ExonFeature):
-        if exon.trans.overlaps(amp_coords):
+        if exon.trans.overlaps(amp_tcoords):
             cnt += 1
     return cnt
 
@@ -299,10 +299,10 @@ def _write_primer_pair_design(fh, primer_designs, primer_design, first, hub_urls
                 _count_amplicon_exons(primer_design, primer_designs.target_transcript),
                 primer_design.primer3_pair.PRIMER_LEFT_END_STABILITY,
                 primer_design.primer3_pair.PRIMER_RIGHT_END_STABILITY,
-                _make_uniqeness_hits_browser_coords(primer_design.transcriptome_on_targets),
-                _make_uniqeness_hits_browser_coords(primer_design.transcriptome_off_targets),
-                _make_uniqeness_hits_browser_coords(primer_design.genome_on_targets),
-                _make_uniqeness_hits_browser_coords(primer_design.genome_off_targets),
+                _make_uniqeness_hits_browser_gcoords(primer_design.transcriptome_on_targets),
+                _make_uniqeness_hits_browser_gcoords(primer_design.transcriptome_off_targets),
+                _make_uniqeness_hits_browser_gcoords(primer_design.genome_on_targets),
+                _make_uniqeness_hits_browser_gcoords(primer_design.genome_off_targets),
                 primer_design_amplicon(primer_design, primer_designs.primer_targets.transcripts[0])]
     fileOps.prRow(fh, row)
 

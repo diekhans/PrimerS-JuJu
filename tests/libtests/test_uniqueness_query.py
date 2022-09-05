@@ -16,8 +16,8 @@ ZBTB45_PRIMER_RIGHT_SEQUENCE = 'GCGTAGAGAGAAGGATCGCC'
 
 def test_uniqueness_query_genome(hg38_uniqueness_query):
     hits = hg38_uniqueness_query.query_genome("SNAI1+1+pp1", SNAI1_PRIMER_LEFT_SEQUENCE, SNAI1_PRIMER_RIGHT_SEQUENCE, 200000)
-    assert hits == [GenomeHit(left_coords=Coords(name='chr20', start=49983006, end=49983026, strand='+', size=64444167),
-                              right_coords=Coords(name='chr20', start=49988321, end=49988341, strand='+', size=64444167),
+    assert hits == [GenomeHit(left_gcoords=Coords(name='chr20', start=49983006, end=49983026, strand='+', size=64444167),
+                              right_gcoords=Coords(name='chr20', start=49988321, end=49988341, strand='+', size=64444167),
                               alignment=Psl.fromRow(['40', '0', '0', '0', '1', '5295', '1', '5295', '+', 'SNAI1+1+pp1', '5335', '0', '5335', 'chr20', '64444167', '49983006', '49988341', '2', '20,20,', '0,5315,', '49983006,49988321,']))]
 
 def test_uniqueness_query_transcriptome(hg38_uniqueness_query):

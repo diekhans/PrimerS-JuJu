@@ -95,11 +95,11 @@ def _must_be_empty(columns, row):
         if row[col] != "":
             raise PrimersJuJuDataError(f"row column {col} must be empty")
 
-def _parse_coords(coord_str):
-    coords = Coords.parse(coord_str, strand='+', oneBased=True)
-    if len(coords) > 10000000:
-        raise PrimersJuJuDataError(f"coordinates seems absurdly long: '{coord_str}'")
-    return coords
+def _parse_gcoords(gcoord_str):
+    gcoords = Coords.parse(gcoord_str, strand='+', oneBased=True)
+    if len(gcoords) > 10000000:
+        raise PrimersJuJuDataError(f"coordinates seems absurdly long: '{gcoord_str}'")
+    return gcoords
 
 def _get_user_cols(rows):
     row0 = rows[0]
@@ -120,8 +120,8 @@ def _do_add_primary_row(primer_target_specs, target_user_cols, transcript_user_c
     _check_target_id(row.target_id)
     _must_not_be_empty(REQUIRED_COLS, row)
 
-    region_5p = _parse_coords(row.region_5p)
-    region_3p = _parse_coords(row.region_3p)
+    region_5p = _parse_gcoords(row.region_5p)
+    region_3p = _parse_gcoords(row.region_3p)
     if region_3p.overlaps(region_5p):
         raise PrimersJuJuDataError(f"region_5p ({region_5p}) overlaps region_3p ({region_3p})")
     if region_3p.name != region_5p.name:
