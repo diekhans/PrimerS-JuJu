@@ -182,21 +182,12 @@ Primer3Pair 4:
     PRIMER_LEFT_SEQUENCE AAGAGGAGTCGGAGATGGCG
     PRIMER_RIGHT_SEQUENCE GCGTAGAGAGAAGGATCGCC
     PRIMER_PAIR_PRODUCT_SIZE 1343
-    genome_on_targets [
-    ]
-    genome_off_targets [
-    ]
-    genome_non_targets [
-    ]
-    transcriptome_on_targets [TranscriptomeHit(left=[ExonFeature(genome=chr19:58514260-58514280/+, trans=ENST00000594051.6__ZBTB45:731-751/-)
-    ],right=[ExonFeature(genome=chr19:58517667-58517673/+, trans=ENST00000594051.6__ZBTB45:2054-2060/-),
-	ExonFeature(genome=chr19:58519741-58519755/+, trans=ENST00000594051.6__ZBTB45:2060-2074/-)
-    ])
-    ]
-    transcriptome_off_targets [
-    ]
-    transcriptome_non_targets [
-    ]
+    genome_on_targets None
+    genome_off_targets None
+    genome_non_targets None
+    transcriptome_on_targets None
+    transcriptome_off_targets None
+    transcriptome_non_targets None
 >>> PrimerDesign <<<
     ppair_id ZBTB45+1_pp3
     features_5p [ExonFeature(genome=Coords(name='chr19', start=58517667, end=58517673, strand='+', size=58617616), trans=Coords(name='FSM_45682', start=2054, end=2060, strand='-', size=2136))
@@ -210,21 +201,12 @@ Primer3Pair 4:
     PRIMER_LEFT_SEQUENCE AAGAGGAGTCGGAGATGGCG
     PRIMER_RIGHT_SEQUENCE GAGGAGAGGAGTAAGGCGGA
     PRIMER_PAIR_PRODUCT_SIZE 1728
-    genome_on_targets [
-    ]
-    genome_off_targets [
-    ]
-    genome_non_targets [
-    ]
-    transcriptome_on_targets [TranscriptomeHit(left=[ExonFeature(genome=chr19:58513875-58513895/+, trans=ENST00000594051.6__ZBTB45:346-366/-)
-    ],right=[ExonFeature(genome=chr19:58517667-58517673/+, trans=ENST00000594051.6__ZBTB45:2054-2060/-),
-	ExonFeature(genome=chr19:58519741-58519755/+, trans=ENST00000594051.6__ZBTB45:2060-2074/-)
-    ])
-    ]
-    transcriptome_off_targets [
-    ]
-    transcriptome_non_targets [
-    ]
+    genome_on_targets None
+    genome_off_targets None
+    genome_non_targets None
+    transcriptome_on_targets None
+    transcriptome_off_targets None
+    transcriptome_non_targets None
 >>> PrimerDesign <<<
     ppair_id ZBTB45+1_pp2
     features_5p [ExonFeature(genome=Coords(name='chr19', start=58517667, end=58517673, strand='+', size=58617616), trans=Coords(name='FSM_45682', start=2054, end=2060, strand='-', size=2136))
@@ -238,21 +220,12 @@ Primer3Pair 4:
     PRIMER_LEFT_SEQUENCE AAGAGGAGTCGGAGATGGCG
     PRIMER_RIGHT_SEQUENCE GGAGTAAGGCGGACTTAGGC
     PRIMER_PAIR_PRODUCT_SIZE 1721
-    genome_on_targets [
-    ]
-    genome_off_targets [
-    ]
-    genome_non_targets [
-    ]
-    transcriptome_on_targets [TranscriptomeHit(left=[ExonFeature(genome=chr19:58513882-58513902/+, trans=ENST00000594051.6__ZBTB45:353-373/-)
-    ],right=[ExonFeature(genome=chr19:58517667-58517673/+, trans=ENST00000594051.6__ZBTB45:2054-2060/-),
-	ExonFeature(genome=chr19:58519741-58519755/+, trans=ENST00000594051.6__ZBTB45:2060-2074/-)
-    ])
-    ]
-    transcriptome_off_targets [
-    ]
-    transcriptome_non_targets [
-    ]
+    genome_on_targets None
+    genome_off_targets None
+    genome_non_targets None
+    transcriptome_on_targets None
+    transcriptome_off_targets None
+    transcriptome_non_targets None
 >>> PrimerDesign <<<
     ppair_id ZBTB45+1_pp5
     features_5p [ExonFeature(genome=Coords(name='chr19', start=58517667, end=58517673, strand='+', size=58617616), trans=Coords(name='FSM_45682', start=2054, end=2060, strand='-', size=2136))
@@ -266,21 +239,12 @@ Primer3Pair 4:
     PRIMER_LEFT_SEQUENCE AAGAGGAGTCGGAGATGGCG
     PRIMER_RIGHT_SEQUENCE GGCCCTGGTATGGAGAAAGG
     PRIMER_PAIR_PRODUCT_SIZE 1704
-    genome_on_targets [
-    ]
-    genome_off_targets [
-    ]
-    genome_non_targets [
-    ]
-    transcriptome_on_targets [TranscriptomeHit(left=[ExonFeature(genome=chr19:58513899-58513919/+, trans=ENST00000594051.6__ZBTB45:370-390/-)
-    ],right=[ExonFeature(genome=chr19:58517667-58517673/+, trans=ENST00000594051.6__ZBTB45:2054-2060/-),
-	ExonFeature(genome=chr19:58519741-58519755/+, trans=ENST00000594051.6__ZBTB45:2060-2074/-)
-    ])
-    ]
-    transcriptome_off_targets [
-    ]
-    transcriptome_non_targets [
-    ]
+    genome_on_targets None
+    genome_off_targets None
+    genome_non_targets None
+    transcriptome_on_targets None
+    transcriptome_off_targets None
+    transcriptome_non_targets None
 >>> PrimerDesign <<<
     ppair_id ZBTB45+1_pp4
     features_5p [ExonFeature(genome=Coords(name='chr19', start=58517667, end=58517673, strand='+', size=58617616), trans=Coords(name='FSM_45682', start=2054, end=2060, strand='-', size=2136))
@@ -294,19 +258,10 @@ Primer3Pair 4:
     PRIMER_LEFT_SEQUENCE AAGAGGAGTCGGAGATGGCG
     PRIMER_RIGHT_SEQUENCE AGCAGGTAGTCGCGTAGAGA
     PRIMER_PAIR_PRODUCT_SIZE 1354
-    genome_on_targets [
-    ]
-    genome_off_targets [
-    ]
-    genome_non_targets [
-    ]
-    transcriptome_on_targets [TranscriptomeHit(left=[ExonFeature(genome=chr19:58514249-58514269/+, trans=ENST00000594051.6__ZBTB45:720-740/-)
-    ],right=[ExonFeature(genome=chr19:58517667-58517673/+, trans=ENST00000594051.6__ZBTB45:2054-2060/-),
-	ExonFeature(genome=chr19:58519741-58519755/+, trans=ENST00000594051.6__ZBTB45:2060-2074/-)
-    ])
-    ]
-    transcriptome_off_targets [
-    ]
-    transcriptome_non_targets [
-    ]
+    genome_on_targets None
+    genome_off_targets None
+    genome_non_targets None
+    transcriptome_on_targets None
+    transcriptome_off_targets None
+    transcriptome_non_targets None
 

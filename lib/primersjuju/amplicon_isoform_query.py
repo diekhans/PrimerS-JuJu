@@ -31,6 +31,7 @@ class AmpliconIsoformTracks:
         transcripts = []
         for track in self.tracks:
             transcripts.extend(self._load_track_transcripts(gcoords, strand, track))
+        return AmpliconIsoformQuery(transcripts)
 
 class AmpliconIsoformQuery:
     """
@@ -39,4 +40,5 @@ class AmpliconIsoformQuery:
     def __init__(self, transcripts):
         self.transcripts = transcripts
 
-    #def _is_amplified(self, primer_design, transcript):
+    def _is_amplified(self, primer_design, transcript):
+        pass

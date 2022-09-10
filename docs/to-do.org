@@ -1,3 +1,8 @@
+* design_primers.py PrimerDesign
+maybe this shouldn't have assumptions about a single transcript?? PrimerDesigns
+does
+    
+* capitalized primers, mixed cases confused people?
 * Document multiple transcript with same amplicon, add new sets.
 * PRIMER_LEFT_END_STABILITY is different than we though:
 ** IDT's does it per potential dimer
@@ -69,3 +74,5 @@ def _build_target_transcript(genome_data, primer_target_spec, trans_spec):
 
 
 
+
+    

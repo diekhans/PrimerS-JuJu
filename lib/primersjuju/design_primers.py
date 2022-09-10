@@ -8,7 +8,7 @@ from pycbio.hgdata.coords import Coords
 from . import PrimersJuJuError
 from .primer3_interface import Primer3Results, Primer3Pair, primer3_design
 from .primer_targets import PrimerTargets, TargetTranscript
-from .transcript_features import Features, transcript_range_to_features
+from .transcript_features import Features, transcript_range_to_features, features_to_transcript_coords, features_to_genomic_coords
 from .primer_uniqueness import PrimerUniqueness, primer_uniqueness_query, primer_uniqueness_none
 
 class DesignStatus(SymEnum):
@@ -30,6 +30,10 @@ class PrimerDesign:
     priority: int = None
 
     def amplicon_trans_coords(self) -> Coords:
+        """amplicon region, in positive transcript coordinates"""
+        return features_to_transcript_coords(self.features_5p + self.features_3p)
+
+    def amplicon_trans_coords(self) -> Coords:
         """amplicon region, in positive transcript coordinates """
         trans_5p = self.features_5p[0].trans
         trans_3p = self.features_3p[0].trans
@@ -43,8 +47,10 @@ class PrimerDesign:
 
     @property
     def amplicon_length(self):
-        # ignore strand with abs
-        return abs(self.features_3p[-1].trans.end - self.features_5p[0].trans.start)
+        if self.features_5p[0].trans.strand == '+':
+            return self.features_3p[-1].trans.end - self.features_5p[0].trans.start
+        else:
+            return self.features_5p[0].trans.end - self.features_3p[-1].trans.start
 
     def dump(self, fh):
         def _lfmt(l):
@@ -106,8 +112,9 @@ def _get_exon_left_features(target_transcript, primer3_tcoords):
     return _get_exon_features(target_transcript, start, end)
 
 def _get_exon_right_features(target_transcript, primer3_tcoords):
-    start = primer3_tcoords[0] - primer3_tcoords[1]
-    end = start + primer3_tcoords[1]
+    # primer3 has the zero-based end position of reverse primer in RNA
+    end = primer3_tcoords[0] + 1
+    start = end - primer3_tcoords[1]
     return _get_exon_features(target_transcript, start, end)
 
 def _validate_primer_features(features_5p, features_3p):
@@ -194,9 +201,21 @@ def design_primers(genome_data, primer_targets, *, uniqueness_query=None, primer
 
     return _build_primer_designs(primer_targets, target_transcript, primer3_results, uniqueness_query)
 
+def primer_design_amplicon_coords(primer_design, target_transcript):
+    """return amplicon coordinates for an RNA and primer design """
+
+    gcoords = features_to_genomic_coords(primer_design.features_5p + primer_design.features_3p)
+    amp_features = target_transcript.features.intersect_genome(gcoords)
+    return features_to_transcript_coords(amp_features)
+
+def primer_design_amplicon(primer_design, target_transcript):
+    """return amplicon for an RNA and primer design """
+    tcoords = primer_design_amplicon_coords(primer_design, target_transcript)
+    return target_transcript.rna[tcoords.start:tcoords.end]
+
 def primer_design_amplicon(primer_design, target_transcript):
     """return amplicon for and RNA and primer"""
     rna = target_transcript.rna
     amplicon_tcoords = primer_design.amplicon_trans_coords()
     assert amplicon_tcoords.end <= len(rna)
-    return rna[amplicon_tcoords.start:amplicon_tcoords.start + amplicon_tcoords.size]
+    return rna[amplicon_tcoords.start:amplicon_tcoords.end]

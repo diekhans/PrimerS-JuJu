@@ -19,3 +19,4 @@ WTC11_consolidated	chr20:49,983,002-49,983,051	chr20:49,987,887-49,988,699	FSM_2
 WTC11_consolidated	chr2:218217185-218225938	chr2:218238453-218240799	NIC_485306	ARPC2	ARPC2+1	NIC/NNC-ONT-specific	batch2	need to trim introns	 
 WTC11_consolidated	chr19:35944582-35945182	chr19:35936839-35937541	FSM_45884	LRFN3	LRFN3+2			initial exon fuzzy in adjacent intron	
 WTC11_consolidated	chr19:50658491-50658506	chr19:50658963-50659037	NNC_64139	C19orf81	C19orf81+1	region smaller than maximum primer size			
+WTC11_consolidated	chr1:8871903-8871971	chr1:8862990-8863205	NIC_214405	ENO1	ENO1+1	NIC-pipeline-rare	batch3		

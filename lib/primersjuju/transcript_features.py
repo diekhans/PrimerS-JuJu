@@ -15,20 +15,20 @@ class Feature(namedtuple("Feature", ("genome", "trans"))):
     def __str__(self):
         return f"{self.__class__.__name__}(genome={str(self.genome)}/{self.genome.strand}, trans={str(self.trans)}/{self.trans.strand})"
 
-    def intersect_genome(self, other):
+    def intersect_genome(self, gcoords):
         """intersect with genomic coordinates, None if no intersection,
-        if other is on the opposite strand, switch other to match."""
-        if not isinstance(other, Coords):
-            raise ValueError(f"bad object type: {type(other)}, expected {Coords}")
-        if other.name != self.genome.name:
-            raise ValueError(f"mismatch genome sequence name '{other.name}', expected '{self.genome.name}'")
-        if other.strand != self.genome.strand:
-            other = other.reverse()
-        genome_intr = self.genome.intersect(other)
+        if gcoords is on the opposite strand, switch gcoords to match strand."""
+        if not isinstance(gcoords, Coords):
+            raise ValueError(f"bad object type: {type(gcoords)}, expected {Coords}")
+        if gcoords.name != self.genome.name:
+            raise ValueError(f"mismatch genome sequence name '{gcoords.name}', expected '{self.genome.name}'")
+        if gcoords.strand != self.genome.strand:
+            gcoords = gcoords.reverse()
+        genome_intr = self.genome.intersect(gcoords)
         if len(genome_intr) == 0:
             return None
         elif isinstance(self, ExonFeature):
-            assert other.contains(genome_intr), f"{other}.contains({genome_intr})"
+            assert gcoords.contains(genome_intr), f"{gcoords}.contains({genome_intr})"
             assert self.genome.contains(genome_intr), f"{self.genome}.contains({genome_intr})"
             genome_off = (genome_intr.start - self.genome.start)
             trans_start = self.trans.start + genome_off
@@ -44,22 +44,22 @@ class Feature(namedtuple("Feature", ("genome", "trans"))):
         else:
             raise PrimersJuJuError("intersect_genome not support on base Feature class")
 
-    def intersect_transcript(self, other):
+    def intersect_transcript(self, tcoords):
         """intersect with transcript coordinates, None if no intersection,
-        if other is on the opposite strand, switch other to match."""
-        if not isinstance(other, Coords):
-            raise ValueError(f"bad object type: {type(other)}, expected {Coords}")
-        if other.name != self.trans.name:
-            raise ValueError(f"mismatch transcript name '{other.name}', expected '{self.trans.name}'")
+        if tcoords is on the opposite strand, switch tcoords to match strand."""
+        if not isinstance(tcoords, Coords):
+            raise ValueError(f"bad object type: {type(tcoords)}, expected {Coords}")
+        if tcoords.name != self.trans.name:
+            raise ValueError(f"mismatch transcript name '{tcoords.name}', expected '{self.trans.name}'")
         if isinstance(self, IntronFeature):
             return None
-        if other.strand != self.trans.strand:
-            other = other.reverse()
-        trans_intr = self.trans.intersect(other)
+        if tcoords.strand != self.trans.strand:
+            tcoords = tcoords.reverse()
+        trans_intr = self.trans.intersect(tcoords)
         if len(trans_intr) == 0:
             return None
         if isinstance(self, ExonFeature):
-            assert other.contains(trans_intr), f"{other}.contains({trans_intr})"
+            assert tcoords.contains(trans_intr), f"{tcoords}.contains({trans_intr})"
             assert self.trans.contains(trans_intr), f"{self.trans}.contains({trans_intr})"
             trans_off = (trans_intr.start - self.trans.start)
             genome_start = self.genome.start + trans_off
@@ -117,6 +117,26 @@ class Features(list):
     def reverse(self):
         """new Features object with strand-reverse coordinates and reversed order"""
         return Features([f.reverse() for f in reversed(self)])
+
+    def intersect_genome(self, gcoords):
+        """intersect with genomic coordinates, Empty list if no intersection,
+        if gcoords is on the opposite strand, switch gcoords to match strand."""
+        intersect_feats = []
+        for feat in self:
+            f = feat.intersect_genome(gcoords)
+            if f is not None:
+                intersect_feats.append(f)
+        return intersect_feats
+
+    def intersect_transcript(self, tcoords):
+        """intersect with transcript coordinates, None if no intersection,
+        if tcoords is on the opposite strand, switch tcoords to match strand."""
+        intersect_feats = []
+        for feat in self:
+            f = feat.intersect_genome(tcoords)
+            if f is not None:
+                intersect_feats.append(f)
+        return intersect_feats
 
 class TranscriptId(namedtuple("TranscriptId", ("track", "name"))):
     "uniquely identifies a transcript by track and name"
@@ -260,6 +280,28 @@ def genome_range_to_features(features, grange):
                 exon_regions.append(exon_region)
     return exon_regions
 
-def features_to_genomic_coords(features, feature_filter=Feature):
-    """create list of genomic coordinates, only keep features of time feature_filter"""
+def features_to_genomic_coords_list(features, feature_filter=Feature):
+    """create a list of genomic coordinates, only keep features of types feature_filter"""
     return [f.genome for f in features if isinstance(f, feature_filter)]
+
+def features_to_genomic_coords(features):
+    """get the positive genomie coordinates given an order list of features.
+    Ordering can in either direction and in genomic or transcript"""
+    start = min(features[0].genome.start, features[-1].genome.end)
+    end = max(features[0].genome.start, features[-1].genome.end)
+    genome = features[0].genome
+    if genome.strand == '+':
+        return Coords(genome.name, start, end, '+', genome.size)
+    else:
+        return Coords(genome.name, genome.size - end, genome.size - start, '+', genome.size)
+
+def features_to_transcript_coords(features) -> Coords:
+    """get the positive transcript coordinates given an order list of features.
+    Ordering can in either direction and in genomic or transcript"""
+    start = min(features[0].trans.start, features[-1].trans.end)
+    end = max(features[0].trans.start, features[-1].trans.end)
+    trans = features[0].trans
+    if trans.strand == '+':
+        return Coords(trans.name, start, end, '+', trans.size)
+    else:
+        return Coords(trans.name, trans.size - end, trans.size - start, '+', trans.size)

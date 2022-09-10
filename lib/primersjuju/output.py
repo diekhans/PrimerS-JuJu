@@ -5,7 +5,7 @@ import urllib.parse
 from pycbio.sys import fileOps
 from pycbio.sys.svgcolors import SvgColors
 from pycbio.hgdata.bed import Bed
-from primersjuju.transcript_features import features_to_genomic_coords
+from primersjuju.transcript_features import features_to_genomic_coords_list
 from primersjuju.primer_targets import ExonFeature
 from primersjuju.design_primers import primer_design_amplicon
 from primersjuju.primer3_interface import primer3_dump_args, primer3_annotate_amplicon
@@ -70,7 +70,7 @@ def build_target_beds(primer_targets):
     thick_gcoords = trans0.bounds.genome.adjrange(features_first[0].genome.start,
                                                   features_last[-1].genome.end)
     feat_beds = [_gcoords_to_bed(trans0.trans_id.name, TARGET_FEAT_COLOR,
-                                 features_to_genomic_coords(trans0.features, ExonFeature),
+                                 features_to_genomic_coords_list(trans0.features, ExonFeature),
                                  strand=primer_targets.strand, thick_gcoords=thick_gcoords)]
     return target_beds + feat_beds
 
@@ -136,8 +136,8 @@ def _primer_color(primer_design):
     return PRIMERS_NONE_COLOR
 
 def _primer_to_bed(primer_designs, primer_design):
-    gcoords_5p_list = features_to_genomic_coords(primer_design.features_5p, ExonFeature)
-    gcoords_3p_list = features_to_genomic_coords(primer_design.features_3p, ExonFeature)
+    gcoords_5p_list = features_to_genomic_coords_list(primer_design.features_5p, ExonFeature)
+    gcoords_3p_list = features_to_genomic_coords_list(primer_design.features_3p, ExonFeature)
     return _gcoords_to_bed(primer_design.ppair_id, _primer_color(primer_design),
                            gcoords_5p_list + gcoords_3p_list,
                            strand=primer_designs.primer_targets.strand,
@@ -173,8 +173,8 @@ def _transcriptome_hit_to_bed(hit, name_pre, color):
     name = name_pre + '|' + hit.trans_id
     if hit.gene_name is not None:
         name += '|' + hit.gene_name
-    left_gcoords = features_to_genomic_coords(hit.left_features, ExonFeature)
-    right_gcoords = features_to_genomic_coords(hit.right_features, ExonFeature)
+    left_gcoords = features_to_genomic_coords_list(hit.left_features, ExonFeature)
+    right_gcoords = features_to_genomic_coords_list(hit.right_features, ExonFeature)
     return _gcoords_to_bed(name, color, left_gcoords + right_gcoords,
                            thick_gcoords=_coords_list_to_range(left_gcoords))
 
