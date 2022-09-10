@@ -64,7 +64,7 @@ class GenomeData:
         be don't if strand is '-' """
         if gcoords.strand == '-':
             gcoords = gcoords.reverse()
-        bases = self.genome_seqs[gcoords.name][gcoords.start:gcoords.end]
+        bases = self.genome_seqs[gcoords.name][gcoords.start:gcoords.end].upper()
         if strand == '-':
             bases = dnaOps.reverseComplement(bases)
         return bases
