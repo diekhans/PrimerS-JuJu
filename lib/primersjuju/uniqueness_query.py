@@ -112,7 +112,7 @@ def _trans_range_to_features(trans_features, tcoords):
     """map a transcript range to features, with positive genome coordinates"""
     features = transcript_range_to_features(trans_features, tcoords)
     if features[0].genome.strand == '-':
-        features = features.reverse()
+        features = features.strandReverse()
     return features
 
 def _trans_psl_to_hit(genome_data, transcriptome_spec, psl):

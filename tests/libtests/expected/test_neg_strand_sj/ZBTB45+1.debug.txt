@@ -175,8 +175,8 @@ Primer3Pair 4:
  ExonFeature(genome=Coords(name='chr19', start=58519741, end=58519755, strand='+', size=58617616), trans=Coords(name='FSM_45682', start=2060, end=2074, strand='-', size=2136))]
     features_3p [ExonFeature(genome=Coords(name='chr19', start=58514260, end=58514280, strand='+', size=58617616), trans=Coords(name='FSM_45682', start=731, end=751, strand='-', size=2136))]
     priority 1
-    amplicon_trans_coords FSM_45682:76-1405
-    amplicon_length 1329
+    amplicon_coords FSM_45682:62-1405
+    amplicon_length 1343
     PRIMER_LEFT (62, 20)
     PRIMER_RIGHT (1404, 20)
     PRIMER_LEFT_SEQUENCE AAGAGGAGTCGGAGATGGCG
@@ -194,8 +194,8 @@ Primer3Pair 4:
  ExonFeature(genome=Coords(name='chr19', start=58519741, end=58519755, strand='+', size=58617616), trans=Coords(name='FSM_45682', start=2060, end=2074, strand='-', size=2136))]
     features_3p [ExonFeature(genome=Coords(name='chr19', start=58513875, end=58513895, strand='+', size=58617616), trans=Coords(name='FSM_45682', start=346, end=366, strand='-', size=2136))]
     priority 2
-    amplicon_trans_coords FSM_45682:76-1790
-    amplicon_length 1714
+    amplicon_coords FSM_45682:62-1790
+    amplicon_length 1728
     PRIMER_LEFT (62, 20)
     PRIMER_RIGHT (1789, 20)
     PRIMER_LEFT_SEQUENCE AAGAGGAGTCGGAGATGGCG
@@ -213,8 +213,8 @@ Primer3Pair 4:
  ExonFeature(genome=Coords(name='chr19', start=58519741, end=58519755, strand='+', size=58617616), trans=Coords(name='FSM_45682', start=2060, end=2074, strand='-', size=2136))]
     features_3p [ExonFeature(genome=Coords(name='chr19', start=58513882, end=58513902, strand='+', size=58617616), trans=Coords(name='FSM_45682', start=353, end=373, strand='-', size=2136))]
     priority 3
-    amplicon_trans_coords FSM_45682:76-1783
-    amplicon_length 1707
+    amplicon_coords FSM_45682:62-1783
+    amplicon_length 1721
     PRIMER_LEFT (62, 20)
     PRIMER_RIGHT (1782, 20)
     PRIMER_LEFT_SEQUENCE AAGAGGAGTCGGAGATGGCG
@@ -232,8 +232,8 @@ Primer3Pair 4:
  ExonFeature(genome=Coords(name='chr19', start=58519741, end=58519755, strand='+', size=58617616), trans=Coords(name='FSM_45682', start=2060, end=2074, strand='-', size=2136))]
     features_3p [ExonFeature(genome=Coords(name='chr19', start=58513899, end=58513919, strand='+', size=58617616), trans=Coords(name='FSM_45682', start=370, end=390, strand='-', size=2136))]
     priority 4
-    amplicon_trans_coords FSM_45682:76-1766
-    amplicon_length 1690
+    amplicon_coords FSM_45682:62-1766
+    amplicon_length 1704
     PRIMER_LEFT (62, 20)
     PRIMER_RIGHT (1765, 20)
     PRIMER_LEFT_SEQUENCE AAGAGGAGTCGGAGATGGCG
@@ -251,8 +251,8 @@ Primer3Pair 4:
  ExonFeature(genome=Coords(name='chr19', start=58519741, end=58519755, strand='+', size=58617616), trans=Coords(name='FSM_45682', start=2060, end=2074, strand='-', size=2136))]
     features_3p [ExonFeature(genome=Coords(name='chr19', start=58514249, end=58514269, strand='+', size=58617616), trans=Coords(name='FSM_45682', start=720, end=740, strand='-', size=2136))]
     priority 5
-    amplicon_trans_coords FSM_45682:76-1416
-    amplicon_length 1340
+    amplicon_coords FSM_45682:62-1416
+    amplicon_length 1354
     PRIMER_LEFT (62, 20)
     PRIMER_RIGHT (1415, 20)
     PRIMER_LEFT_SEQUENCE AAGAGGAGTCGGAGATGGCG

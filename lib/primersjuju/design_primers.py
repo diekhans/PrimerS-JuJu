@@ -25,32 +25,17 @@ class PrimerDesign:
     primer3_pair: Primer3Pair
     features_5p: Features  # in transcription order, positive genomic strand
     features_3p: Features
+    amplicon_coords: Coords
     uniqueness: PrimerUniqueness
     # ranking by stability and uniqueness
     priority: int = None
-
-    def amplicon_trans_coords(self) -> Coords:
-        """amplicon region, in positive transcript coordinates"""
-        return features_to_transcript_coords(self.features_5p + self.features_3p)
-
-    def amplicon_trans_coords(self) -> Coords:
-        """amplicon region, in positive transcript coordinates """
-        trans_5p = self.features_5p[0].trans
-        trans_3p = self.features_3p[0].trans
-        if trans_5p.strand == '+':
-            return Coords(trans_5p.name, trans_5p.start, trans_3p.end, '+', trans_5p.size)
-        else:
-            return Coords(trans_5p.name, trans_5p.size - trans_5p.end, trans_5p.size - trans_3p.start, '+', trans_5p.size)
 
     def spans_splice_juncs(self):
         return (len(self.features_5p) > 1) or (len(self.features_3p) > 1)
 
     @property
     def amplicon_length(self):
-        if self.features_5p[0].trans.strand == '+':
-            return self.features_3p[-1].trans.end - self.features_5p[0].trans.start
-        else:
-            return self.features_5p[0].trans.end - self.features_3p[-1].trans.start
+        return len(self.amplicon_coords)
 
     def dump(self, fh):
         def _lfmt(l):
@@ -66,7 +51,7 @@ class PrimerDesign:
         print("    features_5p", self.features_5p, file=fh)
         print("    features_3p", self.features_3p, file=fh)
         print("    priority", self.priority, file=fh)
-        print("    amplicon_trans_coords", self.amplicon_trans_coords(), file=fh)
+        print("    amplicon_coords", self.amplicon_coords, file=fh)
         print("    amplicon_length", self.amplicon_length, file=fh)
         _print_p3_attr("PRIMER_LEFT")
         _print_p3_attr("PRIMER_RIGHT")
@@ -130,13 +115,15 @@ def _build_primer_design(target_transcript, target_id, result_num, primer3_pair,
     features_5p = _get_exon_left_features(target_transcript, primer3_pair.PRIMER_LEFT)
     features_3p = _get_exon_right_features(target_transcript, primer3_pair.PRIMER_RIGHT)
     _validate_primer_features(features_5p, features_3p)
+    amplicon_coords = features_to_transcript_coords(features_5p + features_3p)
+    assert len(amplicon_coords) == primer3_pair.PRIMER_PAIR_PRODUCT_SIZE
 
     if uniqueness_query is not None:
         uniqueness = primer_uniqueness_query(uniqueness_query, target_transcript, ppair_id, primer3_pair)
     else:
         uniqueness = primer_uniqueness_none()
 
-    return PrimerDesign(ppair_id, primer3_pair, features_5p, features_3p, uniqueness)
+    return PrimerDesign(ppair_id, primer3_pair, features_5p, features_3p, amplicon_coords, uniqueness)
 
 def _calc_design_status(primer_design) -> DesignStatus:
     if primer_design.uniqueness.transcriptome_off_target_cnt > 0:
@@ -212,10 +199,3 @@ def primer_design_amplicon(primer_design, target_transcript):
     """return amplicon for an RNA and primer design """
     tcoords = primer_design_amplicon_coords(primer_design, target_transcript)
     return target_transcript.rna[tcoords.start:tcoords.end]
-
-def primer_design_amplicon(primer_design, target_transcript):
-    """return amplicon for and RNA and primer"""
-    rna = target_transcript.rna
-    amplicon_tcoords = primer_design.amplicon_trans_coords()
-    assert amplicon_tcoords.end <= len(rna)
-    return rna[amplicon_tcoords.start:amplicon_tcoords.end]

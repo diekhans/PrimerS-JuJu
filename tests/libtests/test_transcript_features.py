@@ -3,7 +3,10 @@ tests cover
    primersjuju.transcript_features
 """
 from pycbio.hgdata.coords import Coords
-from primersjuju.transcript_features import ExonFeature, IntronFeature, bed_to_features, features_intersect_genome, transcript_range_to_features
+from primersjuju.transcript_features import (ExonFeature, IntronFeature, Features,
+                                             bed_to_features, features_intersect_genome,
+                                             transcript_range_to_features, features_to_genomic_coords,
+                                             features_to_transcript_coords)
 
 def transcript_region_check(genome_data_hg38, wtc11_track, trans_id, region, expected_feats):
     trans_bed = wtc11_track.read_by_name(trans_id)
@@ -104,3 +107,44 @@ def test_transcript_mapping():
     assert genome_features_3p == [
         ExonFeature(genome=Coords(name='chr19', start=58514242, end=58514262, strand='+', size=58617616), trans=Coords(name='FSM_45682', start=713, end=733, strand='-', size=2136))
     ]
+
+
+features_tneg = Features([ExonFeature(genome=Coords(name='chr19', start=58517667, end=58517673, strand='+', size=58617616),
+                                      trans=Coords(name='FSM_45682', start=2054, end=2060, strand='-', size=2136)),
+                          ExonFeature(genome=Coords(name='chr19', start=58519741, end=58519755, strand='+', size=58617616),
+                                      trans=Coords(name='FSM_45682', start=2060, end=2074, strand='-', size=2136)),
+                          ExonFeature(genome=Coords(name='chr19', start=58514260, end=58514280, strand='+', size=58617616),
+                                      trans=Coords(name='FSM_45682', start=731, end=751, strand='-', size=2136))])
+
+features_tpos = features_tneg.strand_reverse()
+
+
+def test_features_to_gcoords():
+    expect_gcoords = Coords(name='chr19', start=58514260, end=58519755, strand='+', size=58617616)
+
+    gcoords = features_to_genomic_coords(features_tneg)
+    assert gcoords == expect_gcoords
+
+    gcoords = features_to_genomic_coords(list(reversed(features_tneg)))
+    assert gcoords == expect_gcoords
+
+    gcoords = features_to_genomic_coords(features_tpos)
+    assert gcoords == expect_gcoords
+
+    gcoords = features_to_genomic_coords(list(reversed(features_tpos)))
+    assert gcoords == expect_gcoords
+
+def test_features_to_tcoords():
+    expect_tcoords = Coords(name='FSM_45682', start=731, end=2074, strand='-', size=2136).reverse()
+
+    tcoords = features_to_transcript_coords(features_tneg)
+    assert tcoords == expect_tcoords
+
+    tcoords = features_to_transcript_coords(list(reversed(features_tneg)))
+    assert tcoords == expect_tcoords
+
+    tcoords = features_to_transcript_coords(features_tpos)
+    assert tcoords == expect_tcoords
+
+    tcoords = features_to_transcript_coords(list(reversed(features_tpos)))
+    assert tcoords == expect_tcoords

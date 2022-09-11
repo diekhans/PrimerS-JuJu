@@ -242,7 +242,7 @@ def _make_uniqeness_hits_browser_gcoords(hits):
         return ", ".join([str(c) for c in gcoords_list])
 
 def _count_amplicon_exons(primer_design, target_transcript):
-    amp_tcoords = primer_design.amplicon_trans_coords()
+    amp_tcoords = primer_design.amplicon_coords
     cnt = 0
     for exon in target_transcript.features.iter_type(ExonFeature):
         if exon.trans.overlaps(amp_tcoords):

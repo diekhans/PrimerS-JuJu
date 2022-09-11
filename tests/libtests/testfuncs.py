@@ -19,7 +19,10 @@ hub_urls = ["http://test.org/JuJu/hub.txt"]
 
 def _check_primer_design(primer_designs, primer_design):
     amplicon = primer_design_amplicon(primer_design, primer_designs.target_transcript)
-    assert primer_design.amplicon_length == len(amplicon), f"primer_design.amplicon_length {primer_design.amplicon_length} != len(amplicon) {len(amplicon)}"
+    assert primer_design.amplicon_length == len(amplicon), \
+        f"primer_design.amplicon_length {primer_design.amplicon_length} != len(amplicon) {len(amplicon)}"
+    assert primer_design.primer3_pair.PRIMER_PAIR_PRODUCT_SIZE == primer_design.amplicon_length, \
+        f"primer3_pair.PRIMER_PAIR_PRODUCT_SIZE {primer_design.primer3_pair.PRIMER_PAIR_PRODUCT_SIZE} != primer_design.amplicon_length {primer_design.amplicon_length}"
 
 def run_primer_design_test(test_id, genome_data, targets_specs, target_id, uniqueness_query=None):
     outdir = osp.join("output", test_id)

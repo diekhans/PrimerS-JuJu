@@ -186,7 +186,7 @@ Primer3Pair 4:
     features_5p [ExonFeature(genome=Coords(name='chr1', start=8871922, end=8871942, strand='+', size=248956422), trans=Coords(name='NIC_214405', start=3844, end=3864, strand='-', size=4108))]
     features_3p [ExonFeature(genome=Coords(name='chr1', start=8863117, end=8863137, strand='+', size=248956422), trans=Coords(name='NIC_214405', start=2759, end=2779, strand='-', size=4108))]
     priority 1
-    amplicon_trans_coords NIC_214405:244-1349
+    amplicon_coords NIC_214405:244-1349
     amplicon_length 1105
     PRIMER_LEFT (244, 20)
     PRIMER_RIGHT (1348, 20)
@@ -204,7 +204,7 @@ Primer3Pair 4:
     features_5p [ExonFeature(genome=Coords(name='chr1', start=8871922, end=8871942, strand='+', size=248956422), trans=Coords(name='NIC_214405', start=3844, end=3864, strand='-', size=4108))]
     features_3p [ExonFeature(genome=Coords(name='chr1', start=8862993, end=8863013, strand='+', size=248956422), trans=Coords(name='NIC_214405', start=2635, end=2655, strand='-', size=4108))]
     priority 2
-    amplicon_trans_coords NIC_214405:244-1473
+    amplicon_coords NIC_214405:244-1473
     amplicon_length 1229
     PRIMER_LEFT (244, 20)
     PRIMER_RIGHT (1472, 20)
@@ -222,7 +222,7 @@ Primer3Pair 4:
     features_5p [ExonFeature(genome=Coords(name='chr1', start=8871922, end=8871942, strand='+', size=248956422), trans=Coords(name='NIC_214405', start=3844, end=3864, strand='-', size=4108))]
     features_3p [ExonFeature(genome=Coords(name='chr1', start=8863155, end=8863175, strand='+', size=248956422), trans=Coords(name='NIC_214405', start=2797, end=2817, strand='-', size=4108))]
     priority 3
-    amplicon_trans_coords NIC_214405:244-1311
+    amplicon_coords NIC_214405:244-1311
     amplicon_length 1067
     PRIMER_LEFT (244, 20)
     PRIMER_RIGHT (1310, 20)
@@ -240,7 +240,7 @@ Primer3Pair 4:
     features_5p [ExonFeature(genome=Coords(name='chr1', start=8871922, end=8871942, strand='+', size=248956422), trans=Coords(name='NIC_214405', start=3844, end=3864, strand='-', size=4108))]
     features_3p [ExonFeature(genome=Coords(name='chr1', start=8863152, end=8863172, strand='+', size=248956422), trans=Coords(name='NIC_214405', start=2794, end=2814, strand='-', size=4108))]
     priority 4
-    amplicon_trans_coords NIC_214405:244-1314
+    amplicon_coords NIC_214405:244-1314
     amplicon_length 1070
     PRIMER_LEFT (244, 20)
     PRIMER_RIGHT (1313, 20)
@@ -258,7 +258,7 @@ Primer3Pair 4:
     features_5p [ExonFeature(genome=Coords(name='chr1', start=8871922, end=8871942, strand='+', size=248956422), trans=Coords(name='NIC_214405', start=3844, end=3864, strand='-', size=4108))]
     features_3p [ExonFeature(genome=Coords(name='chr1', start=8863142, end=8863162, strand='+', size=248956422), trans=Coords(name='NIC_214405', start=2784, end=2804, strand='-', size=4108))]
     priority 5
-    amplicon_trans_coords NIC_214405:244-1324
+    amplicon_coords NIC_214405:244-1324
     amplicon_length 1080
     PRIMER_LEFT (244, 20)
     PRIMER_RIGHT (1323, 20)

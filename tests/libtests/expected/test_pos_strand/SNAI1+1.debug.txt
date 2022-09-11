@@ -172,7 +172,7 @@ Primer3Pair 4:
     features_5p [ExonFeature(genome=Coords(name='chr20', start=49983001, end=49983021, strand='+', size=64444167), trans=Coords(name='FSM_23673', start=22, end=42, strand='+', size=1703))]
     features_3p [ExonFeature(genome=Coords(name='chr20', start=49988188, end=49988208, strand='+', size=64444167), trans=Coords(name='FSM_23673', start=1007, end=1027, strand='+', size=1703))]
     priority 1
-    amplicon_trans_coords FSM_23673:22-1027
+    amplicon_coords FSM_23673:22-1027
     amplicon_length 1005
     PRIMER_LEFT (22, 20)
     PRIMER_RIGHT (1026, 20)
@@ -190,7 +190,7 @@ Primer3Pair 4:
     features_5p [ExonFeature(genome=Coords(name='chr20', start=49983001, end=49983021, strand='+', size=64444167), trans=Coords(name='FSM_23673', start=22, end=42, strand='+', size=1703))]
     features_3p [ExonFeature(genome=Coords(name='chr20', start=49988571, end=49988591, strand='+', size=64444167), trans=Coords(name='FSM_23673', start=1390, end=1410, strand='+', size=1703))]
     priority 2
-    amplicon_trans_coords FSM_23673:22-1410
+    amplicon_coords FSM_23673:22-1410
     amplicon_length 1388
     PRIMER_LEFT (22, 20)
     PRIMER_RIGHT (1409, 20)
@@ -208,7 +208,7 @@ Primer3Pair 4:
     features_5p [ExonFeature(genome=Coords(name='chr20', start=49983001, end=49983021, strand='+', size=64444167), trans=Coords(name='FSM_23673', start=22, end=42, strand='+', size=1703))]
     features_3p [ExonFeature(genome=Coords(name='chr20', start=49988261, end=49988281, strand='+', size=64444167), trans=Coords(name='FSM_23673', start=1080, end=1100, strand='+', size=1703))]
     priority 3
-    amplicon_trans_coords FSM_23673:22-1100
+    amplicon_coords FSM_23673:22-1100
     amplicon_length 1078
     PRIMER_LEFT (22, 20)
     PRIMER_RIGHT (1099, 20)
@@ -226,7 +226,7 @@ Primer3Pair 4:
     features_5p [ExonFeature(genome=Coords(name='chr20', start=49983001, end=49983021, strand='+', size=64444167), trans=Coords(name='FSM_23673', start=22, end=42, strand='+', size=1703))]
     features_3p [ExonFeature(genome=Coords(name='chr20', start=49988321, end=49988341, strand='+', size=64444167), trans=Coords(name='FSM_23673', start=1140, end=1160, strand='+', size=1703))]
     priority 4
-    amplicon_trans_coords FSM_23673:22-1160
+    amplicon_coords FSM_23673:22-1160
     amplicon_length 1138
     PRIMER_LEFT (22, 20)
     PRIMER_RIGHT (1159, 20)
@@ -244,7 +244,7 @@ Primer3Pair 4:
     features_5p [ExonFeature(genome=Coords(name='chr20', start=49983001, end=49983021, strand='+', size=64444167), trans=Coords(name='FSM_23673', start=22, end=42, strand='+', size=1703))]
     features_3p [ExonFeature(genome=Coords(name='chr20', start=49988150, end=49988170, strand='+', size=64444167), trans=Coords(name='FSM_23673', start=969, end=989, strand='+', size=1703))]
     priority 5
-    amplicon_trans_coords FSM_23673:22-989
+    amplicon_coords FSM_23673:22-989
     amplicon_length 967
     PRIMER_LEFT (22, 20)
     PRIMER_RIGHT (988, 20)

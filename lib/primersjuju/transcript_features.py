@@ -114,7 +114,7 @@ class Features(list):
         return Feature(f0.genome.adjrange(f0.genome.start, fN.genome.end),
                        f0.trans.adjrange(f0.trans.start, fN.trans.end))
 
-    def reverse(self):
+    def strand_reverse(self):
         """new Features object with strand-reverse coordinates and reversed order"""
         return Features([f.reverse() for f in reversed(self)])
 
@@ -285,10 +285,9 @@ def features_to_genomic_coords_list(features, feature_filter=Feature):
     return [f.genome for f in features if isinstance(f, feature_filter)]
 
 def features_to_genomic_coords(features):
-    """get the positive genomie coordinates given an order list of features.
-    Ordering can in either direction and in genomic or transcript"""
-    start = min(features[0].genome.start, features[-1].genome.end)
-    end = max(features[0].genome.start, features[-1].genome.end)
+    """get the positive genomic coordinates from a list of features in any order"""
+    start = min((f.genome.start for f in features))
+    end = max((f.genome.end for f in features))
     genome = features[0].genome
     if genome.strand == '+':
         return Coords(genome.name, start, end, '+', genome.size)
@@ -296,10 +295,9 @@ def features_to_genomic_coords(features):
         return Coords(genome.name, genome.size - end, genome.size - start, '+', genome.size)
 
 def features_to_transcript_coords(features) -> Coords:
-    """get the positive transcript coordinates given an order list of features.
-    Ordering can in either direction and in genomic or transcript"""
-    start = min(features[0].trans.start, features[-1].trans.end)
-    end = max(features[0].trans.start, features[-1].trans.end)
+    """get the positive transcript coordinates from a list of features in any order"""
+    start = min((f.trans.start for f in features))
+    end = max((f.trans.end for f in features))
     trans = features[0].trans
     if trans.strand == '+':
         return Coords(trans.name, start, end, '+', trans.size)
