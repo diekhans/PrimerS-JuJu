@@ -121,7 +121,7 @@ class Features(list):
     def intersect_genome(self, gcoords):
         """intersect with genomic coordinates, Empty list if no intersection,
         if gcoords is on the opposite strand, switch gcoords to match strand."""
-        intersect_feats = []
+        intersect_feats = Features()
         for feat in self:
             f = feat.intersect_genome(gcoords)
             if f is not None:
@@ -131,7 +131,7 @@ class Features(list):
     def intersect_transcript(self, tcoords):
         """intersect with transcript coordinates, None if no intersection,
         if tcoords is on the opposite strand, switch tcoords to match strand."""
-        intersect_feats = []
+        intersect_feats = Features()
         for feat in self:
             f = feat.intersect_genome(tcoords)
             if f is not None:

@@ -1,6 +1,7 @@
 * design_primers.py PrimerDesign
-maybe this shouldn't have assumptions about a single transcript?? PrimerDesigns
-does
+maybe this shouldn't have assumptions about a single transcript??
+PrimerDesigns does have the transcript, but the primer3 info
+is in 
     
 * Document multiple transcript with same amplicon, add new sets.
 * PRIMER_LEFT_END_STABILITY is different than we though:

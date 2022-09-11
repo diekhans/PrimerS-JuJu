@@ -7,7 +7,7 @@ from pycbio.sys.svgcolors import SvgColors
 from pycbio.hgdata.bed import Bed
 from primersjuju.transcript_features import features_to_genomic_coords_list
 from primersjuju.primer_targets import ExonFeature
-from primersjuju.design_primers import primer_design_amplicon
+from primersjuju.design_primers import primer_design_amplicon, primer_design_amplicon_features, primer_design_amplicon_coords
 from primersjuju.primer3_interface import primer3_dump_args, primer3_annotate_amplicon
 
 # Document these in README
@@ -242,12 +242,8 @@ def _make_uniqeness_hits_browser_gcoords(hits):
         return ", ".join([str(c) for c in gcoords_list])
 
 def _count_amplicon_exons(primer_design, target_transcript):
-    amp_tcoords = primer_design.amplicon_coords
-    cnt = 0
-    for exon in target_transcript.features.iter_type(ExonFeature):
-        if exon.trans.overlaps(amp_tcoords):
-            cnt += 1
-    return cnt
+    amp_features = primer_design_amplicon_features(primer_design, target_transcript)
+    return len([exon for exon in amp_features.iter_type(ExonFeature)])
 
 def output_target_debug(outdir, primer_targets, primer_designs):
     target_transcript = primer_targets.transcripts[0]
@@ -323,6 +319,33 @@ def output_primer_designs(outdir, primer_targets, primer_designs, hub_urls):
         with open(tmp_tsv, "w") as fh:
             _write_primer_designs(fh, primer_designs, hub_urls)
 
+_isoform_tsv_header = ("target_id", "primer_id", "pri", "track", "transcript_id",
+                       "amplicon_coords", "amplicon_len", "amplicon_exons", "amplicon")
+
+def _write_primer_pair_isoform(fh, primer_targets, target_transcript, primer_design):
+    "write isoform information for one primer design"
+
+    # map primer regions to this transcript
+    amp_tcoords = primer_design_amplicon_coords(primer_design, target_transcript)
+
+    fileOps.prRowv(fh, primer_targets.target_id, primer_design.ppair_id, primer_design.priority,
+                   target_transcript.trans_id.track, target_transcript.trans_id.name,
+                   amp_tcoords, len(amp_tcoords),
+                   _count_amplicon_exons(primer_design, target_transcript),
+                   primer_design_amplicon(primer_design, target_transcript))
+
+def _write_primers_isoforms(fh, primer_targets, primer_designs):
+    fileOps.prRow(fh, _isoform_tsv_header)
+    for primer_design in primer_designs.designs:
+        for target_transcript in primer_targets.transcripts:
+            _write_primer_pair_isoform(fh, primer_targets, target_transcript, primer_design)
+
+def output_primers_isoforms(outdir, primer_targets, primer_designs):
+    fileOps.ensureDir(outdir)
+    with fileOps.AtomicFileCreate(_get_out_path(outdir, primer_targets.target_id, "isoforms.tsv")) as tmp_tsv:
+        with open(tmp_tsv, "w") as fh:
+            _write_primers_isoforms(fh, primer_targets, primer_designs)
+
 def output_target_designs(outdir, primer_targets, primer_designs, hub_urls=None):
     """output primer TSV, BEDs, and debug information for one target.  The
     $target_id.design.tsv file is created atomically, so it can be used as a
@@ -333,4 +356,5 @@ def output_target_designs(outdir, primer_targets, primer_designs, hub_urls=None)
 
     output_target_debug(outdir, primer_targets, primer_designs)
     output_target_beds(outdir, primer_targets, primer_designs)
+    output_primers_isoforms(outdir, primer_targets, primer_designs)
     output_primer_designs(outdir, primer_targets, primer_designs, hub_urls)

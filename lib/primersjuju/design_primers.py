@@ -188,11 +188,13 @@ def design_primers(genome_data, primer_targets, *, uniqueness_query=None, primer
 
     return _build_primer_designs(primer_targets, target_transcript, primer3_results, uniqueness_query)
 
+def primer_design_amplicon_features(primer_design, target_transcript):
+    gcoords = features_to_genomic_coords(primer_design.features_5p + primer_design.features_3p)
+    return target_transcript.features.intersect_genome(gcoords)
+
 def primer_design_amplicon_coords(primer_design, target_transcript):
     """return amplicon coordinates for an RNA and primer design """
-
-    gcoords = features_to_genomic_coords(primer_design.features_5p + primer_design.features_3p)
-    amp_features = target_transcript.features.intersect_genome(gcoords)
+    amp_features = primer_design_amplicon_features(primer_design, target_transcript)
     return features_to_transcript_coords(amp_features)
 
 def primer_design_amplicon(primer_design, target_transcript):
