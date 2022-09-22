@@ -1,3 +1,4 @@
+* stable ids or history tracking
 * design_primers.py PrimerDesign
 maybe this shouldn't have assumptions about a single transcript??
 PrimerDesigns does have the transcript, but the primer3 info
