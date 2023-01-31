@@ -56,6 +56,16 @@ def _gcoords_to_bed(name, color, gcoords_list, *, strand=None, extra_cols=None, 
         bed.addBlock(gcoords.start, gcoords.end)
     return bed
 
+def build_target_transcript_beds(primer_targets, trans):
+    # transcript, with amplicon as thick
+    features_first, features_last = trans.get_genome_ordered_features()
+    # these are features in target ranges
+    thick_gcoords = trans.bounds.genome.adjrange(features_first[0].genome.start,
+                                                 features_last[-1].genome.end)
+    return _gcoords_to_bed(trans.trans_id.name, TARGET_FEAT_COLOR,
+                           features_to_genomic_coords_list(trans.features, ExonFeature),
+                           strand=primer_targets.strand, thick_gcoords=thick_gcoords)
+
 def build_target_beds(primer_targets):
     # specified target regions
     target_beds = [_gcoords_to_bed(primer_targets.target_id, TARGET_SPEC_COLOR,
@@ -63,15 +73,8 @@ def build_target_beds(primer_targets):
                                    strand=primer_targets.strand,
                                    thick_gcoords=primer_targets.region_5p)]
 
-    # transcript, with amplicon as thick
-    trans0 = primer_targets.transcripts[0]
-
-    features_first, features_last = trans0.get_genome_ordered_features()
-    thick_gcoords = trans0.bounds.genome.adjrange(features_first[0].genome.start,
-                                                  features_last[-1].genome.end)
-    feat_beds = [_gcoords_to_bed(trans0.trans_id.name, TARGET_FEAT_COLOR,
-                                 features_to_genomic_coords_list(trans0.features, ExonFeature),
-                                 strand=primer_targets.strand, thick_gcoords=thick_gcoords)]
+    feat_beds = [build_target_transcript_beds(primer_targets, trans)
+                 for trans in primer_targets.transcripts]
     return target_beds + feat_beds
 
 _primer_bed_columns = (

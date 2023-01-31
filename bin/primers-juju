@@ -35,7 +35,6 @@ def parse_args():
 
     Designing primers:
     If output exists for a target, it is skipped unless --force is specified.
-    D
     """
 
     def _add_primer_targets(parser):

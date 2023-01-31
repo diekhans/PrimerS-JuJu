@@ -1,3 +1,4 @@
+* strip ids of white space in input
 * stable ids or history tracking
 * design_primers.py PrimerDesign
 maybe this shouldn't have assumptions about a single transcript??
@@ -16,7 +17,11 @@ http://biotools.nubic.northwestern.edu/OligoCalcSource3.19.zip
 PRIMER_MIN_3_PRIME_OVERLAP_OF_JUNCTION
 PRIMER_MIN_5_PRIME_OVERLAP_OF_JUNCTION
 for now, default to 8
-* >>> Designing C19orf81+1
+* ugly location formating
+caused by: specified primer region, after adjusted for exon bounds chr17:49970352-49970466 for transcript (non_redundant_NNC/ENST00000705765) must contain either one exon, or two exons and an intron: [IntronFeature(genome=Coords(name='chr17', start=49970352, end=49970466, strand='+', size=83257441), trans=Coords(name='ENST00000705765', start=1164, end=1164, strand='+', size=2759))]
+
+* Region is too small, need a better error message
+>>> Designing C19orf81+1
 Error: PRIMER_MAX_SIZE > min PRIMER_PRODUCT_SIZE_RANGE
 WTC11_consolidated	chr19:50658491-50658506	chr19:50658963-50659037	NNC_64139	C19orf81	C19orf81+1		
 # region too small

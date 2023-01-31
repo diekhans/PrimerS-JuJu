@@ -35,7 +35,7 @@ help:
 
 
 lint:
-	${FLAKE8} ${pyprogs} ${pytests} lib
+	${FLAKE8} --color=never ${pyprogs} ${pytests} lib
 
 .PHONY: venv
 venv:

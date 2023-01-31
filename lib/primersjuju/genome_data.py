@@ -23,7 +23,7 @@ class Track:
         try:
             return bigbed_read_by_name(self.bigbed, name)
         except Exception as ex:
-            raise PrimersJuJuDataError(f"failed to read {name} from track {self.track_name}") from ex
+            raise PrimersJuJuDataError(f"failed to read {name} from track {self.name}") from ex
 
     def read_by_names(self, names):
         try:
