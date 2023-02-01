@@ -13,14 +13,12 @@ def data_path(fname):
 # blat server is hg38KgSeqV41
 gencodeBb = "gencodeV41.bb"
 
-gencodeBb = "gencodeV39.bb"
-
 hg38gd = GenomeData("hg38",
                     data_path("hg38.2bit"),
                     assembly_report=data_path("GCF_000001405.40_GRCh38.p14_assembly_report.txt"))
-hg38gd.add_track("gencodeV39",
+hg38gd.add_track(osp.basename(gencodeBb),
                  data_path(gencodeBb),
-                 "https://hgdownload.soe.ucsc.edu/gbdb/hg38/gencode/gencodeV41.bb")
+                 f"https://hgdownload.soe.ucsc.edu/gbdb/hg38/gencode/${gencodeBb}")
 hg38gd.add_track("WTC11_consolidated",
                  data_path("WTC11_consolidated.bigBed"),
                  "http://conesalab.org/LRGASP/LRGASP_hub/hg38/Human_samples/WTC11_consolidated.bigBed")
