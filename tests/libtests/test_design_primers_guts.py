@@ -52,7 +52,7 @@ def test_FBXL16(request, genome_data_hg38, wtc11_targets_specs_set1):
                                             "FBXL16+1")
     assert len(primer_designs.designs) == 5
 
-def test_SLCA1(request, genome_data_hg38, wtc11_targets_specs_set1):
+def test_SLC46A1(request, genome_data_hg38, wtc11_targets_specs_set1):
     # both regions in exons, multiple transcript in target
     primer_designs = run_primer_design_test(test_id(request), genome_data_hg38, wtc11_targets_specs_set1,
                                             "SLC46A1+1")
