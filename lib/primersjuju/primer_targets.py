@@ -2,6 +2,7 @@
 Target transcripts analysis.  Includes validation, and trimming of primer
 regions to match exons.
 """
+import sys
 from dataclasses import dataclass, KW_ONLY
 import pprint
 from pycbio.hgdata.coords import Coords
@@ -44,7 +45,7 @@ class TargetTranscript(Transcript):
         return [self.rna[tc.start:tc.end]
                 for tc in self._features_to_trans_coords(features)]
 
-    def dump(self, dump_fh):
+    def dump(self, dump_fh=sys.stderr):
         super().dump(dump_fh)
         pp = pprint.PrettyPrinter(stream=dump_fh, sort_dicts=False, indent=4)
         print("region_5p:", self.region_5p, file=dump_fh)
@@ -76,7 +77,7 @@ class PrimerTargets:
                 return t
         raise PrimersJuJuDataError(f"({track_name}, {trans_name}) not found in {self.target_id}")
 
-    def dump(self, dump_fh):
+    def dump(self, dump_fh=sys.stderr):
         print("target_id:", self.target_id, file=dump_fh)
         print("region_5p:", self.region_5p, file=dump_fh)
         print("region_3p:", self.region_3p, file=dump_fh)

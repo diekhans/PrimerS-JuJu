@@ -2,6 +2,7 @@
 Target transcripts features.  Loads BED into list of genomic and transcript feature coordinates
 and handles conversions of sub0ranges.
 """
+import sys
 from dataclasses import dataclass, KW_ONLY
 import pprint
 from collections import namedtuple
@@ -170,7 +171,7 @@ class Transcript:
     def trans_len(self):
         return self.features[0].trans.size
 
-    def dump(self, dump_fh):
+    def dump(self, dump_fh=sys.stderr):
         pp = pprint.PrettyPrinter(stream=dump_fh, sort_dicts=False, indent=4)
         print("transcript:", self.trans_id, file=dump_fh)
         print("coords:", str(self.bounds), file=dump_fh)

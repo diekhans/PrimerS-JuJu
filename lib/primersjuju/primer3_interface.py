@@ -35,7 +35,7 @@ class Primer3Pair(ObjDict):
     def __init__(self, result_num):
         self.result_num = result_num
 
-    def dump(self, fh):
+    def dump(self, fh=sys.stderr):
         pp = pprint.PrettyPrinter(stream=fh, sort_dicts=False, indent=4)
         print(f"Primer3Pair {self.result_num}:", file=fh)
         pp.pprint(self)
@@ -52,7 +52,7 @@ class Primer3Results(ObjDict):
             setattr(self, n, getattr(p3_output, n))
         self.pairs = []
 
-    def dump(self, fh):
+    def dump(self, fh=sys.stderr):
         print(f">>> Primer3Results: {len(self.pairs)} results <<<", file=fh)
         for r in self.pairs:
             r.dump(fh)

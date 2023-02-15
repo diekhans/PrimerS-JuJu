@@ -1,3 +1,5 @@
+* targeted transcript BED could have amplicon annotated
+not targeted region, however this would require on sequence per primer pair
 * strip ids of white space in input
 * stable ids or history tracking
 * design_primers.py PrimerDesign
