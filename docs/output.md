@@ -32,7 +32,7 @@ BED file, $target_id.target.bed, has the target regions that were specified as i
 
 Color coding:
 * blue - input target regions
-* green - targeted transcript, amplicion is drawn thick
+* green - targeted transcript, targeted region is drawn thick
 
 # primer track
 
