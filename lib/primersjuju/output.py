@@ -5,16 +5,20 @@ import urllib.parse
 from pycbio.sys import fileOps
 from pycbio.sys.svgcolors import SvgColors
 from pycbio.hgdata.bed import Bed
-from primersjuju.transcript_features import features_to_genomic_coords_list
+from primersjuju.transcript_features import features_to_genomic_coords_list, features_sort_genome
 from primersjuju.primer_targets import ExonFeature
 from primersjuju.design_primers import primer_design_amplicon, primer_design_amplicon_features, primer_design_amplicon_coords
 from primersjuju.primer3_interface import primer3_dump_args, primer3_annotate_amplicon
 
 # Document these in README
 
-# target track
+# target tracks
 TARGET_SPEC_COLOR = SvgColors.blue
 TARGET_FEAT_COLOR = SvgColors.green
+
+# amplicon tracks
+AMP_TARGET_COLOR = SvgColors.orange
+AMP_PRIMER_COLOR = SvgColors.indigo
 
 # primer tracks
 PRIMERS_UNSTABLE_COLOR = SvgColors.fuchsia
@@ -56,26 +60,48 @@ def _gcoords_to_bed(name, color, gcoords_list, *, strand=None, extra_cols=None, 
         bed.addBlock(gcoords.start, gcoords.end)
     return bed
 
-def build_target_transcript_beds(primer_targets, trans):
-    # transcript, with amplicon as thick
-    features_first, features_last = trans.get_genome_ordered_features()
-    # these are features in target ranges
-    thick_gcoords = trans.bounds.genome.adjrange(features_first[0].genome.start,
-                                                 features_last[-1].genome.end)
-    return _gcoords_to_bed(trans.trans_id.name, TARGET_FEAT_COLOR,
+def make_transcript_bed(primer_targets, trans, name, start, end, color):
+    """Generate a transcript BED with an amplication regions annotation and a custom name."""
+    thick_gcoords = trans.bounds.genome.adjrange(start, end)
+    return _gcoords_to_bed(name, color,
                            features_to_genomic_coords_list(trans.features, ExonFeature),
                            strand=primer_targets.strand, thick_gcoords=thick_gcoords)
 
+def build_target_transcript_bed(primer_targets, trans):
+    "transcript, with maximum possbile amplicon as thick"
+    features_first, features_last = trans.get_genome_ordered_features()
+    return make_transcript_bed(primer_targets, trans, trans.trans_id.name,
+                               features_first[0].genome.start, features_last[-1].genome.end,
+                               TARGET_FEAT_COLOR)
+
 def build_target_beds(primer_targets):
     # specified target regions
-    target_beds = [_gcoords_to_bed(primer_targets.target_id, TARGET_SPEC_COLOR,
-                                   [primer_targets.region_5p, primer_targets.region_3p],
-                                   strand=primer_targets.strand,
-                                   thick_gcoords=primer_targets.region_5p)]
+    target_bed = [_gcoords_to_bed(primer_targets.target_id, TARGET_SPEC_COLOR,
+                                  [primer_targets.region_5p, primer_targets.region_3p],
+                                  strand=primer_targets.strand,
+                                  thick_gcoords=primer_targets.region_5p)]
+    trans_beds = [build_target_transcript_bed(primer_targets, trans)
+                  for trans in primer_targets.transcripts]
 
-    feat_beds = [build_target_transcript_beds(primer_targets, trans)
-                 for trans in primer_targets.transcripts]
-    return target_beds + feat_beds
+    return target_bed + trans_beds
+
+def build_target_amplicon_bed(primer_targets, trans, primer_design):
+    primer_feats = primer_design.features_5p + primer_design.features_3p
+    features_sort_genome(primer_feats)
+    thick_gcoords = trans.bounds.genome.adjrange(primer_feats[0].genome.start, primer_feats[-1].genome.end)
+    return make_transcript_bed(primer_targets, trans, trans.trans_id.name,
+                               thick_gcoords.start, thick_gcoords.end, AMP_TARGET_COLOR)
+
+def build_amplicon_beds(primer_targets, primer_designs):
+    if len(primer_designs.designs) == 0:
+        return []
+    primer_design = primer_designs.designs[0]
+    assert primer_design.priority == 1
+
+    primer_bed = [_primer_to_bed(primer_designs, primer_design, color=AMP_PRIMER_COLOR, add_extra=False)]
+    trans_beds = [build_target_amplicon_bed(primer_targets, trans, primer_design)
+                  for trans in primer_targets.transcripts]
+    return primer_bed + trans_beds
 
 _primer_bed_columns = (
     'PRIMER_PAIR_PRODUCT_SIZE',    # 1133
@@ -138,14 +164,17 @@ def _primer_color(primer_design):
         return PRIMERS_NON_COLOR
     return PRIMERS_NONE_COLOR
 
-def _primer_to_bed(primer_designs, primer_design):
+def _primer_to_bed(primer_designs, primer_design, *, color=None, add_extra=True):
+    if color is None:
+        color =  _primer_color(primer_design)
     gcoords_5p_list = features_to_genomic_coords_list(primer_design.features_5p, ExonFeature)
     gcoords_3p_list = features_to_genomic_coords_list(primer_design.features_3p, ExonFeature)
-    return _gcoords_to_bed(primer_design.ppair_id, _primer_color(primer_design),
+    extra_cols = _get_extra_cols(primer_designs, primer_design) if add_extra else None
+    return _gcoords_to_bed(primer_design.ppair_id, color,
                            gcoords_5p_list + gcoords_3p_list,
                            strand=primer_designs.primer_targets.strand,
                            thick_gcoords=_coords_list_to_range(gcoords_5p_list),
-                           extra_cols=_get_extra_cols(primer_designs, primer_design))
+                           extra_cols=extra_cols)
 
 def build_primer_beds(primer_designs):
     return [_primer_to_bed(primer_designs, pd) for pd in primer_designs.designs]
@@ -265,6 +294,8 @@ def output_target_beds(outdir, primer_targets, primer_designs):
     fileOps.ensureDir(outdir)
     _write_beds(build_target_beds(primer_targets),
                 _get_out_path(outdir, primer_targets.target_id, "target.bed"))
+    _write_beds(build_amplicon_beds(primer_targets, primer_designs),
+                _get_out_path(outdir, primer_targets.target_id, "amplicon.bed"))
     _write_beds(build_primer_beds(primer_designs),
                 _get_out_path(outdir, primer_targets.target_id, "primers.bed"))
     if primer_designs.uniqueness_checked:
@@ -272,6 +303,7 @@ def output_target_beds(outdir, primer_targets, primer_designs):
                     _get_out_path(outdir, primer_targets.target_id, "genome-uniqueness.bed"))
         _write_beds(build_transcriptome_uniqueness_hits_beds(primer_designs),
                     _get_out_path(outdir, primer_targets.target_id, "transcriptome-uniqueness.bed"))
+
 
 _design_tsv_header = ("target_id", "design_status", "transcript_id", "browser",
                       "primer_id", "left_primer", "right_primer", "pri",

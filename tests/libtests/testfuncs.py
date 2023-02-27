@@ -7,7 +7,7 @@ from primersjuju.primer_targets import primer_targets_build
 from primersjuju.design_primers import design_primers, primer_design_amplicon
 from primersjuju.output import output_target_designs
 
-def test_id(request):
+def get_test_id(request):
     return request.node.name
 
 def diff_expected(rel_name):

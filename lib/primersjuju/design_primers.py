@@ -75,7 +75,7 @@ class PrimerDesigns:
     target_transcript: TargetTranscript
     primer3_results: Primer3Results
     uniqueness_checked: bool
-    designs: Sequence[PrimerDesign]
+    designs: Sequence[PrimerDesign]  # in priority order
     status: DesignStatus
 
     def dump(self, fh=sys.stderr):

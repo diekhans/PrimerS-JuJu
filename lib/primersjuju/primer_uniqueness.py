@@ -4,6 +4,7 @@ Primer uniqueness query and results
 
 from typing import Sequence
 from dataclasses import dataclass
+from pycbio.ncbi.assembly import AssemblyReportNotFound
 from .transcript_features import ExonFeature
 from .uniqueness_query import GenomeHit, TranscriptomeHit
 
@@ -57,7 +58,11 @@ def _is_target_chrom(genome_data, chrom_name):
     if genome_data.assembly_info is None:
         # no information so consider this a possible target
         return True
-    chrom_info = genome_data.assembly_info.getByName(chrom_name)
+    try:
+        chrom_info = genome_data.assembly_info.getByName(chrom_name)
+    except AssemblyReportNotFound:
+        # can be due to UCSC keep sequences that were removed
+        return False
     return ((chrom_info.sequenceRole == "assembled-molecule") and
             (chrom_info.assemblyUnit == "Primary Assembly"))
 

@@ -32,7 +32,11 @@ BED file, $target_id.target.bed, has the target regions that were specified as i
 
 Color coding:
 * blue - input target regions
-* green - targeted transcript, targeted region is drawn thick
+* green - targeted transcript, target regions are drawn thick; this would be the maximum possible amplicon
+
+### amplicon track.
+* orange - targeted transcript with highest priority amplicon drawn think.
+* indigo - highest priority amplicon
 
 # primer track
 
