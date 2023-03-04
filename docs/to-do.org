@@ -1,3 +1,6 @@
+* verify amplicon correctly aligns with BLAT or minimap2
+* deal better with pairing of transcripts with primers, etc.
+started etc/targetBed.as, but decided to just add pairing in amplicons for now
 * targeted transcript BED could have amplicon annotated
 not targeted region, however this would require on sequence per primer pair
 * strip ids of white space in input

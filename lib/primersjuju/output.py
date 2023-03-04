@@ -89,7 +89,8 @@ def build_target_amplicon_bed(primer_targets, trans, primer_design):
     primer_feats = primer_design.features_5p + primer_design.features_3p
     features_sort_genome(primer_feats)
     thick_gcoords = trans.bounds.genome.adjrange(primer_feats[0].genome.start, primer_feats[-1].genome.end)
-    return make_transcript_bed(primer_targets, trans, trans.trans_id.name,
+    name = trans.trans_id.name + "^" + primer_design.ppair_id
+    return make_transcript_bed(primer_targets, trans, name,
                                thick_gcoords.start, thick_gcoords.end, AMP_TARGET_COLOR)
 
 def build_amplicon_beds(primer_targets, primer_designs):
@@ -166,7 +167,7 @@ def _primer_color(primer_design):
 
 def _primer_to_bed(primer_designs, primer_design, *, color=None, add_extra=True):
     if color is None:
-        color =  _primer_color(primer_design)
+        color = _primer_color(primer_design)
     gcoords_5p_list = features_to_genomic_coords_list(primer_design.features_5p, ExonFeature)
     gcoords_3p_list = features_to_genomic_coords_list(primer_design.features_3p, ExonFeature)
     extra_cols = _get_extra_cols(primer_designs, primer_design) if add_extra else None
