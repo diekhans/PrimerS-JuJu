@@ -1,8 +1,15 @@
-* verify amplicon correctly aligns with BLAT or minimap2
+* small end exon issue
+** JuJu could detect this and warn
+** try to pick primer that put more sequence in end exons
+** verify amplicon correctly aligns with BLAT or minimap2
 * deal better with pairing of transcripts with primers, etc.
 started etc/targetBed.as, but decided to just add pairing in amplicons for now
+* main tsv doesn't need improved for multiple isoforms
+* include gene name as standard column for statistics
+* only include URL part in TSV, separate program to make spread sheet.
 * targeted transcript BED could have amplicon annotated
 not targeted region, however this would require on sequence per primer pair
+added amplicon bed, but might want others.
 * strip ids of white space in input
 * stable ids or history tracking
 * design_primers.py PrimerDesign
