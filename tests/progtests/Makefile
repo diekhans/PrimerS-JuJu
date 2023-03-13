@@ -10,7 +10,7 @@ suffixes = .debug.txt designs.tsv primers.bed target.bed uniqueness.bed
 
 define diff_results =
 @for f in $$(cd output && find $@ -type f) ; do diff -u expected/$$f output/$$f ; done
-@tawk 'NF != 17{print "Expect 17 columns, got " NF ":" NR " in "FILENAME; exit 1}' output/$@/*/*.designs.tsv
+@tawk 'NF != 18{print "Expect 18 columns, got " NF ":" NR " in "FILENAME; exit 1}' output/$@/*/*.designs.tsv
 endef
 
 test: prog-tests

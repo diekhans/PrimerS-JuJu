@@ -306,46 +306,52 @@ def output_target_beds(outdir, primer_targets, primer_designs):
                     _get_out_path(outdir, primer_targets.target_id, "transcriptome-uniqueness.bed"))
 
 
-_design_tsv_header = ("target_id", "design_status", "transcript_id", "browser",
+_design_tsv_header = ("target_id", "transcript_id", "design_status", "position", "browser",
                       "primer_id", "left_primer", "right_primer", "pri",
                       "amplicon_len", "amplicon_exons", "left_delta_G", "right_delta_G",
                       "on_target_trans", "off_target_trans",
                       "on_target_genome", "off_target_genome",
                       "amplicon")
 
-def _write_primer_pair_design(fh, primer_designs, primer_design, first, hub_urls):
+def _write_primer_pair_design_trans(fh, primer_designs, primer_design, trans, first, hub_urls):
     "write one design, if primer_design is None, it means there were no primers found"
-    row = [primer_designs.primer_targets.target_id,
-           primer_designs.status, primer_designs.primer_targets.transcripts[0].trans_id.name]
+    row = [primer_designs.primer_targets.target_id, trans.trans_id.name,
+           primer_designs.status]
     if first:
-        row.append(_make_design_browser_link(primer_designs, hub_urls))
+        row.extend([primer_designs.target_transcript.bounds.genome,
+                    _make_design_browser_link(primer_designs, hub_urls)])
     else:
-        row.append('')
+        row.extend(2 * [''])
     if primer_design is None:
         row += 13 * ['']
     else:
+        amp_seq = primer_design_amplicon(primer_design, trans)
         row += [primer_design.ppair_id,
                 primer_design.primer3_pair.PRIMER_LEFT_SEQUENCE,
                 primer_design.primer3_pair.PRIMER_RIGHT_SEQUENCE,
                 primer_design.priority,
-                primer_design.amplicon_length,
-                _count_amplicon_exons(primer_design, primer_designs.target_transcript),
+                len(amp_seq),
+                _count_amplicon_exons(primer_design, trans),
                 primer_design.primer3_pair.PRIMER_LEFT_END_STABILITY,
                 primer_design.primer3_pair.PRIMER_RIGHT_END_STABILITY,
                 _make_uniqeness_hits_browser_gcoords(primer_design.uniqueness.transcriptome_on_targets),
                 _make_uniqeness_hits_browser_gcoords(primer_design.uniqueness.transcriptome_off_targets),
                 _make_uniqeness_hits_browser_gcoords(primer_design.uniqueness.genome_on_targets),
                 _make_uniqeness_hits_browser_gcoords(primer_design.uniqueness.genome_off_targets),
-                primer_design_amplicon(primer_design, primer_designs.primer_targets.transcripts[0])]
+                amp_seq]
     fileOps.prRow(fh, row)
+
+def _write_primer_pair_design(fh, primer_designs, primer_design, first, hub_urls):
+    for trans in primer_designs.primer_targets.transcripts:
+        _write_primer_pair_design_trans(fh, primer_designs, primer_design, trans, first, hub_urls)
 
 def _write_primer_designs(fh, primer_designs, hub_urls):
     fileOps.prRow(fh, _design_tsv_header)
     first = True
     if len(primer_designs.designs) == 0:
-        _write_primer_pair_design(fh, primer_designs, None, first, hub_urls)
+        _write_primer_pair_design(fh, primer_designs, None, True, hub_urls)
     else:
-        for primer_design in primer_designs.designs:
+        for primer_design in sorted(primer_designs.designs, key=lambda pd: pd.priority):
             _write_primer_pair_design(fh, primer_designs, primer_design, first, hub_urls)
             first = False
 
