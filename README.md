@@ -3,6 +3,7 @@
 Tools to assist with designing multiple RT-PCR primers for full-length
 isoform amplification.
 
+Package is currently alpha-quality and requires a bit manual setup to run.
 
 This package builds on [primer3](https://github.com/primer3-org/primer3)
 and
