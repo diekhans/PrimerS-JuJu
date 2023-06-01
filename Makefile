@@ -59,17 +59,17 @@ real-clean: clean
 	rm -rf dev-venv/
 
 clean: test_clean
-	rm -rf build/ dist/ ${testenv}/ lib/*.egg-info/ lib/primersjuju/__pycache__/ tests/.pytest_cache/
+	rm -rf build/ dist/ ${dev_venv}/ lib/*.egg-info/ lib/primersjuju/__pycache__/ tests/.pytest_cache/
 
 test_clean:
 	cd tests && ${MAKE} clean
 
 define envsetup
-	@rm -rf ${testenv}/
-	mkdir -p ${testenv}
-	${PYTHON} -m virtualenv ${testenv}
+	@rm -rf ${dev_venv}/
+	mkdir -p ${dev_venv}
+	${PYTHON} -m virtualenv ${dev_venv}
 endef
-envact = source ${testenv}/bin/activate
+envact = source ${dev_venv}/bin/activate
 
 dist_tar = dist/primersjuju-${version}.tar.gz
 dist_whl = dist/primersjuju-${version}-py3-none-any.whl
@@ -84,7 +84,7 @@ dist: clean
 # test install locally
 test-pip: dist
 	${envsetup}
-	${envact} && cd ${testenv} && ${PIP} install --no-cache-dir $(realpath ${dist_tar})
+	${envact} && cd ${dev_venv} && ${PIP} install --no-cache-dir $(realpath ${dist_tar})
 	${envact} && cd tests ${MAKE} test
 
 # test release to testpypi
@@ -94,7 +94,7 @@ release-testpypi: dist
 # test release install from testpypi
 test-release-testpypi:
 	${envsetup}
-	${envact} && cd ${testenv} && ${PIP} install --no-cache-dir --index-url=${testpypi_url} --extra-index-url=https://pypi.org/simple ${pkgver_spec}
+	${envact} && cd ${dev_venv} && ${PIP} install --no-cache-dir --index-url=${testpypi_url} --extra-index-url=https://pypi.org/simple ${pkgver_spec}
 	${envact} && cd tests && ${MAKE} test
 
 release: dist
@@ -102,6 +102,6 @@ release: dist
 
 test-release:
 	${envsetup}
-	${envact} && cd ${testenv} && ${PIP} install --no-cache-dir ${pkgver_spec}
+	${envact} && cd ${dev_venv} && ${PIP} install --no-cache-dir ${pkgver_spec}
 	${envact} && cd tests && ${MAKE} test
 
