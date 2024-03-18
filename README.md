@@ -13,5 +13,17 @@ and
 > Nucleic acids research 40.15 (2012): e115-e115.
 > doi: 10.1093/nar/gks596
 
-Licensed under GPL v2 to compile with the primer3 license.
+Licensed under GPL v2 to comply with the primer3 license.
+
+# Addition requirements
+
+* available from http://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/
+  * bigBedNamedItems
+  * bigBedToBed
+  
+* available from http://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/blat/
+  * gfPcr
+  * gfServer  (if not using an assembly in the UCSC browser)
+
+
 
