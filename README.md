@@ -17,7 +17,9 @@ Licensed under GPL v2 to comply with the primer3 license.
 
 # Install in a python virtualenv
 
-    pip install git@github.com:diekhans/PrimerS-JuJu.git
+    CFLAGS=-std=c99 pip install git+https://github.com/diekhans/PrimerS-JuJu.git
+
+primer3-py needs -std=c99, at least on some systems.
 
 # Addition requirements
 
