@@ -3,7 +3,7 @@
 import setuptools
 
 requirements = [
-    "primer3-py==0.6.1",
+    "primer3-py>=2.0.3",
     "twobitreader>=3.1.7",
     "pycbio @ git+https://github.com/diekhans/pycbio.git@2024-03-20.stable",
     "pipettor",
