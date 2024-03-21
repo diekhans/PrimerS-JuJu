@@ -1,3 +1,10 @@
+* primer3 upgrade issues 2024-03-19
+** debug option got from design_primers
+** primer3 doesn't like ObjDict, even though it is a dict.  Hack for now  "/hive/users/markd/gencode/projs/primer-design/PrimerS-JuJu/dev-venv/lib/python3.12/site-packages/primer3/bindings.py", line 582, in designPrimers
+    return THERMO_ANALYSIS.run_design(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: Argument 'global_args' has incorrect type (expected dict, got ObjDict)
+
 * small end exon issue
 ** JuJu could detect this and warn
 ** try to pick primer that put more sequence in end exons

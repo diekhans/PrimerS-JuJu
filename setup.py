@@ -3,12 +3,10 @@
 import setuptools
 
 requirements = [
-    "primer3-py>=0.6.1",
+    "primer3-py==0.6.1",
     "twobitreader>=3.1.7",
-    # FIXME: not sure why these don't work:
-    # "pycbio @ git+https://github.com/diekhans/pycbio.git",
-    # "pycbio @ file:///cluster/home/markd/compbio/code/pycbio",
-    "pipettor"
+    "pycbio @ git+https://github.com/diekhans/pycbio.git@2024-03-20.stable",
+    "pipettor",
 ]
 
 setuptools.setup(

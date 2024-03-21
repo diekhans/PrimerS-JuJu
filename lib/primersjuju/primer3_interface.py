@@ -23,7 +23,12 @@ _global_args_defaults = ObjDict(PRIMER_TASK="generic",
                                 PRIMER_EXPLAIN_FLAG=1)
 
 # these might me configured in the future
-FIVE_PRIME_NUM_STRONG_MATCH = 2
+# FIXME: primer3 2.* now insists on this being at least 5 bases
+#       which cause some of the test cases to fail.
+# FIVE_PRIME_NUM_STRONG_MATCH = 2
+FIVE_PRIME_NUM_STRONG_MATCH = 0
+PRIMER_MIN_5_PRIME_OVERLAP_OF_JUNCTION = 8
+PRIMER_MIN_3_PRIME_OVERLAP_OF_JUNCTION = 8
 
 class Primer3Pair(ObjDict):
     """One result pair set from primer3, files are primer three result names with
@@ -102,20 +107,28 @@ def _build_junction_overlap(features):
     else:
         return ()
 
-def _build_seq_args(target_transcript):
-    # likes oligos 5' with G or C will anneal with 3' of sequence
-    # S = Strong (G or C)
-    match_5p = FIVE_PRIME_NUM_STRONG_MATCH * 'S'
+def _build_strong_match_str():
+    mstr = FIVE_PRIME_NUM_STRONG_MATCH * 'S'  # Strong (G or C)
+    if FIVE_PRIME_NUM_STRONG_MATCH < PRIMER_MIN_5_PRIME_OVERLAP_OF_JUNCTION:
+        # must cover the 5' junction overlap, so extend with `N' to match any
+        mstr += (PRIMER_MIN_5_PRIME_OVERLAP_OF_JUNCTION - FIVE_PRIME_NUM_STRONG_MATCH) * 'N'
+    return mstr
 
+def _build_seq_args(target_transcript):
     ok_regions = make_ok_region(target_transcript)
-    junction_overlaps = _build_junction_overlap(target_transcript.features_5p) + _build_junction_overlap(target_transcript.features_3p)
     seq_args = ObjDict(SEQUENCE_ID=target_transcript.trans_id.name,
                        SEQUENCE_TEMPLATE=target_transcript.rna,
                        SEQUENCE_PRIMER_PAIR_OK_REGION_LIST=ok_regions,
-                       PRIMER_MUST_MATCH_FIVE_PRIME=match_5p,
-                       SEQUENCE_OVERLAP_JUNCTION_LIST=junction_overlaps,
-                       PRIMER_MIN_3_PRIME_OVERLAP_OF_JUNCTION=8,
-                       PRIMER_MIN_5_PRIME_OVERLAP_OF_JUNCTION=8)
+                       PRIMER_MIN_3_PRIME_OVERLAP_OF_JUNCTION=PRIMER_MIN_3_PRIME_OVERLAP_OF_JUNCTION,
+                       PRIMER_MIN_5_PRIME_OVERLAP_OF_JUNCTION=PRIMER_MIN_5_PRIME_OVERLAP_OF_JUNCTION)
+    # likes oligos 5' with G or C will anneal with 3' of sequence
+    # S = Strong (G or C)
+    if FIVE_PRIME_NUM_STRONG_MATCH > 0:
+        seq_args.PRIMER_MUST_MATCH_FIVE_PRIME = _build_strong_match_str()
+
+    junction_overlaps = _build_junction_overlap(target_transcript.features_5p) + _build_junction_overlap(target_transcript.features_3p)
+    if len(junction_overlaps) > 0:
+        seq_args.SEQUENCE_OVERLAP_JUNCTION_LIST = junction_overlaps
     return seq_args
 
 def _build_global_args(target_transcript, global_args):
@@ -160,9 +173,10 @@ def primer3_design(target_transcript, *, global_args=_global_args_defaults, misp
         primer3_dump_args(sys.stderr, target_transcript, global_args=global_args)
 
     _check_common_errors(target_transcript, seq_args, global_args)
-    p3_output = primer3.bindings.designPrimers(seq_args, global_args,
-                                               misprime_lib=misprime_lib, mishyb_lib=mishyb_lib,
-                                               debug=debug)
+
+    # FIXME: dict() is a hack around primer3 give type error on ObjDict
+    p3_output = primer3.bindings.design_primers(dict(seq_args), dict(global_args),
+                                                misprime_lib=misprime_lib, mishyb_lib=mishyb_lib)
     results = primer3_parse_output(p3_output)
     if "PRIMER_ERRORS" in results:
         raise PrimersJuJuError(f"primer3 errors: {results.PRIMER_ERRORS}")
@@ -219,7 +233,7 @@ def primer3_annotate_amplicon(target_transcript):
     # Build insert list [(before_index, char), ...], sort for insertion order.  transcript must cover
     # the whole range
     inserts = sorted(_make_region_char_inserts(target, '[', ']') +
-                     _make_point_char_inserts(seq_args.SEQUENCE_OVERLAP_JUNCTION_LIST, '-'))
+                     _make_point_char_inserts(seq_args.get("SEQUENCE_OVERLAP_JUNCTION_LIST", ()), '-'))
     # generate annotated sequence
     amplicon_parts = []
     prev_end = before[1]

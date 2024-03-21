@@ -4,7 +4,8 @@ include ${ROOT}/defs.mk
 DEBUG = --debug
 
 hg38_hub_url_args = --huburl=http://conesalab.org/LRGASP/LRGASP_hub/hub.txt --huburl=https://hgwdev.gi.ucsc.edu/~markd/lrgasp/juju-hub/hub.txt
-chromAlias_hg38 = https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.chromAlias.bb
+hg38_chromAlias = https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.chromAlias.bb
+hg38_twobit = https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.2bit
 
 suffixes = .debug.txt designs.tsv primers.bed target.bed uniqueness.bed
 
@@ -30,8 +31,8 @@ test-design-good3: mkdirs
 	rm -rf output/$@
 	${primers_juju} ${DEBUG} --conf=input/config1.py design ${hg38_hub_url_args} input/LRGASP_WTC11_Target_subset3.tsv output/$@
 	${diff_results}
-	bedToBigBed -tab -type=bed12+ -as=${ROOT}/etc/bigPrimerBed.as -sizesIsBb -extraIndex=name \
-	   output/test-design-good3/ZBTB45+1/ZBTB45+1.primers.bed ${chromAlias_hg38} output/$@/ZBTB45+1.bb
+	bedToBigBed -tab -type=bed12+ -as=${ROOT}/etc/bigPrimerBed.as -sizesIs2Bit -extraIndex=name \
+	   output/test-design-good3/ZBTB45+1/ZBTB45+1.primers.bed ${hg38_twobit} output/$@/ZBTB45+1.bb
 	rm output/$@/ZBTB45+1.bb
 
 test-design-subset: mkdirs

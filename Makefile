@@ -43,8 +43,6 @@ venv:
 	${PIP} install --upgrade pip
 	${PIP} install --upgrade wheel
 	${PIP} install --upgrade -r requirements-dev.txt
-	${PIP} install --upgrade -r ${pycbio}/requirements.txt
-	${PIP} install --upgrade -e ${pycbio}
 	${PIP} install --upgrade -e .
 
 # this gets a lot of false-positive, just use for code cleanup rather than making it

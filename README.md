@@ -15,6 +15,10 @@ and
 
 Licensed under GPL v2 to comply with the primer3 license.
 
+# Install in a python virtualenv
+
+    pip install git@github.com:diekhans/PrimerS-JuJu.git
+
 # Addition requirements
 
 * available from http://hgdownload.soe.ucsc.edu/admin/exe/linux.x86_64/

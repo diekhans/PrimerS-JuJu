@@ -17,8 +17,8 @@ def test_pos_strand(request, genome_data_hg38, wtc11_targets_specs_set1):
     assert len(primer_designs.designs) == 5
 
     p3p = primer_designs.designs[0].primer3_pair
-    assert p3p.PRIMER_LEFT == (22, 20)
-    assert p3p.PRIMER_RIGHT == (1026, 20)
+    assert p3p.PRIMER_LEFT == [22, 20]
+    assert p3p.PRIMER_RIGHT == [1026, 20]
     assert p3p.PRIMER_LEFT_SEQUENCE == 'CGAGTGGTTCTTCTGCGCTA'
     assert p3p.PRIMER_RIGHT_SEQUENCE == 'TCATCAAAGTCCTGTGGGGC'
 
@@ -31,8 +31,8 @@ def test_neg_strand(request, genome_data_hg38, wtc11_targets_specs_set1):
     assert len(primer_designs.designs) == 5
 
     p3p = primer_designs.designs[0].primer3_pair
-    assert p3p.PRIMER_LEFT == (244, 20)
-    assert p3p.PRIMER_RIGHT == (1348, 20)
+    assert p3p.PRIMER_LEFT == [244, 20]
+    assert p3p.PRIMER_RIGHT == [1348, 20]
     assert p3p.PRIMER_LEFT_SEQUENCE == 'TATGAGGCCCTAGAGCTCCG'
     assert p3p.PRIMER_RIGHT_SEQUENCE == 'CAAGAGCACTGACTCAGGGG'
 
@@ -61,8 +61,8 @@ def test_SLC46A1(request, genome_data_hg38, wtc11_targets_specs_set1):
     assert len(primer_designs.designs) == 5
 
     p3p = primer_designs.designs[0].primer3_pair
-    assert p3p.PRIMER_LEFT == (815, 20)
-    assert p3p.PRIMER_RIGHT == (1662, 20)
+    assert p3p.PRIMER_LEFT == [815, 20]
+    assert p3p.PRIMER_RIGHT == [1662, 20]
     assert p3p.PRIMER_LEFT_SEQUENCE == 'CTCTTCACGTTCCGTCACCA'
     assert p3p.PRIMER_RIGHT_SEQUENCE == 'TCCTAGACAGAGGCTGGGTC'
 
