@@ -27,6 +27,9 @@ The coordinate range pairs must meet the primer3 requirement that at
 least one of the two sequences is less than 60 bp in length.  If a region
 spans an intron, then. 
 
+The input file specification is described in
+[Input and output data formats used by PrimerS JuJu](data_formats.md).
+
 ## Processing
 
 * Validate input to make sure it is consistent with the requirements:
