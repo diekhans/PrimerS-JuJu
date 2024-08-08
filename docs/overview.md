@@ -15,6 +15,7 @@ For each desired primer pair, the user provides as input:
 * a unique symbolic name to identify the primer set being designed
 * the genome assembly
 * list of transcript models to use
+* transcript set to check for off-target primers, currently this must be part of the target model set.
 * coordinates ranges of two regions from which to pick the primer pairs
 * parameters to use for the primer design
 
