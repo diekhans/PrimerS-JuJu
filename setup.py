@@ -17,7 +17,8 @@ setuptools.setup(
     author = "Mark Diekhans",
     author_email = 'markd@ucsc.edu',
     url = 'https://github.com/diekhans/PrimerS-JuJu',
-    scripts=[
+    scripts = [
+        'bin/primers-juju'
     ],
     packages = [
         'primersjuju',

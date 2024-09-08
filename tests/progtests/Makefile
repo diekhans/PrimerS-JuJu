@@ -4,7 +4,6 @@ include ${ROOT}/defs.mk
 DEBUG = --debug
 
 hg38_hub_url_args = --huburl=http://conesalab.org/LRGASP/LRGASP_hub/hub.txt --huburl=https://hgwdev.gi.ucsc.edu/~markd/lrgasp/juju-hub/hub.txt
-hg38_chromAlias = https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.chromAlias.bb
 hg38_twobit = https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.2bit
 
 suffixes = .debug.txt designs.tsv primers.bed target.bed uniqueness.bed

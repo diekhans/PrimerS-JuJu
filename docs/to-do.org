@@ -97,7 +97,11 @@ caused by: specified primer region contig_18545_pilon:308302-309177 for transcri
 def _build_target_transcript(genome_data, primer_target_spec, trans_spec):
     "build transcript with initial regions trimmed to exons"
 
-
-
+* improve config file errors (see pycbio issues)
+* need test cases not relying on external hubs;
+make make a test data repo
+* better setup instructions and running instructions
+** config not documented
+** step by step on running it
 
     

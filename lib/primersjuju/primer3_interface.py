@@ -23,9 +23,10 @@ _global_args_defaults = ObjDict(PRIMER_TASK="generic",
                                 PRIMER_EXPLAIN_FLAG=1)
 
 # these might me configured in the future
-# FIXME: primer3 2.* now insists on this being at least 5 bases
-#       which cause some of the test cases to fail.
-# FIVE_PRIME_NUM_STRONG_MATCH = 2
+# FIXME: primer3 2.* now insists on FIVE_PRIME_NUM_STRONG_MATCH
+#       being at least 5 bases which cause some of the test cases to fail.
+#    FIVE_PRIME_NUM_STRONG_MATCH = 2
+
 FIVE_PRIME_NUM_STRONG_MATCH = 0
 PRIMER_MIN_5_PRIME_OVERLAP_OF_JUNCTION = 8
 PRIMER_MIN_3_PRIME_OVERLAP_OF_JUNCTION = 8
@@ -131,13 +132,24 @@ def _build_seq_args(target_transcript):
         seq_args.SEQUENCE_OVERLAP_JUNCTION_LIST = junction_overlaps
     return seq_args
 
+def _compute_primer_product_size_range(target_transcript, global_args):
+    # must be at least twice PRIMER_MAX_SIZE
+    min_size = 2 * global_args.PRIMER_MAX_SIZE
+
+    # inside of primer regions and including primer regions, uses abs() and sort() to ignore strand.
+    size_ranges = [
+        max(abs(target_transcript.region_5p.trans.start - target_transcript.region_3p.trans.end),
+            min_size),
+        max(abs(target_transcript.region_5p.trans.end - target_transcript.region_3p.trans.start),
+            min_size)]
+    size_ranges.sort()
+    return [size_ranges]
+
 def _build_global_args(target_transcript, global_args):
     # set PRIMER_PRODUCT_SIZE_RANGE for specific sequence
     if "PRIMER_PRODUCT_SIZE_RANGE" not in global_args:
         global_args = copy.copy(global_args)
-        # inside of primer regions and including primer regions, abs(), sorted() ignores strand.
-        global_args.PRIMER_PRODUCT_SIZE_RANGE = [sorted([abs(target_transcript.region_5p.trans.start - target_transcript.region_3p.trans.end),
-                                                         abs(target_transcript.region_5p.trans.end - target_transcript.region_3p.trans.start)])]
+        global_args.PRIMER_PRODUCT_SIZE_RANGE = _compute_primer_product_size_range(target_transcript, global_args)
     return global_args
 
 def primer3_global_defaults():
