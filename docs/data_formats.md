@@ -37,7 +37,7 @@ Continuation rows consist of the same *target_id*, with the *region_5p* and
 *region_3p* cells empty.  They containing *trans_track* and
 *trans_id* for each additional transcript.  No order is required, as the
 *target_id* connects the rows.  However, having the continuation row follow
-The primary row is good for maintaining sanity.
+the primary row is good for maintaining sanity.
 
 All other columns in TSV are passed through.  Other column names starting with
 *trans_* will be associated with that specific transcripts, while others are
