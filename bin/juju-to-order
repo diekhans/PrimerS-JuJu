@@ -1,0 +1,46 @@
+#!/usr/bin/env python3
+
+import argparse
+from pycbio.tsv import TsvReader, intOrNoneType
+from pycbio.sys import fileOps
+
+def parse_args():
+    desc = """Convert a PrimerS-JuJu design TSV to the minimal information for
+    an order or to a fasta for each primer.   This outputs only the priority 1 primers."""
+    parser = argparse.ArgumentParser(description=desc)
+    parser.add_argument("--fasta", action='store_true',
+                        help="""output a fasta""")
+    parser.add_argument("designTsv",
+                        help="""PrimerS-Juju combined design TSV""")
+    parser.add_argument("orderOut",
+                        help="""output with primer ids and primer sequences""")
+    return parser.parse_args()
+
+def load_pri1_design_tsv(designTsv):
+    typeMap = {"pri": intOrNoneType}
+    return [r for r in TsvReader(designTsv, typeMap=typeMap)
+            if r.pri == 1]
+
+def write_order_tsv(designs_pri1, fh):
+    fileOps.prRowv(fh, "primer_id", "left_primer", "right_primer")
+    for row in designs_pri1:
+        fileOps.prRowv(fh, row.primer_id, row.left_primer, row.right_primer)
+
+def write_fasta_rec(seqid, seq, fh):
+    print(">" + seqid, file=fh)
+    print(seq, file=fh)
+
+def write_order_fasta(designs_pri1, fh):
+    for row in designs_pri1:
+        write_fasta_rec(row.primer_id + 'L', row.left_primer, fh)
+        write_fasta_rec(row.primer_id + 'R', row.right_primer, fh)
+
+def main(args):
+    designs_pri1 = load_pri1_design_tsv(args.designTsv)
+    with open(args.orderOut, 'w') as fh:
+        if args.fasta:
+            write_order_fasta(designs_pri1, fh)
+        else:
+            write_order_tsv(designs_pri1, fh)
+
+main(parse_args())
