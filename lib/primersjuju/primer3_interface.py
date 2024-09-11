@@ -212,7 +212,6 @@ def _make_point_char_inserts(points, mark_char):
 
 def _make_region_char_inserts(region_range, start_char, end_char):
     # region_range is (start, end)
-    assert region_range[0] < region_range[1], f"{region_range[0]} < {region_range[1]}"
     return ((region_range[0], start_char),
             (region_range[1], end_char))
 
@@ -239,13 +238,13 @@ def primer3_annotate_amplicon(target_transcript):
     assert len(ok_region_ranges) == 2
     # regions we consider
     before = (0, ok_region_ranges[0][0])
-    after = (ok_region_ranges[1][1], target_transcript.region_5p.trans.size)
     target = (ok_region_ranges[0][1], ok_region_ranges[1][0])
+    after = (ok_region_ranges[1][1], target_transcript.region_5p.trans.size)
 
     # Build insert list [(before_index, char), ...], sort for insertion order.  transcript must cover
     # the whole range
-    inserts = sorted(_make_region_char_inserts(target, '[', ']') +
-                     _make_point_char_inserts(seq_args.get("SEQUENCE_OVERLAP_JUNCTION_LIST", ()), '-'))
+    inserts = list(sorted(_make_region_char_inserts(target, '[', ']') +
+                          _make_point_char_inserts(seq_args.get("SEQUENCE_OVERLAP_JUNCTION_LIST", ()), '-')))
     # generate annotated sequence
     amplicon_parts = []
     prev_end = before[1]

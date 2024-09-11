@@ -5,6 +5,8 @@
            ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 TypeError: Argument 'global_args' has incorrect type (expected dict, got ObjDict)
 
+* full program logic, less cmdline parsing, should be in library
+
 * small end exon issue
 ** JuJu could detect this and warn
 ** try to pick primer that put more sequence in end exons
