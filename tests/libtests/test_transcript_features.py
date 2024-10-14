@@ -8,22 +8,22 @@ from primersjuju.transcript_features import (ExonFeature, IntronFeature, Feature
                                              transcript_range_to_features, features_to_genomic_coords,
                                              features_to_transcript_coords)
 
-def transcript_region_check(genome_data_hg38, wtc11_track, trans_id, region, expected_feats):
+def transcript_region_check(config_hg38, wtc11_track, trans_id, region, expected_feats):
     trans_bed = wtc11_track.read_by_name(trans_id)
-    feats = bed_to_features(genome_data_hg38, trans_bed)
+    feats = bed_to_features(config_hg38.genome, trans_bed)
     subfeats = features_intersect_genome(feats, region)
     assert len(subfeats) == len(expected_feats)
     assert subfeats == expected_feats
 
-def test_get_transcript_region_exon(genome_data_hg38, wtc11_track):
-    transcript_region_check(genome_data_hg38, wtc11_track, "FSM_45093",
+def test_get_transcript_region_exon(config_hg38, wtc11_track):
+    transcript_region_check(config_hg38, wtc11_track, "FSM_45093",
                             Coords("chr17", 7709209, 7710259, strand='+', size=83257441),
                             [ExonFeature(genome=Coords(name='chr17', start=7709209, end=7710259, strand='+', size=83257441),
                                          trans=Coords(name='FSM_45093', start=1051, end=2101, strand='+', size=3209))
                              ])
 
-def test_get_transcript_region_intron_exon(genome_data_hg38, wtc11_track):
-    transcript_region_check(genome_data_hg38, wtc11_track, "FSM_45093",
+def test_get_transcript_region_intron_exon(config_hg38, wtc11_track):
+    transcript_region_check(config_hg38, wtc11_track, "FSM_45093",
                             Coords("chr17", 7708917, 7709357, strand='+', size=83257441),
                             [IntronFeature(genome=Coords(name='chr17', start=7708917, end=7709166, strand='+', size=83257441),
                                            trans=Coords(name='FSM_45093', start=1008, end=1008, strand='+', size=3209)),
@@ -31,8 +31,8 @@ def test_get_transcript_region_intron_exon(genome_data_hg38, wtc11_track):
                                          trans=Coords(name='FSM_45093', start=1008, end=1199, strand='+', size=3209))
                              ])
 
-def test_get_transcript_region_exons(genome_data_hg38, wtc11_track):
-    transcript_region_check(genome_data_hg38, wtc11_track, "FSM_45093",
+def test_get_transcript_region_exons(config_hg38, wtc11_track):
+    transcript_region_check(config_hg38, wtc11_track, "FSM_45093",
                             Coords("chr17", 7708471, 7709256, strand='+', size=83257441),
                             [ExonFeature(genome=Coords(name='chr17', start=7708471, end=7708527, strand='+', size=83257441),
                                          trans=Coords(name='FSM_45093', start=847, end=903, strand='+', size=3209)),
@@ -46,8 +46,8 @@ def test_get_transcript_region_exons(genome_data_hg38, wtc11_track):
                                          trans=Coords(name='FSM_45093', start=1008, end=1098, strand='+', size=3209))
                              ])
 
-def test_get_transcript_region_FSM_45580(genome_data_hg38, wtc11_track):
-    transcript_region_check(genome_data_hg38, wtc11_track, "FSM_45580",
+def test_get_transcript_region_FSM_45580(config_hg38, wtc11_track):
+    transcript_region_check(config_hg38, wtc11_track, "FSM_45580",
                             Coords('chr19', 47228327, 47231039, strand='+', size=83257441),
                             [ExonFeature(genome=Coords(name='chr19', start=47228327, end=47228446, strand='+', size=58617616),
                                          trans=Coords(name='FSM_45580', start=1456, end=1575, strand='-', size=1841)),

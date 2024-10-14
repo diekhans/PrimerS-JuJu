@@ -181,11 +181,11 @@ def _build_primer_designs(primer_targets, target_transcript, primer3_results, un
                          uniqueness_query is not None,
                          primer_design_list, _get_design_status(primer_design_list))
 
-def design_primers(genome_data, primer_targets, *, uniqueness_query=None, primer3_debug=False,
+def design_primers(primer3_config, primer_targets, *, uniqueness_query=None, primer3_debug=False,
                    amplicon_isoform_query=None):
     """design transcripts """
     target_transcript = primer_targets.transcripts[0]
-    primer3_results = primer3_design(target_transcript, debug=primer3_debug)
+    primer3_results = primer3_design(primer3_config, target_transcript, debug=primer3_debug)
 
     return _build_primer_designs(primer_targets, target_transcript, primer3_results, uniqueness_query)
 

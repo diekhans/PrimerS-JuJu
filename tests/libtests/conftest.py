@@ -1,6 +1,7 @@
 import pytest
 import os.path as osp
 from . import mydir
+from primersjuju.config import PrimersJuJuConfig
 from primersjuju.genome_data import GenomeData
 from primersjuju.primer_target_spec import primer_target_specs_read
 from primersjuju.uniqueness_query import IsPcrServerSpec, UniquenessQuery
@@ -9,7 +10,7 @@ def _test_data_file(fname):
     return osp.join(mydir, "../data", fname)
 
 @pytest.fixture(scope="session")
-def genome_data_hg38():
+def config_hg38():
     test_gdata = GenomeData("hg38",
                             _test_data_file("hg38.2bit"),
                             assembly_report=_test_data_file("GCF_000001405.40_GRCh38.p14_assembly_report.txt"))
@@ -19,16 +20,18 @@ def genome_data_hg38():
     test_gdata.add_track("WTC11_consolidated",
                          _test_data_file("WTC11_consolidated.bigBed"),
                          "http://conesalab.org/LRGASP/LRGASP_hub/hg38/Human_samples/WTC11_consolidated.bigBed")
-
-    return test_gdata
+    config = PrimersJuJuConfig()
+    config.add_genome(test_gdata)
+    config.genome = test_gdata
+    return config
 
 @pytest.fixture(scope="session")
 def example_targets_specs():
     return primer_target_specs_read(osp.join(mydir, "../../docs/primer-targets-example.tsv"))
 
 @pytest.fixture(scope="session")
-def wtc11_track(genome_data_hg38):
-    return genome_data_hg38.get_track("WTC11_consolidated")
+def wtc11_track(config_hg38):
+    return config_hg38.genome.get_track("WTC11_consolidated")
 
 @pytest.fixture(scope="session")
 def wtc11_targets_specs_set1():
@@ -46,5 +49,5 @@ def gencode_ispcr_spec():
                            trans_bigbed=osp.join(mydir, "../data/gencodeV39.bb"))
 
 @pytest.fixture(scope="session")
-def hg38_uniqueness_query(genome_data_hg38, hg38_ispcr_spec, gencode_ispcr_spec):
-    return UniquenessQuery(genome_data_hg38, hg38_ispcr_spec, gencode_ispcr_spec)
+def hg38_uniqueness_query(config_hg38, hg38_ispcr_spec, gencode_ispcr_spec):
+    return UniquenessQuery(config_hg38.genome, hg38_ispcr_spec, gencode_ispcr_spec)

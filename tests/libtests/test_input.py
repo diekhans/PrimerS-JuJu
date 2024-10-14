@@ -90,22 +90,22 @@ def test_primer_targets_dup_target_id():
     assert_except_msg(exinfo, PrimersJuJuDataError,
                       msg="duplicate primer target_id 'EFNB3+1'")
 
-def test_get_genome_seq(genome_data_hg38):
+def test_get_genome_seq(config_hg38):
     coords = Coords.parse("chr17:7709209-7709259")
-    assert genome_data_hg38.get_genome_seq(coords) == 'CCTGCCCCCTCCCAGCATGCCTGCAGTGGCTGGGGCAGCAGGGGGGCTGG'
+    assert config_hg38.genome.get_genome_seq(coords) == 'CCTGCCCCCTCCCAGCATGCCTGCAGTGGCTGGGGCAGCAGGGGGGCTGG'
 
-def test_get_track_annot(genome_data_hg38):
-    gencode = genome_data_hg38.get_track("gencodeV39")
+def test_get_track_annot(config_hg38):
+    gencode = config_hg38.genome.get_track("gencodeV39")
     grecs = gencode.read_by_names(["ENST00000226091.3"])
     assert len(grecs) == 1
 
-    wtc11 = genome_data_hg38.get_track("WTC11_consolidated")
+    wtc11 = config_hg38.genome.get_track("WTC11_consolidated")
     wrecs = wtc11.read_by_names(["FSM_45093", "NNC_318304"])
     assert len(wrecs) == 2
     assert isinstance(wrecs['FSM_45093'], Bed)
 
-def test_get_track_missing(genome_data_hg38):
-    wtc11 = genome_data_hg38.get_track("WTC11_consolidated")
+def test_get_track_missing(config_hg38):
+    wtc11 = config_hg38.genome.get_track("WTC11_consolidated")
 
     with pytest.raises(PrimersJuJuDataError,
                        match='track WTC11_consolidated: records not found in bigBed.*: Barney, Fred'):

@@ -278,13 +278,13 @@ def _count_amplicon_exons(primer_design, target_transcript):
     amp_features = primer_design_amplicon_features(primer_design, target_transcript)
     return len([exon for exon in amp_features.iter_type(ExonFeature)])
 
-def output_target_debug(outdir, primer_targets, primer_designs):
+def output_target_debug(config, outdir, primer_targets, primer_designs):
     target_transcript = primer_targets.transcripts[0]
     fileOps.ensureDir(outdir)
     with open(_get_out_path(outdir, primer_targets.target_id, "debug.txt"), 'w') as fh:
         primer_targets.dump(fh)
-        print("annotated_amplicon:", primer3_annotate_amplicon(primer_targets.transcripts[0]), file=fh)
-        primer3_dump_args(fh, target_transcript)
+        print("annotated_amplicon:", primer3_annotate_amplicon(config.primer3, primer_targets.transcripts[0]), file=fh)
+        primer3_dump_args(fh, config.primer3, target_transcript)
         print(file=fh)
         primer_designs.primer3_results.dump(fh)
         print(file=fh)
@@ -388,7 +388,7 @@ def output_primers_isoforms(outdir, primer_targets, primer_designs):
         with open(tmp_tsv, "w") as fh:
             _write_primers_isoforms(fh, primer_targets, primer_designs)
 
-def output_target_designs(outdir, primer_targets, primer_designs, hub_urls=None):
+def output_target_designs(config, outdir, primer_targets, primer_designs, hub_urls=None):
     """output primer TSV, BEDs, and debug information for one target.  The
     $target_id.design.tsv file is created atomically, so it can be used as a
     marker that this design is complete.  If hub_urls is specified, the
@@ -396,7 +396,7 @@ def output_target_designs(outdir, primer_targets, primer_designs, hub_urls=None)
     browser.
     """
 
-    output_target_debug(outdir, primer_targets, primer_designs)
+    output_target_debug(config, outdir, primer_targets, primer_designs)
     output_target_beds(outdir, primer_targets, primer_designs)
     output_primers_isoforms(outdir, primer_targets, primer_designs)
     output_primer_designs(outdir, primer_targets, primer_designs, hub_urls)

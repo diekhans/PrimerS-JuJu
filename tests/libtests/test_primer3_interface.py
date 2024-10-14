@@ -132,13 +132,13 @@ def test_primer3_parse_example():
     assert results.pairs[4].PRIMER_RIGHT == (108, 20)
     assert results.pairs[4].PRIMER_RIGHT_GC_PERCENT == 55.0
 
-def test_annotate_amplicon(genome_data_hg38, wtc11_targets_specs_set1):
+def test_annotate_amplicon(config_hg38, wtc11_targets_specs_set1):
     target_spec = wtc11_targets_specs_set1.get_target('ZBTB45+1')
-    primer_targets = primer_targets_build(genome_data_hg38, target_spec)
+    primer_targets = primer_targets_build(config_hg38.genome, target_spec)
     target_transcript = primer_targets.transcripts[0]
     assert target_transcript.trans_id.name == 'FSM_45682'
 
-    ann_rna = primer3_annotate_amplicon(target_transcript)
+    ann_rna = primer3_annotate_amplicon(config_hg38.primer3, target_transcript)
 
     assert ann_rna == ('GCGGCCTTGTAGTCGGTCAGGAGGAAGCGGCCACGGCAGAGCCTGGTGCCTGAAGAGGAGTCGGAGA-TGGCGGCTGCAGAGGCTGTGCATCACATACACCTGCAGAACTTCTCACGCTCTCTGCTTGAGACCCTCAATGGGCAGAGGCTTGGGGGACACTTCTGTGACGTGACTGTGCGCATTCG[TGAAGCTTCGCTG'
                        'CGTGCCCACCGCTGCGTGCTGGCGGCCGGCTCACCCTTCTTCCAAGACAAGCTGCTGCTCGGCCACTCTGAGATCCGTGTGCCTCCGGTGGTGCCCGCGCAGACAGTGCGACAGCTGGTAGAGTTCCTGTACAGCGGTTCGCTCGTTGTGGCGCAGGGTGAAGCCCTGCAGGTGCTCACGGCCGCGTCAGTGCTTCGCAT'

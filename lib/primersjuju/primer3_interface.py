@@ -22,15 +22,6 @@ _global_args_defaults = ObjDict(PRIMER_TASK="generic",
                                 PRIMER_MAX_SIZE=22,
                                 PRIMER_EXPLAIN_FLAG=1)
 
-# these might me configured in the future
-# FIXME: primer3 2.* now insists on FIVE_PRIME_NUM_STRONG_MATCH
-#       being at least 5 bases which cause some of the test cases to fail.
-#    FIVE_PRIME_NUM_STRONG_MATCH = 2
-
-FIVE_PRIME_NUM_STRONG_MATCH = 0
-PRIMER_MIN_5_PRIME_OVERLAP_OF_JUNCTION = 8
-PRIMER_MIN_3_PRIME_OVERLAP_OF_JUNCTION = 8
-
 class Primer3Pair(ObjDict):
     """One result pair set from primer3, files are primer three result names with
     number dropped.  So PRIMER_LEFT_0_GC_PERCENT becomes PRIMER_LEFT_GC_PERCENT.
@@ -108,28 +99,31 @@ def _build_junction_overlap(features):
     else:
         return ()
 
-def _build_strong_match_str():
-    mstr = FIVE_PRIME_NUM_STRONG_MATCH * 'S'  # Strong (G or C)
-    if FIVE_PRIME_NUM_STRONG_MATCH < PRIMER_MIN_5_PRIME_OVERLAP_OF_JUNCTION:
+def _build_strong_match_str(config):
+    mstr = config.num_5_prime_strong_match * 'S'  # Strong (G or C)
+    if config.num_5_prime_strong_match < config.min_5_prime_overlap_of_junction:
         # must cover the 5' junction overlap, so extend with `N' to match any
-        mstr += (PRIMER_MIN_5_PRIME_OVERLAP_OF_JUNCTION - FIVE_PRIME_NUM_STRONG_MATCH) * 'N'
+        mstr += (config.min_5_prime_overlap_of_junction - config.num_5_prime_strong_match) * 'N'
     return mstr
 
-def _build_seq_args(target_transcript):
+def _build_seq_args(config, target_transcript):
     ok_regions = make_ok_region(target_transcript)
     seq_args = ObjDict(SEQUENCE_ID=target_transcript.trans_id.name,
                        SEQUENCE_TEMPLATE=target_transcript.rna,
                        SEQUENCE_PRIMER_PAIR_OK_REGION_LIST=ok_regions,
-                       PRIMER_MIN_3_PRIME_OVERLAP_OF_JUNCTION=PRIMER_MIN_3_PRIME_OVERLAP_OF_JUNCTION,
-                       PRIMER_MIN_5_PRIME_OVERLAP_OF_JUNCTION=PRIMER_MIN_5_PRIME_OVERLAP_OF_JUNCTION)
+                       PRIMER_MIN_3_PRIME_OVERLAP_OF_JUNCTION=config.min_3_prime_overlap_of_junction,
+                       PRIMER_MIN_5_PRIME_OVERLAP_OF_JUNCTION=config.min_5_prime_overlap_of_junction)
     # likes oligos 5' with G or C will anneal with 3' of sequence
     # S = Strong (G or C)
-    if FIVE_PRIME_NUM_STRONG_MATCH > 0:
-        seq_args.PRIMER_MUST_MATCH_FIVE_PRIME = _build_strong_match_str()
+    if config.num_5_prime_strong_match > 0:
+        seq_args.PRIMER_MUST_MATCH_FIVE_PRIME = _build_strong_match_str(config)
 
     junction_overlaps = _build_junction_overlap(target_transcript.features_5p) + _build_junction_overlap(target_transcript.features_3p)
     if len(junction_overlaps) > 0:
         seq_args.SEQUENCE_OVERLAP_JUNCTION_LIST = junction_overlaps
+
+    if config.max_poly_x is not None:
+        seq_args.PRIMER_MAX_POLY_X = config.max_poly_x
     return seq_args
 
 def _compute_primer_product_size_range(target_transcript, global_args):
@@ -170,7 +164,7 @@ def _check_common_errors(target_transcript, seq_args, global_args):
         _check_region(region_features, "PRIMER_MIN_SIZE", global_args.PRIMER_MIN_SIZE)
         _check_region(region_features, "PRIMER_MAX_SIZE", global_args.PRIMER_MAX_SIZE)
 
-def primer3_design(target_transcript, *, global_args=_global_args_defaults, misprime_lib=None, mishyb_lib=None, debug=False):
+def primer3_design(primer3_config, target_transcript, *, global_args=_global_args_defaults, debug=False):
     """main entry to run primer3
     global_args defined here:
     https://www.primer3plus.com/primer3plusHelp.html#globalTags
@@ -179,16 +173,17 @@ def primer3_design(target_transcript, *, global_args=_global_args_defaults, misp
     """
 
     global_args = _build_global_args(target_transcript, global_args)
-    seq_args = _build_seq_args(target_transcript)
+    seq_args = _build_seq_args(primer3_config, target_transcript)
     if debug:
         print(">>>>> primer3 debug:", target_transcript, file=sys.stderr)
-        primer3_dump_args(sys.stderr, target_transcript, global_args=global_args)
+        primer3_dump_args(sys.stderr, primer3_config, target_transcript, global_args=global_args)
 
     _check_common_errors(target_transcript, seq_args, global_args)
 
     # FIXME: dict() is a hack around primer3 give type error on ObjDict
     p3_output = primer3.bindings.design_primers(dict(seq_args), dict(global_args),
-                                                misprime_lib=misprime_lib, mishyb_lib=mishyb_lib)
+                                                misprime_lib=primer3_config.misprime_lib,
+                                                mishyb_lib=primer3_config.mishyb_lib)
     results = primer3_parse_output(p3_output)
     if "PRIMER_ERRORS" in results:
         raise PrimersJuJuError(f"primer3 errors: {results.PRIMER_ERRORS}")
@@ -196,9 +191,9 @@ def primer3_design(target_transcript, *, global_args=_global_args_defaults, misp
         raise PrimersJuJuError(f"primer3 warnings: {results.PRIMER_WARNINGS}")
     return results
 
-def primer3_dump_args(fh, target_transcript, *, global_args=_global_args_defaults):
+def primer3_dump_args(fh, primer3_config, target_transcript, *, global_args=_global_args_defaults):
     "print the arguments that will be used for this design"
-    seq_args = _build_seq_args(target_transcript)
+    seq_args = _build_seq_args(primer3_config, target_transcript)
     pp = pprint.PrettyPrinter(stream=fh, sort_dicts=False, indent=4)
     print(">>> primer3_args <<<", file=fh)
     print("global_args:", file=fh)
@@ -215,7 +210,7 @@ def _make_region_char_inserts(region_range, start_char, end_char):
     return ((region_range[0], start_char),
             (region_range[1], end_char))
 
-def primer3_annotate_amplicon(target_transcript):
+def primer3_annotate_amplicon(primer3_config, target_transcript):
     """Generate primer3 web annotated amplicon, for debugging purposes"""
     # Internally we use SEQUENCE_PRIMER_PAIR_OK_REGION_LIST to define regions to
     # design primers.  However, this isn't support by primer3 annotations, instead we
@@ -228,7 +223,7 @@ def primer3_annotate_amplicon(target_transcript):
     # target regions work, so we output the amplicaton and exclude the before and after
     # regions
     rna = target_transcript.rna
-    seq_args = _build_seq_args(target_transcript)
+    seq_args = _build_seq_args(primer3_config, target_transcript)
 
     # build regions in primer3 style, first convert to [start, end]
     ok_region_ranges = []

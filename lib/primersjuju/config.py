@@ -30,11 +30,28 @@ class GenomeConfig:
                                                       self.genome_ispcr_spec, self.transcriptome_ispcr_spec)
         return self.__uniqueness_query
 
+class Primer3Config:
+    """Options to pass to primer3, see primer3 manual for a description.
+    """
+    def __init__(self):
+        self.num_5_prime_strong_match = 0
+        self.min_5_prime_overlap_of_junction = 8
+        self.min_3_prime_overlap_of_junction = 8
+        self.max_poly_x = None
+        self.misprime_lib = None
+        self.mishyb_lib = None
+
+_default_primer3_config = Primer3Config()
+
 class PrimersJuJuConfig:
     """Main configuration object. An instance of this object must be create
     and stored in a variable Config"""
-    def __init__(self):
+    def __init__(self, *, primer3_config=_default_primer3_config):
         self.genomes = {}
+        self.primer3 = primer3_config
+
+        # derived, not set in config file
+        self.genome = None  # selected genome, set at load from genomes
 
     def add_genome(self, genome_config: GenomeConfig):
         self.genomes[genome_config.genome_name] = genome_config

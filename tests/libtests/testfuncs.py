@@ -24,15 +24,15 @@ def _check_primer_design(primer_designs, primer_design):
     assert primer_design.primer3_pair.PRIMER_PAIR_PRODUCT_SIZE == primer_design.amplicon_length, \
         f"primer3_pair.PRIMER_PAIR_PRODUCT_SIZE {primer_design.primer3_pair.PRIMER_PAIR_PRODUCT_SIZE} != primer_design.amplicon_length {primer_design.amplicon_length}"
 
-def run_primer_design_test(test_id, genome_data, targets_specs, target_id, uniqueness_query=None):
+def run_primer_design_test(test_id, config, targets_specs, target_id, uniqueness_query=None):
     outdir = osp.join("output", test_id)
     target_spec = targets_specs.get_target(target_id)
-    primer_targets = primer_targets_build(genome_data, target_spec)
-    primer_designs = design_primers(genome_data, primer_targets, uniqueness_query=uniqueness_query)
+    primer_targets = primer_targets_build(config.genome, target_spec)
+    primer_designs = design_primers(config.primer3, primer_targets, uniqueness_query=uniqueness_query)
 
     for primer_design in primer_designs.designs:
         _check_primer_design(primer_designs, primer_design)
-    output_target_designs(outdir, primer_targets, primer_designs, hub_urls=hub_urls)
+    output_target_designs(config, outdir, primer_targets, primer_designs, hub_urls=hub_urls)
 
     output_suffixes = (".debug.txt", ".designs.tsv", ".primers.bed", ".target.bed")
     if uniqueness_query is not None:
