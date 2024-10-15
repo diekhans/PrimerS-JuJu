@@ -150,8 +150,9 @@ def _design_target_maybe(config, primer_target_spec, error_info, hub_urls, prime
 
 def _design_targets(config, primer_target_specs, target_ids, error_info, hub_urls, primer3_debug, outdir):
     for target_id in target_ids:
-        _design_target_maybe(config, primer_target_specs.targets[target_id], error_info,
-                             hub_urls, primer3_debug, osp.join(outdir, target_id))
+        if not primer_target_specs.targets[target_id].disabled:
+            _design_target_maybe(config, primer_target_specs.targets[target_id], error_info,
+                                 hub_urls, primer3_debug, osp.join(outdir, target_id))
     print(">>> Designs complete", file=sys.stderr)
 
 def _get_target_ids(primer_target_specs, target_id_subset):

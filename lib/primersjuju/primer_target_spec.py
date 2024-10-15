@@ -13,6 +13,8 @@ from . import PrimersJuJuDataError
 REGION_COLS = frozenset(["region_5p", "region_3p"])
 TRANSCRIPT_COLS = frozenset(["trans_track", "trans_id"])
 REQUIRED_COLS = frozenset(frozenset(["target_id"]) | REGION_COLS | TRANSCRIPT_COLS)
+OPTIONAL_COLS = frozenset(["disabled"])
+DEFINED_COLS = REQUIRED_COLS | OPTIONAL_COLS
 
 class TargetTranscriptSpec:
     """a target transcript"""
@@ -29,11 +31,12 @@ class PrimerTargetSpec:
     """
     A given primer target regions and associate target transcripts
     """
-    def __init__(self, target_id, region_5p, region_3p, user_attrs):
+    def __init__(self, target_id, region_5p, region_3p, user_attrs, disabled):
         self.target_id = target_id
         self.region_5p, self.region_3p = region_5p, region_3p
         self.user_attrs = user_attrs
         self.tracks = {}  # by [trans_track][trans_id]
+        self.disabled = disabled
 
     def add_transcript(self, trans_track, trans_id, user_attrs):
         track = self.tracks.get(trans_track)
@@ -64,10 +67,10 @@ class PrimerTargetSpecs:
     def __init__(self):
         self.targets = {}
 
-    def add_target(self, target_id, region_5p, region_3p, user_attrs):
+    def add_target(self, target_id, region_5p, region_3p, user_attrs, disabled):
         if target_id in self.targets:
             raise PrimersJuJuDataError(f"duplicate primer target_id '{target_id}'")
-        target = PrimerTargetSpec(target_id, region_5p, region_3p, user_attrs)
+        target = PrimerTargetSpec(target_id, region_5p, region_3p, user_attrs, disabled)
         self.targets[target_id] = target
         return target
 
@@ -106,7 +109,7 @@ def _get_user_cols(rows):
     target_user_cols = set()
     transcript_user_cols = set()
     for col in row0._columns_:
-        if col not in REQUIRED_COLS:
+        if col not in DEFINED_COLS:
             if col.startswith("trans_"):
                 transcript_user_cols.add(col)
             else:
@@ -115,6 +118,9 @@ def _get_user_cols(rows):
 
 def _build_column_dict(columns, row):
     return {col: row[col] for col in columns}
+
+def _get_disabled(row):
+    return bool(getattr(row, 'disabled', False))
 
 def _do_add_primary_row(primer_target_specs, target_user_cols, transcript_user_cols, row):
     _check_target_id(row.target_id)
@@ -128,7 +134,8 @@ def _do_add_primary_row(primer_target_specs, target_user_cols, transcript_user_c
         raise PrimersJuJuDataError(f"region_5p ({region_5p}) is on a different chromosome than region_3p ({region_3p})")
 
     target = primer_target_specs.add_target(row.target_id, region_5p, region_3p,
-                                            _build_column_dict(target_user_cols, row))
+                                            _build_column_dict(target_user_cols, row),
+                                            _get_disabled(row))
     target.add_transcript(row.trans_track, row.trans_id,
                           _build_column_dict(transcript_user_cols, row))
 
@@ -142,6 +149,8 @@ def _do_add_continue_row(primer_target_specs, transcript_user_cols, row):
     _check_target_id(row.target_id)
     _must_be_empty(REGION_COLS, row)
     _must_not_be_empty(TRANSCRIPT_COLS, row)
+    if _get_disabled(row):
+        raise PrimersJuJuDataError(f"continue row for '{row.target_id}' can not have 'disabled' column set to True")
     target = primer_target_specs.get_target(row.target_id)
     target.add_transcript(row.trans_track, row.trans_id,
                           _build_column_dict(transcript_user_cols, row))

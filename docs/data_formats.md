@@ -31,6 +31,9 @@ target transcripts.
   tracks names and their corresponding file will be defined for the project.
 * *trans_id* - target transcript id, which is the BED name.  This must be
   unique within the track.
+* *disabled* - optional, if set of 1 or True, this record or its continuation row are not processed.
+   If empty, 0, or False, then process as normal.  Continuation rows can no be disabled.
+   Useful when a particular design triggers projects with primer3 or isPcr.
 
 
 Continuation rows consist of the same *target_id*, with the *region_5p* and
