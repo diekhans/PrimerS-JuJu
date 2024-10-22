@@ -6,7 +6,8 @@ from primersjuju.uniqueness_query import UniquenessQuery, IsPcrServerSpec
 from primersjuju.genome_data import GenomeData
 
 class GenomeConfig:
-    "Configuration for a particular assembly"
+    """Configuration for a particular assembly.  Setting either of ispcr specs to None
+    cases the corresponding off target query to be skupped."""
 
     def __init__(self,
                  genome_data: GenomeData,
@@ -31,13 +32,25 @@ class GenomeConfig:
         return self.__uniqueness_query
 
 class Primer3Config:
-    """Options to pass to primer3, see primer3 manual for a description.
+    """Options to pass to primer3, see primer3 manual Global Input Tags for a
+    description.
+    https://primer3.org/manual.html#globalTags
     """
     def __init__(self):
-        self.num_5_prime_strong_match = 0
-        self.min_5_prime_overlap_of_junction = 8
-        self.min_3_prime_overlap_of_junction = 8
-        self.max_poly_x = None
+        self.num_5_prime_strong_match = 0   # builds PRIMER_MUST_MATCH_FIVE_PRIME
+        self.PRIMER_MIN_5_PRIME_OVERLAP_OF_JUNCTION = 8
+        self.PRIMER_MIN_3_PRIME_OVERLAP_OF_JUNCTION = 8
+        self.PRIMER_MAX_POLY_X = None
+        self.PRIMER_MAX_SELF_ANY = None
+        self.PRIMER_MAX_SELF_ANY_TH = None
+        self.PRIMER_PAIR_MAX_COMPL_ANY = None
+        self.PRIMER_PAIR_MAX_COMPL_ANY_TH = None
+        self.PRIMER_PICK_INTERNAL_OLIGO = 0
+        self.PRIMER_OPT_SIZE = 20
+        self.PRIMER_MIN_SIZE = 18
+        self.PRIMER_MAX_SIZE = 22
+
+        # library files
         self.misprime_lib = None
         self.mishyb_lib = None
 

@@ -1,3 +1,8 @@
+* is genome_data srcUrl really needed?
+
+* not sure if PRIMER_MIN_3_PRIME_OVERLAP_OF_JUNCTION works
+don't build match_str to include is
+
 * repeat filtering
 This is suggestion from ThermoFisher regaridng Primer design: Try to avoid
 runs of 4 or more of one base, or dinucleotide repeats (for example, ACCCC or
@@ -6,12 +11,7 @@ ATATATAT).
 for now set PRIMER_MAX_POLY_X, PRIMER_INTERNAL_MAX_POLY_X (int; default 5)
 Equivalent parameter of PRIMER_MAX_POLY_X for the internal oligo.
 
-* way to pass through arguments to primer3 from command or config
-
-*  primer3 2.* now insists on FIVE_PRIME_NUM_STRONG_MATCH
-being at least 5 bases which cause some of the test cases to fail.
-was FIVE_PRIME_NUM_STRONG_MATCH = 2
-
+* type check Primer3Config variables
 
 * primer3 upgrade issues 2024-03-19
 ** debug option got from design_primers

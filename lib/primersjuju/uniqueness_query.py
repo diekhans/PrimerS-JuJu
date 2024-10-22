@@ -135,19 +135,24 @@ def _trans_psl_to_hit(genome_data, transcriptome_spec, psl):
     return TranscriptomeHit(psl.tName, trans_id, gene_name, *features_list, psl)
 
 class UniquenessQuery:
-    """Interface to UCSC isPCR server to query for uniqueness."""
+    """Interface to UCSC isPCR server to query for uniqueness. the
+    spec
+    """
     def __init__(self, genome_data, genome_spec, transcriptome_spec):
-        assert transcriptome_spec.trans_bigbed is not None
         self.genome_data = genome_data
         self.genome_spec = genome_spec
         self.transcriptome_spec = transcriptome_spec
 
     def query_genome(self, name, left_primer, right_primer, max_size) -> Sequence[GenomeHit]:
         """query for primer hits in genome"""
+        if self.genome_spec is None:
+            return []
         genome_pcr_psls = _gfPcr(self.genome_spec, name, left_primer, right_primer, max_size)
         return [_genome_psl_to_hit(psl) for psl in genome_pcr_psls]
 
     def query_transcriptome(self, name, left_primer, right_primer, max_size) -> Sequence[TranscriptomeHit]:
         """query for primer hits in transcriptome"""
+        if self.transcriptome_spec is None:
+            return []
         trans_pcr_psls = _gfPcr(self.transcriptome_spec, name, left_primer, right_primer, max_size)
         return [_trans_psl_to_hit(self.genome_data, self.transcriptome_spec, psl) for psl in trans_pcr_psls]

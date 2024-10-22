@@ -15,11 +15,7 @@ from . import PrimersJuJuDataError, PrimersJuJuError
 _global_args_defaults = ObjDict(PRIMER_TASK="generic",
                                 PRIMER_FIRST_BASE_INDEX=0,
                                 PRIMER_PICK_LEFT_PRIMER=1,
-                                PRIMER_PICK_INTERNAL_OLIGO=0,
                                 PRIMER_PICK_RIGHT_PRIMER=1,
-                                PRIMER_OPT_SIZE=20,
-                                PRIMER_MIN_SIZE=18,
-                                PRIMER_MAX_SIZE=22,
                                 PRIMER_EXPLAIN_FLAG=1)
 
 class Primer3Pair(ObjDict):
@@ -101,29 +97,20 @@ def _build_junction_overlap(features):
 
 def _build_strong_match_str(config):
     mstr = config.num_5_prime_strong_match * 'S'  # Strong (G or C)
-    if config.num_5_prime_strong_match < config.min_5_prime_overlap_of_junction:
+    if config.num_5_prime_strong_match < config.PRIMER_MIN_5_PRIME_OVERLAP_OF_JUNCTION:
         # must cover the 5' junction overlap, so extend with `N' to match any
-        mstr += (config.min_5_prime_overlap_of_junction - config.num_5_prime_strong_match) * 'N'
+        mstr += (config.MIN_5_PRIME_OVERLAP_OF_JUNCTION - config.num_5_prime_strong_match) * 'N'
     return mstr
 
 def _build_seq_args(config, target_transcript):
     ok_regions = make_ok_region(target_transcript)
     seq_args = ObjDict(SEQUENCE_ID=target_transcript.trans_id.name,
                        SEQUENCE_TEMPLATE=target_transcript.rna,
-                       SEQUENCE_PRIMER_PAIR_OK_REGION_LIST=ok_regions,
-                       PRIMER_MIN_3_PRIME_OVERLAP_OF_JUNCTION=config.min_3_prime_overlap_of_junction,
-                       PRIMER_MIN_5_PRIME_OVERLAP_OF_JUNCTION=config.min_5_prime_overlap_of_junction)
-    # likes oligos 5' with G or C will anneal with 3' of sequence
-    # S = Strong (G or C)
-    if config.num_5_prime_strong_match > 0:
-        seq_args.PRIMER_MUST_MATCH_FIVE_PRIME = _build_strong_match_str(config)
-
+                       SEQUENCE_PRIMER_PAIR_OK_REGION_LIST=ok_regions)
     junction_overlaps = _build_junction_overlap(target_transcript.features_5p) + _build_junction_overlap(target_transcript.features_3p)
     if len(junction_overlaps) > 0:
         seq_args.SEQUENCE_OVERLAP_JUNCTION_LIST = junction_overlaps
 
-    if config.max_poly_x is not None:
-        seq_args.PRIMER_MAX_POLY_X = config.max_poly_x
     return seq_args
 
 def _compute_primer_product_size_range(target_transcript, global_args):
@@ -139,16 +126,26 @@ def _compute_primer_product_size_range(target_transcript, global_args):
     size_ranges.sort()
     return [size_ranges]
 
-def _build_global_args(target_transcript, global_args):
-    # set PRIMER_PRODUCT_SIZE_RANGE for specific sequence
-    if "PRIMER_PRODUCT_SIZE_RANGE" not in global_args:
-        global_args = copy.copy(global_args)
-        global_args.PRIMER_PRODUCT_SIZE_RANGE = _compute_primer_product_size_range(target_transcript, global_args)
-    return global_args
+def _copy_config_global_args(config, global_args):
+    for fld in dir(config):
+        if fld.startswith("PRIMER_"):
+            val = getattr(config, fld)
+            if val is not None:
+                global_args[fld] = val
 
-def primer3_global_defaults():
-    "get a copy to modify"
-    return copy.copy(_global_args_defaults)
+def _build_global_args(config, target_transcript):
+    # set PRIMER_PRODUCT_SIZE_RANGE for specific sequence
+    global_args = copy.copy(_global_args_defaults)
+    _copy_config_global_args(config, global_args)
+
+    # likes oligos 5' with G or C will anneal with 3' of sequence
+    # S = Strong (G or C)
+    if config.num_5_prime_strong_match > 0:
+        global_args.PRIMER_MUST_MATCH_FIVE_PRIME = _build_strong_match_str(config)
+
+    global_args.PRIMER_PRODUCT_SIZE_RANGE = _compute_primer_product_size_range(target_transcript, global_args)
+
+    return global_args
 
 def _check_common_errors(target_transcript, seq_args, global_args):
     """check for common errors in specification that would generate primer3
@@ -164,7 +161,7 @@ def _check_common_errors(target_transcript, seq_args, global_args):
         _check_region(region_features, "PRIMER_MIN_SIZE", global_args.PRIMER_MIN_SIZE)
         _check_region(region_features, "PRIMER_MAX_SIZE", global_args.PRIMER_MAX_SIZE)
 
-def primer3_design(primer3_config, target_transcript, *, global_args=_global_args_defaults, debug=False):
+def primer3_design(primer3_config, target_transcript, *, debug=False):
     """main entry to run primer3
     global_args defined here:
     https://www.primer3plus.com/primer3plusHelp.html#globalTags
@@ -172,11 +169,12 @@ def primer3_design(primer3_config, target_transcript, *, global_args=_global_arg
     global PRIMER_FIRST_BASE_INDEX must be zero.
     """
 
-    global_args = _build_global_args(target_transcript, global_args)
+    global_args = _build_global_args(primer3_config, target_transcript)
     seq_args = _build_seq_args(primer3_config, target_transcript)
     if debug:
         print(">>>>> primer3 debug:", target_transcript, file=sys.stderr)
-        primer3_dump_args(sys.stderr, primer3_config, target_transcript, global_args=global_args)
+        primer3_dump_args(sys.stderr, primer3_config, target_transcript,
+                          global_args=global_args, seq_args=seq_args)
 
     _check_common_errors(target_transcript, seq_args, global_args)
 
@@ -191,9 +189,12 @@ def primer3_design(primer3_config, target_transcript, *, global_args=_global_arg
         raise PrimersJuJuError(f"primer3 warnings: {results.PRIMER_WARNINGS}")
     return results
 
-def primer3_dump_args(fh, primer3_config, target_transcript, *, global_args=_global_args_defaults):
+def primer3_dump_args(fh, primer3_config, target_transcript, *, global_args=None, seq_args=None):
     "print the arguments that will be used for this design"
-    seq_args = _build_seq_args(primer3_config, target_transcript)
+    if global_args is None:
+        global_args = _build_global_args(primer3_config, target_transcript)
+    if seq_args is None:
+        seq_args = _build_seq_args(primer3_config, target_transcript)
     pp = pprint.PrettyPrinter(stream=fh, sort_dicts=False, indent=4)
     print(">>> primer3_args <<<", file=fh)
     print("global_args:", file=fh)
